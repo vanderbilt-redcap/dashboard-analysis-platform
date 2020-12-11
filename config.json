@@ -1,0 +1,40 @@
+{
+  "name": "Dashboard Analysis Platform- Empowering the Participant Voice",
+
+  "namespace": "Vanderbilt\\DashboardAnalysisPlatformExternalModule",
+  "framework-version": 5,
+  "authors": [
+    {
+      "name": "Eva Bascompte Moragas",
+      "email": "datacore@vumc.org",
+      "institution": "Vanderbilt University Medical Center"
+    }
+  ],
+
+  "permissions": [],
+
+  "links": {
+    "project": [
+      {
+        "name": "Dashboard Analysis Platform",
+        "icon": "fas fa-chart-area",
+        "url": "index.php",
+        "target": "_blank"
+      }
+    ]
+  },
+
+  "no-auth-pages":["index"],
+
+  "description": "This module’s main use is to create an auto-generated, web-browsable version of a Data Exchange Standard, a common data model for sharing.",
+
+  "project-settings": [
+
+  ],
+  "compatibility": {
+    "php-version-min": "5.5.0",
+    "php-version-max": "",
+    "redcap-version-min": "10.2.0",
+    "redcap-version-max": ""
+  }
+}
