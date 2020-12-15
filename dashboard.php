@@ -75,8 +75,12 @@ $array_study = array(
         $table .= '</tr>';
 
         if ($question == 1) {
+            $array_colors = array();
+            $questionCount = 0;
             foreach ($row_questions_1 as $question_1) {
                 $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
+                $questionCount++;
+                $array_colors[$questionCount] = array();
                 foreach ($study_options as $index => $col_title) {
                     $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
@@ -100,7 +104,8 @@ $array_study = array(
                     }else{
                         $topScore = 0;
                     }
-                    $table .= '<td>'.$topScore.'</td>';
+                    $table .= '<td id="'.$questionCount.'_'.$index.'">'.$topScore.'</td>';
+                    $array_colors[$questionCount][$index] = $topScore;
                 }
                 #MISSING
                 $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
@@ -113,8 +118,33 @@ $array_study = array(
                         $missing += 1;
                     }
                 }
+
                 $table .= '<td>'.$missing.'</td>';
                 $table .= '</tr>';
+            }
+
+            #COLORS
+            $array_colors_by_column = array();
+            for ($j = 1; $j < count($study_options) + 1; $j++) {
+                if (!array_key_exists($j, $array_colors_by_column)) {
+                    $array_colors_by_column[$j] = array();
+                }
+                for($k=1;$k<$questionCount+1;$k++) {
+                        array_push($array_colors_by_column[$j], $array_colors[$k][$j]);
+                }
+            }
+
+            $add_colors = array();
+            foreach ($array_colors_by_column as $column => $col_value){
+                $max = max($col_value);
+                $min = min($col_value);
+                foreach ($col_value as $index => $value){
+                    if($value == $max){
+                        $add_colors[$column."_".($index+1)]["max"] = $max;
+                    }else if($value == $min){
+                        $add_colors[$column."_".($index+1)]["min"] = $min;
+                    }
+                }
             }
         }else {
             $option = explode("-",$row_questions[$question]);
@@ -160,3 +190,20 @@ $array_study = array(
     }
     ?>
 </div>
+<script>
+    $( document ).ready(function() {
+        colors_array = <?=json_encode($add_colors)?>;
+        Object.keys(colors_array).forEach(function (color) {
+            var indexes = color.split("_");
+            var colindex = indexes[0];
+            var rowindex = indexes[1];
+            Object.keys(colors_array[color]).forEach(function (mindex) {
+                if(mindex == 'max'){
+                    $('#'+rowindex+'_'+colindex).addClass('maxscore');
+                }else if(mindex == 'min'){
+                    $('#'+rowindex+'_'+colindex).addClass('minscore');
+                }
+            });
+        });
+    });
+</script>

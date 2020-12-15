@@ -154,3 +154,9 @@ option {
     font-weight: bold;
     background-color: #f5f5f5;
 }
+.maxscore{
+    background-color: #28a745;
+}
+.minscore{
+    background-color: #dc3545;
+}
