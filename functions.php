@@ -21,4 +21,16 @@ function getParamOnType($field_name,$index){
     }
     return "[".$field_name."] = '".$index."'";
 }
+
+function lineargradient($ra,$ga,$ba,$rz,$gz,$bz,$iterationnr) {
+    $colorindex = array();
+    for($iterationc=1; $iterationc<=$iterationnr; $iterationc++) {
+        $iterationdiff = $iterationnr-$iterationc;
+        $colorindex[] = '#'.
+            dechex(intval((($ra*$iterationc)+($rz*$iterationdiff))/$iterationnr)).
+            dechex(intval((($ga*$iterationc)+($gz*$iterationdiff))/$iterationnr)).
+            dechex(intval((($ba*$iterationc)+($bz*$iterationdiff))/$iterationnr));
+    }
+    return $colorindex;
+}
 ?>

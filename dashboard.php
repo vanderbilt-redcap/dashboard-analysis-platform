@@ -76,11 +76,9 @@ $array_study = array(
 
         if ($question == 1) {
             $array_colors = array();
-            $questionCount = 0;
-            foreach ($row_questions_1 as $question_1) {
-                $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
-                $questionCount++;
-                $array_colors[$questionCount] = array();
+            $max = 0;
+            foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                $array_colors[$indexQuestion] = array();
                 foreach ($study_options as $index => $col_title) {
                     $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
@@ -104,8 +102,10 @@ $array_study = array(
                     }else{
                         $topScore = 0;
                     }
-                    $table .= '<td id="'.$questionCount.'_'.$index.'">'.$topScore.'</td>';
-                    $array_colors[$questionCount][$index] = $topScore;
+                    $array_colors[$indexQuestion][$index] = $topScore;
+                    if($topScore > $max){
+                        $max = $topScore;
+                    }
                 }
                 #MISSING
                 $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
@@ -118,35 +118,25 @@ $array_study = array(
                         $missing += 1;
                     }
                 }
+                if($topScore > $missing){
+                    $max = $topScore;
+                }
 
-                $array_colors[$questionCount][count($study_options)+1] = $missing;
-
-                $table .= '<td id="'.$questionCount.'_'.(count($study_options)+1).'">'.$missing.'</td>';
+                $array_colors[$indexQuestion][$index+1] = $topScore;
+            }
+            #COLOR
+            $colorindex = lineargradient(
+                40, 167, 69,   // rgb of the start color
+                220, 53, 69, // rgb of the end color
+                $max+1          // number of colors in your linear gradient
+            );
+            foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
+                for ($i = 0;$i<count($study_options)+1;$i++) {
+                    $color = $colorindex[$array_colors[$indexQuestion][$i]];
+                    $table .= '<td style="background-color:'.$color.'">'.$array_colors[$indexQuestion][$i].'</td>';
+                }
                 $table .= '</tr>';
-            }
-
-            #COLORS
-            $array_colors_by_column = array();
-            for ($j = 1; $j < count($study_options) + 2; $j++) {
-                if (!array_key_exists($j, $array_colors_by_column)) {
-                    $array_colors_by_column[$j] = array();
-                }
-                for($k=1;$k<$questionCount+1;$k++) {
-                        array_push($array_colors_by_column[$j], $array_colors[$k][$j]);
-                }
-            }
-
-            $add_colors = array();
-            foreach ($array_colors_by_column as $column => $col_value){
-                $max = max($col_value);
-                $min = min($col_value);
-                foreach ($col_value as $index => $value){
-                    if($value == $max){
-                        $add_colors[$column."_".($index+1)]["max"] = $max;
-                    }else if($value == $min){
-                        $add_colors[$column."_".($index+1)]["min"] = $min;
-                    }
-                }
             }
         }else {
             $option = explode("-",$row_questions[$question]);
@@ -192,20 +182,3 @@ $array_study = array(
     }
     ?>
 </div>
-<script>
-    $( document ).ready(function() {
-        colors_array = <?=json_encode($add_colors)?>;
-        Object.keys(colors_array).forEach(function (color) {
-            var indexes = color.split("_");
-            var colindex = indexes[0];
-            var rowindex = indexes[1];
-            Object.keys(colors_array[color]).forEach(function (mindex) {
-                if(mindex == 'max'){
-                    $('#'+rowindex+'_'+colindex).addClass('maxscore');
-                }else if(mindex == 'min'){
-                    $('#'+rowindex+'_'+colindex).addClass('minscore');
-                }
-            });
-        });
-    });
-</script>
