@@ -119,13 +119,15 @@ $array_study = array(
                     }
                 }
 
-                $table .= '<td>'.$missing.'</td>';
+                $array_colors[$questionCount][count($study_options)+1] = $missing;
+
+                $table .= '<td id="'.$questionCount.'_'.(count($study_options)+1).'">'.$missing.'</td>';
                 $table .= '</tr>';
             }
 
             #COLORS
             $array_colors_by_column = array();
-            for ($j = 1; $j < count($study_options) + 1; $j++) {
+            for ($j = 1; $j < count($study_options) + 2; $j++) {
                 if (!array_key_exists($j, $array_colors_by_column)) {
                     $array_colors_by_column[$j] = array();
                 }
