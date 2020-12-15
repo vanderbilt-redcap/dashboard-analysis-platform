@@ -118,23 +118,17 @@ $array_study = array(
                         $missing += 1;
                     }
                 }
-                if($topScore > $missing){
-                    $max = $topScore;
+                if($missing > $max){
+                    $max = $missing;
                 }
 
-                $array_colors[$indexQuestion][$index+1] = $topScore;
+                $array_colors[$indexQuestion][$index+1] = $missing;
             }
             #COLOR
-            $colorindex = lineargradient(
-                40, 167, 69,   // rgb of the start color
-                220, 53, 69, // rgb of the end color
-                $max+1          // number of colors in your linear gradient
-            );
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
                 for ($i = 1;$i<count($study_options)+2;$i++) {
-//                    $color = $colorindex[$array_colors[$indexQuestion][$i]];
-                    $percent = ($array_colors[$indexQuestion][$i]/$max)*100;
+                    $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
                     $color = GetColorFromRedYellowGreenGradient($percent);
                     $table .= '<td style="background-color:'.$color.'">'.$array_colors[$indexQuestion][$i].'</td>';
                 }
