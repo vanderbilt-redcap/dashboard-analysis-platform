@@ -132,8 +132,10 @@ $array_study = array(
             );
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
-                for ($i = 0;$i<count($study_options)+1;$i++) {
-                    $color = $colorindex[$array_colors[$indexQuestion][$i]];
+                for ($i = 1;$i<count($study_options)+2;$i++) {
+//                    $color = $colorindex[$array_colors[$indexQuestion][$i]];
+                    $percent = ($array_colors[$indexQuestion][$i]/$max)*100;
+                    $color = GetColorFromRedYellowGreenGradient($percent);
                     $table .= '<td style="background-color:'.$color.'">'.$array_colors[$indexQuestion][$i].'</td>';
                 }
                 $table .= '</tr>';

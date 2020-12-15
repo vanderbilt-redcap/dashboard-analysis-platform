@@ -33,4 +33,12 @@ function lineargradient($ra,$ga,$ba,$rz,$gz,$bz,$iterationnr) {
     }
     return $colorindex;
 }
+function GetColorFromRedYellowGreenGradient($percentage)
+{
+    $red = ($percentage > 50 ? 1 - 2 * ($percentage - 50) / 100.0 : 1.0) * 255;
+    $green = ($percentage > 50 ? 1.0 : 2 * $percentage / 100.0) * 255;
+    $blue = 0.0;
+    $result = sprintf("#%02x%02x%02x", $red, $green, $blue);
+    return $result;
+}
 ?>
