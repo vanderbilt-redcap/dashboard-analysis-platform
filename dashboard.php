@@ -91,7 +91,7 @@ $array_study = array(
                     $score_is_5 = 0;
                     foreach ($records as $record){
                         if(isTopScore($record[$question_1],$topScoreMax)) {
-                            $topScoreFound += $record[$question_1];
+                            $topScoreFound += 1;
                         }
                         if($record[$question_1] == 5 && $topScoreMax == 5){
                             $score_is_5 += 1;
@@ -175,6 +175,15 @@ $array_study = array(
         }
         $table .= '</table>';
         echo $table;
+        ?>
+        <script>
+            /*var myLineChart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: options
+            });*/
+        </script>
+        <?php
     }
     ?>
 </div>
