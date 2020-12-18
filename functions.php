@@ -1,6 +1,8 @@
 <?php
-function isTopScore($value,$topScoreMax){
+function isTopScore($value,$topScoreMax,$var =""){
     if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 4){
+        return true;
+    }else if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 1 && ($var == "rpps_s_q21" || $var == "rpps_s_q25")) {
         return true;
     }else if($topScoreMax == 11 && ($value == 9 || $value == 10)) {
         return true;

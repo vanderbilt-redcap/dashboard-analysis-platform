@@ -19,7 +19,7 @@ $array_study = array(
     65 => "Gender",
     16 => "Study type",
     15 => "Disease required",
-    66 => "nrollment setting",
+    66 => "Enrollment setting",
     58 => "Demand of study"
 );
 ?>
@@ -66,12 +66,22 @@ $array_study = array(
                             13 => "rpps_up_q67", 14 => "rpps_s_q57");
         $study_options = $module->getChoiceLabels("rpps_s_q" . $study, $project_id);
 
+        $score_title = "% Responding Very or Somewhat Important";
+        if ($question == 1) {
+            $score_title = "% Best score";
+        }
         $table = '<table class="table table-bordered pull-left" id="table_archive"><thead>
-            <tr><th class="question"><strong>% Top score</strong></th>';
+            <tr><th class="question"><strong>'.$score_title.'</strong></th>';
         foreach ($study_options as $col_title) {
             $table .= '<th>' . $col_title . '</th>';
         }
         $table .= '<th>MISSING</th>';
+
+        if($study == 61){
+            $table .= '<th>MULTIPLE</th>';
+            $RecordSetMultiple = \REDCap::getData($project_id, 'array');
+            $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+        }
         $table .= '</tr>';
 
         if ($question == 1) {
@@ -79,9 +89,9 @@ $array_study = array(
             $max = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $array_colors[$indexQuestion] = array();
+                $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+                $topScoreMax = count($outcome_labels);
                 foreach ($study_options as $index => $col_title) {
-                    $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
-                    $topScoreMax = count($outcome_labels);
                     $condition = getParamOnType("rpps_s_q" . $study,$index);
 
                     $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition);
@@ -90,7 +100,7 @@ $array_study = array(
                     $topScoreFound = 0;
                     $score_is_5 = 0;
                     foreach ($records as $record){
-                        if(isTopScore($record[$question_1],$topScoreMax)) {
+                        if(isTopScore($record[$question_1],$topScoreMax,$question_1)) {
                             $topScoreFound += 1;
                         }
                         if($record[$question_1] == 5 && $topScoreMax == 5){
@@ -107,6 +117,7 @@ $array_study = array(
                         $max = $topScore;
                     }
                 }
+
                 #MISSING
                 $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
                     "[".$question_1."] != ''"
@@ -121,13 +132,27 @@ $array_study = array(
                 if($missing > $max){
                     $max = $missing;
                 }
-
                 $array_colors[$indexQuestion][$index+1] = $missing;
+
+                #MULTIPLE
+                if($study == 61) {
+                    $multiple = 0;
+                    foreach ($multipleRecords as $multirecord){
+                        if(isTopScore($multirecord[$question_1],$topScoreMax,$question_1) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
+                            $multiple += 1;
+                        }
+                    }
+                    $array_colors[$indexQuestion][$index+2] = $multiple;
+                }
             }
             #COLOR
+            $extras = 2;
+            if($study == 61) {
+                $extras = 3;
+            }
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
-                for ($i = 1;$i<count($study_options)+2;$i++) {
+                for ($i = 1;$i<count($study_options)+$extras;$i++) {
                     $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
                     $color = GetColorFromRedYellowGreenGradient($percent);
                     $table .= '<td style="background-color:'.$color.'">'.$array_colors[$indexQuestion][$i].'</td>';
@@ -169,21 +194,23 @@ $array_study = array(
                     }
                 }
                 $table .= '<td>'.$missing.'</td>';
+
+                #MULTIPLE
+                if($study == 61) {
+                    $multiple = 0;
+                    foreach ($multipleRecords as $multirecord){
+                        if(isTopScoreVeryOrSomewhatImportant($multirecord["rpps_s_q".$i]) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
+                            $multiple += 1;
+                        }
+                    }
+                    $table .= '<td>'.$multiple.'</td>';
+                }
                 $table .= '</tr>';
             }
             $table .= '</tr>';
         }
         $table .= '</table>';
         echo $table;
-        ?>
-        <script>
-            /*var myLineChart = new Chart(ctx, {
-                type: 'line',
-                data: data,
-                options: options
-            });*/
-        </script>
-        <?php
     }
     ?>
 </div>
