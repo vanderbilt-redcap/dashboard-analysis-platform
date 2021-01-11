@@ -112,7 +112,7 @@ $array_study = array(
                             $missing_InfoLabel += 1;
                         }
                     }
-                    $tooltipTextArray[$indexQuestion][$index+1]  = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
+                    $tooltipTextArray[$indexQuestion][$index]  = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
                     if($topScoreFound > 0){
                         $topScore = number_format(($topScoreFound/(count($records)-$score_is_5)*100),0);
                     }else{
