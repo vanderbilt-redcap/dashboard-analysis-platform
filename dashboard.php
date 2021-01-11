@@ -89,6 +89,7 @@ $array_study = array(
             $max = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $array_colors[$indexQuestion] = array();
+                $tooltipTextArray[$indexQuestion] = array();
                 $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                 $topScoreMax = count($outcome_labels);
                 foreach ($study_options as $index => $col_title) {
@@ -99,6 +100,7 @@ $array_study = array(
 
                     $topScoreFound = 0;
                     $score_is_5 = 0;
+                    $missing_InfoLabel = 0;
                     foreach ($records as $record){
                         if(isTopScore($record[$question_1],$topScoreMax,$question_1)) {
                             $topScoreFound += 1;
@@ -106,7 +108,11 @@ $array_study = array(
                         if($record[$question_1] == 5 && $topScoreMax == 5){
                             $score_is_5 += 1;
                         }
+                        if($record[$question_1] == '' || !array_key_exists($question_1,$record)){
+                            $missing_InfoLabel += 1;
+                        }
                     }
+                    $tooltipTextArray[$indexQuestion][$index+1]  = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
                     if($topScoreFound > 0){
                         $topScore = number_format(($topScoreFound/(count($records)-$score_is_5)*100),0);
                     }else{
@@ -155,7 +161,7 @@ $array_study = array(
                 for ($i = 1;$i<count($study_options)+$extras;$i++) {
                     $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
                     $color = GetColorFromRedYellowGreenGradient($percent);
-                    $table .= '<td style="background-color:'.$color.'">'.$array_colors[$indexQuestion][$i].'</td>';
+                    $table .= '<td style="background-color:'.$color.'"><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipTextArray[$indexQuestion][$i].'">'.$array_colors[$indexQuestion][$i].'</div></td>';
                 }
                 $table .= '</tr>';
             }
@@ -170,9 +176,13 @@ $array_study = array(
                     $records = ProjectData::getProjectInfoArray($RecordSet);
 
                     $topScoreFound = 0;
+                    $missing_InfoLabel = 0;
                     foreach ($records as $record){
                         if(isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
                             $topScoreFound += 1;
+                        }
+                        if($record["rpps_s_q".$i] == '' || !array_key_exists("rpps_s_q".$i,$record)){
+                            $missing_InfoLabel += 1;
                         }
                     }
                     if($topScoreFound > 0){
@@ -180,7 +190,8 @@ $array_study = array(
                     }else{
                         $topScore = 0;
                     }
-                    $table .= '<td>'.$topScore.'</td>';
+                    $tooltipText = count($records)." responses, ".$missing_InfoLabel." missing";
+                    $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$topScore.'</div></td>';
                 }
                 #MISSING
                 $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
@@ -214,3 +225,8 @@ $array_study = array(
     }
     ?>
 </div>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>

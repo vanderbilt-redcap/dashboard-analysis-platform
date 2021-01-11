@@ -160,3 +160,14 @@ option {
 .minscore{
     background-color: #dc3545;
 }
+#table_archive{
+    height:100%;
+    width: 100%;
+    border-collapse:collapse;
+}
+.extraInfoLabel{
+    width:100%;
+    height:100%;
+    cursor: pointer;
+}
+/*.tooltip-arrow,.red-tooltip + .tooltip > .tooltip-inner {background-color: #337ab7;}*/
