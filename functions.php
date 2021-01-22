@@ -1,4 +1,6 @@
 <?php
+namespace FunctionsDAP;
+
 function isTopScore($value,$topScoreMax,$var =""){
     if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 4){
         return true;
@@ -31,5 +33,11 @@ function GetColorFromRedYellowGreenGradient($percentage)
     $blue = 0.0;
     $result = sprintf("#%02x%02x%02x", $red, $green, $blue);
     return $result;
+}
+
+function date_compare($element1, $element2) {
+    $datetime1 = strtotime($element1['datetime']);
+    $datetime2 = strtotime($element2['datetime']);
+    return $datetime1 - $datetime2;
 }
 ?>

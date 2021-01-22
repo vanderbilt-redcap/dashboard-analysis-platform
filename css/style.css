@@ -5,21 +5,11 @@ body {
     color: #333;
     background-color: #fff;
 }
-/*@media (min-width: 1200px) {*/
-/*    .container {*/
-/*        width: 1170px;*/
-/*    }*/
-/*}*/
 @media (min-width: 992px) {
     .container {
         width: 970px;
     }
 }
-/*@media (min-width: 768px) {*/
-/*    .container {*/
-/*        width: 750px;*/
-/*    }*/
-/*}*/
 .container {
     padding-right: 15px;
     padding-left: 15px;
@@ -146,6 +136,7 @@ option {
 }
 #options tr{
     cursor: pointer !important;
+    text-align: center;
 }
 #options tr:hover{
     background-color: #e0dfdf !important;
