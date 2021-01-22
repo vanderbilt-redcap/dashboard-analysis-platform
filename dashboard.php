@@ -68,6 +68,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     $graph_top_score = array();
     $graph_top_score_year = array();
     $graph_top_score_month = array();
+    $graph_top_score_quarter = array("Q1"=>0,"Q2"=>0,"Q3"=>0,"Q4"=>0);
 
     $score_title = "% Responding Very or Somewhat Important";
     if ($question == 1) {
@@ -139,6 +140,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                         $graph_top_score[date("Y-m",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_year[date("Y",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_month[strtotime(date("Y-m",strtotime($record['survey_datetime'])))] += 1;
+                        $month = date("m",strtotime($record['survey_datetime']));
+                        if($month <= 3){
+                            $graph_top_score_quarter["Q1"] += 1;
+                        }else if($month > 3 && $month <= 6) {
+                            $graph_top_score_quarter["Q2"] += 1;
+                        }else if($month > 6 && $month <= 9) {
+                            $graph_top_score_quarter["Q3"] += 1;
+                        }else if($month > 9){
+                            $graph_top_score_quarter["Q4"] += 1;
+                        }
                     }
                     if($record[$question_1] == 5 && $topScoreMax == 5){
                         $score_is_5 += 1;
@@ -244,6 +255,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                         $graph_top_score[date("Y-m",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_year[date("Y",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_month[strtotime(date("Y-m",strtotime($record['survey_datetime'])))] += 1;
+                        $month = date("m",strtotime($record['survey_datetime']));
+                        if($month <= 3){
+                            $graph_top_score_quarter["Q1"] += 1;
+                        }else if($month > 3 && $month <= 6) {
+                            $graph_top_score_quarter["Q2"] += 1;
+                        }else if($month > 6 && $month <= 9) {
+                            $graph_top_score_quarter["Q3"] += 1;
+                        }else if($month > 9){
+                            $graph_top_score_quarter["Q4"] += 1;
+                        }
                     }
                     if($record["rpps_s_q".$i] == '' || !array_key_exists("rpps_s_q".$i,$record)){
                         $missing_InfoLabel += 1;
@@ -303,17 +324,18 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     }
 
     #QUARTER
-
+    ksort($graph_top_score_quarter);
+    $graph_top_score_quarter = array_values($graph_top_score_quarter);
     ?>
     <script>
         $(function () {
             var labels_year = <?=json_encode($labels_year)?>;
             var labels_month = <?=json_encode($labels_month)?>;
-            var labels_quarter= ["Q1","Q2","Q3","Q4"];
+            var labels_quarter = ["Q1","Q2","Q3","Q4"];
 
             var results_year = <?=json_encode($graph_top_score_year)?>;
             var results_month = <?=json_encode($graph_top_score_month_values)?>;
-            var results_quarter = <?=json_encode($graph_top_score_year)?>;
+            var results_quarter = <?=json_encode($graph_top_score_quarter)?>;
 
             var  ctx_dash = $("#DashChart");
             var config_dash = {
