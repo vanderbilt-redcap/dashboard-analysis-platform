@@ -132,9 +132,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
 
+                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND [".$question_1."] = ''");
+                $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
+
                 $topScoreFound = 0;
                 $score_is_5 = 0;
-                $missing_InfoLabel = 0;
                 foreach ($records as $record){
                     if(\FunctionsDAP\isTopScore($record[$question_1],$topScoreMax,$question_1)) {
                         $topScoreFound += 1;
@@ -147,9 +149,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     }
                     if($record[$question_1] == 5 && $topScoreMax == 5){
                         $score_is_5 += 1;
-                    }
-                    if($record[$question_1] == '' || !array_key_exists($question_1,$record)){
-                        $missing_InfoLabel += 1;
                     }
                 }
                 $tooltipTextArray[$indexQuestion][$index]  = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
@@ -180,7 +179,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($missing > $max){
                 $max = $missing;
             }
-            $array_colors[$indexQuestion][$index+1] = $missing;
+            $array_colors[$indexQuestion][$index+1] = number_format(($missing/count($missingRecords))*100);
 
             #MULTIPLE
             if($study == 61) {
@@ -241,8 +240,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,$condition);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
 
+                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND ["."rpps_s_q".$i."] = ''");
+                $missingSingle = count(ProjectData::getProjectInfoArray($RecordSetMissing));
+
                 $topScoreFound = 0;
-                $missing_InfoLabel = 0;
                 foreach ($records as $record){
                     if(\FunctionsDAP\isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
                         $topScoreFound += 1;
@@ -253,22 +254,19 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                         $graph_top_score_quarter = \FunctionsDAP\setQUarter($graph_top_score_quarter,$record['survey_datetime']);
                         $years[date("Y",strtotime($record['survey_datetime']))] = 0;
                     }
-                    if($record["rpps_s_q".$i] == '' || !array_key_exists("rpps_s_q".$i,$record)){
-                        $missing_InfoLabel += 1;
-                    }
                 }
 
                 if($topScoreFound > 0){
-                    $topScore = number_format(($topScoreFound/(count($records)-$missing_InfoLabel)*100),0);
+                    $topScore = number_format(($topScoreFound/(count($records)-$missingSingle)*100),0);
                 }else{
                     $topScore = 0;
                 }
-                $tooltipText = count($records)." responses, ".$missing_InfoLabel." missing";
+                $tooltipText = count($records)." responses, ".$missingSingle." missing";
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$topScore.'</div></td>';
             }
             #MISSING
             $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-                "[".$i."] != ''"
+                "[rpps_s_q".$i."] != ''"
             );
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             $missing = 0;
@@ -277,7 +275,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     $missing += 1;
                 }
             }
-            $table .= '<td>'.$missing.'</td>';
+            $table .= '<td>'.number_format(($missing/count($missingRecords))*100).'</td>';
 
             #MULTIPLE
             if($study == 61) {
