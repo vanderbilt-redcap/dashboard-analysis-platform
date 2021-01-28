@@ -114,7 +114,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             $topScoreFoundO = 0;
             foreach ($recordsoverall as $recordo){
-                if(\FunctionsDAP\isTopScore($recordo[$question_1],$topScoreMax,$question_1)) {
+                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1],$topScoreMax,$question_1)) {
                     $topScoreFoundO += 1;
                 }
             }
@@ -127,7 +127,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             #NORMAL STUDY
             foreach ($study_options as $index => $col_title) {
-                $condition = \FunctionsDAP\getParamOnType("rpps_s_q" . $study,$index);
+                $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
                 $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
@@ -138,13 +138,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $topScoreFound = 0;
                 $score_is_5 = 0;
                 foreach ($records as $record){
-                    if(\FunctionsDAP\isTopScore($record[$question_1],$topScoreMax,$question_1)) {
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1],$topScoreMax,$question_1)) {
                         $topScoreFound += 1;
                         $graph_top_score[date("Y-m",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_year[date("Y",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_month[strtotime(date("Y-m",strtotime($record['survey_datetime'])))] += 1;
-                        $graph_top_score_quarter = \FunctionsDAP\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
-                        $graph_top_score_quarter = \FunctionsDAP\setQuarter($graph_top_score_quarter,$record['survey_datetime']);
+                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
+                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph_top_score_quarter,$record['survey_datetime']);
                         $years[date("Y",strtotime($record['survey_datetime']))] = 0;
                     }
                     if($record[$question_1] == 5 && $topScoreMax == 5){
@@ -185,7 +185,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($study == 61) {
                 $multiple = 0;
                 foreach ($multipleRecords as $multirecord){
-                    if(\FunctionsDAP\isTopScore($multirecord[$question_1],$topScoreMax,$question_1) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1],$topScoreMax,$question_1) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
                         $multiple += 1;
                     }
                 }
@@ -201,7 +201,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
-                $color = \FunctionsDAP\GetColorFromRedYellowGreenGradient($percent);
+                $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
                 $table .= '<td style="background-color:'.$color.'"><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipTextArray[$indexQuestion][$i].'">'.$array_colors[$indexQuestion][$i].'</div></td>';
             }
             $table .= '</tr>';
@@ -220,7 +220,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $topScoreFoundO = 0;
             $notTopScoreFoundO = 0;
             foreach ($recordsoverall as $recordo){
-                if(\FunctionsDAP\isTopScoreVeryOrSomewhatImportant($recordo["rpps_s_q".$i])) {
+                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo["rpps_s_q".$i])) {
                     $topScoreFoundO += 1;
                 }else{
                     $notTopScoreFoundO += 1;
@@ -235,7 +235,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             #NORMAL STUDY
             foreach ($study_options as $index => $col_title) {
-                $condition = \FunctionsDAP\getParamOnType("rpps_s_q" . $study,$index);
+                $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
                 $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,$condition);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
@@ -245,13 +245,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
                 $topScoreFound = 0;
                 foreach ($records as $record){
-                    if(\FunctionsDAP\isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
                         $topScoreFound += 1;
                         $graph_top_score[date("Y-m",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_year[date("Y",strtotime($record['survey_datetime']))] += 1;
                         $graph_top_score_month[strtotime(date("Y-m",strtotime($record['survey_datetime'])))] += 1;
-                        $graph_top_score_quarter = \FunctionsDAP\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
-                        $graph_top_score_quarter = \FunctionsDAP\setQUarter($graph_top_score_quarter,$record['survey_datetime']);
+                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
+                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQUarter($graph_top_score_quarter,$record['survey_datetime']);
                         $years[date("Y",strtotime($record['survey_datetime']))] = 0;
                     }
                 }
@@ -281,7 +281,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($study == 61) {
                 $multiple = 0;
                 foreach ($multipleRecords as $multirecord){
-                    if(\FunctionsDAP\isTopScoreVeryOrSomewhatImportant($multirecord["rpps_s_q".$i]) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord["rpps_s_q".$i]) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
                         $multiple += 1;
                     }
                 }

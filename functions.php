@@ -1,5 +1,5 @@
 <?php
-namespace FunctionsDAP;
+namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
 function isTopScore($value,$topScoreMax,$var =""){
     if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 4){
