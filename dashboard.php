@@ -107,10 +107,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
 
             $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'");
-            $score_is_5O = count(ProjectData::getProjectInfoArray($RecordSetOverall5));
-
-            $RecordSetMissingOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = ''");
-            $missingO = count(ProjectData::getProjectInfoArray($RecordSetMissingOverall));
+            $score_is_5O_overall = count(ProjectData::getProjectInfoArray($RecordSetOverall5));
 
             $topScoreFoundO = 0;
             foreach ($recordsoverall as $recordo){
@@ -120,9 +117,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             }
             $overall = 0;
             if($topScoreFoundO > 0){
-                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O)*100),0);
+                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall)*100),0);
             }
-            $tooltipTextArray[$indexQuestion][0]  = count($recordsoverall)." responses, ".$missingO." missing, ".$score_is_5O." not applicable";
+            $missingOverall = 0;
             $array_colors[$indexQuestion][0] = $overall;
 
             #NORMAL STUDY
@@ -151,6 +148,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                         $score_is_5 += 1;
                     }
                 }
+                $missingOverall += $missing_InfoLabel;
                 $tooltipTextArray[$indexQuestion][$index]  = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
                 if($topScoreFound > 0){
                     $topScore = number_format(($topScoreFound/(count($records)-$score_is_5-$missing_InfoLabel)*100),0);
@@ -171,15 +169,27 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             );
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             $missing = 0;
+            $missingTop = 0;
             foreach ($missingRecords as $mrecord){
                 if(($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)){
                     $missing += 1;
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1],$topScoreMax,$question_1)) {
+                        $missingTop += 1;
+                    }
                 }
             }
-            if($missing > $max){
-                $max = $missing;
+            $missingPercent = 0;
+            if($missingTop > 0){
+                $missingPercent = number_format(($missingTop/$missing)*100);
             }
-            $array_colors[$indexQuestion][$index+1] = number_format(($missing/count($missingRecords))*100);
+            $array_colors[$indexQuestion][$index+1] = $missingPercent;
+            if($missingPercent > $max){
+                $max = $missingPercent;
+            }
+
+            #OVERAL MISSING
+            $missingOverall += $missingTop;
+            $tooltipTextArray[$indexQuestion][0]  = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall." not applicable";
 
             #MULTIPLE
             if($study == 61) {
@@ -210,12 +220,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
         $option = explode("-",$row_questions[$question]);
         for($i=$option[0];$i<$option[1];$i++) {
             $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).'</td>';
+
             #OVERALL
             $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q".$i."] <> ''");
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
-
-            $RecordSetMissingOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q".$i."] = ''");
-            $missingO = count(ProjectData::getProjectInfoArray($RecordSetMissingOverall));
 
             $topScoreFoundO = 0;
             $notTopScoreFoundO = 0;
@@ -230,10 +238,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($topScoreFoundO > 0){
                 $overall = number_format(($topScoreFoundO/(count($recordsoverall))*100),0);
             }
-            $tooltipText = count($recordsoverall)." responses, ".$missingO." missing";
-            $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$overall.'</div></td>';
+            $missingOverall = 0;
 
             #NORMAL STUDY
+            $table_b = '';
             foreach ($study_options as $index => $col_title) {
                 $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
@@ -261,8 +269,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 }else{
                     $topScore = 0;
                 }
+                $missingOverall += $missingSingle;
                 $tooltipText = count($records)." responses, ".$missingSingle." missing";
-                $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$topScore.'</div></td>';
+                $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$topScore.'</div></td>';
             }
             #MISSING
             $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
@@ -270,12 +279,26 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             );
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             $missing = 0;
+            $missingTop = 0;
             foreach ($missingRecords as $mrecord){
                 if(($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)){
                     $missing += 1;
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
+                        $missingTop += 1;
+                    }
                 }
             }
-            $table .= '<td>'.number_format(($missing/count($missingRecords))*100).'</td>';
+            $missingPercent = 0;
+            if($missingTop > 0){
+                $missingPercent = number_format(($missingTop/$missing)*100);
+            }
+            $table_b .= '<td>'.$missingPercent.'</td>';
+
+            #OVERAL MISSING
+            $missingOverall += $missingTop;
+            $tooltipText = count($recordsoverall)." responses, ".$missingOverall." missing";
+            $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$overall.'</div></td>';
+            $table .= $table_b;
 
             #MULTIPLE
             if($study == 61) {
@@ -394,10 +417,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     </script>
     <div class="optionSelect">
         <div class="pull-left">
-            <canvas id="DashChart" class="canvas_statistics" height="400px" width="700px"></canvas>
+<!--            <canvas id="DashChart" class="canvas_statistics" height="400px" width="700px"></canvas>-->
         </div>
         <?php
-            echo "<table class='table table-bordered pull-right' id='options'>
+           /* echo "<table class='table table-bordered pull-right' id='options'>
                         <tr>
                             <td class='selected' id='month'>Month</td>
                         </tr>
@@ -408,6 +431,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                             <td id='year'>Year</td>
                         </tr>
                   </table>";
+           */
         }
         ?>
     </div>
