@@ -62,7 +62,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     $study = $_SESSION[$_GET['pid'] . "_study"];
     $row_questions = array(2 => "2-15", 3 => "26-39", 4 => "40-55");
     $row_questions_1 = array(0 => "rpps_s_q1",1 => "rpps_s_q17", 2 => "rpps_s_q18", 3 => "rpps_s_q19", 4 => "rpps_s_q20", 5 => "rpps_s_q21",
-                        6 => "rpps_up_q66", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 0 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_up_q65",
+                        6 => "rpps_up_q66", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_up_q65",
                         12 => "rpps_up_q67", 13 => "rpps_s_q57");
     $study_options = $module->getChoiceLabels("rpps_s_q" . $study, $project_id);
     $graph_top_score = array();
@@ -70,6 +70,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     $graph_top_score_month = array();
     $graph_top_score_quarter = array();
     $years = array();
+
+    $RecordSetMissingStudy = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
+        "[rpps_s_q" . $study."] = ''"
+    );
+    $missingStudyTotal = count(ProjectData::getProjectInfoArray($RecordSetMissingStudy));
 
     $score_title = "% Responding Very or Somewhat Important";
     if ($question == 1) {
@@ -149,7 +154,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     }
                 }
                 $missingOverall += $missing_InfoLabel;
-                $tooltipTextArray[$indexQuestion][$index]  = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
+                $tooltipTextArray[$indexQuestion][$index] = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
                 if($topScoreFound > 0){
                     $topScore = number_format(($topScoreFound/(count($records)-$score_is_5-$missing_InfoLabel)*100),0);
                 }else{
@@ -170,26 +175,33 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             $missing = 0;
             $missingTop = 0;
+            $missingTopAll = 0;
             foreach ($missingRecords as $mrecord){
                 if(($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)){
                     $missing += 1;
                     if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1],$topScoreMax,$question_1)) {
                         $missingTop += 1;
                     }
+                }else{
+                    $missingTopAll += 1;
                 }
             }
+
             $missingPercent = 0;
             if($missingTop > 0){
                 $missingPercent = number_format(($missingTop/$missing)*100);
             }
+            $missing_column = ($missingStudyTotal-$missing);
             $array_colors[$indexQuestion][$index+1] = $missingPercent;
+            $tooltipTextArray[$indexQuestion][$index+1] = $missing." responses, ".$missing_column." missing, ".$score_is_5O_overall." not applicable";
+
             if($missingPercent > $max){
                 $max = $missingPercent;
             }
 
             #OVERAL MISSING
-            $missingOverall += $missingTop;
-            $tooltipTextArray[$indexQuestion][0]  = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall." not applicable";
+            $missingOverall += $missing_column;
+            $tooltipTextArray[$indexQuestion][0] = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall." not applicable";
 
             #MULTIPLE
             if($study == 61) {
@@ -292,10 +304,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($missingTop > 0){
                 $missingPercent = number_format(($missingTop/$missing)*100);
             }
-            $table_b .= '<td>'.$missingPercent.'</td>';
+            $missing_column = ($missingStudyTotal-$missing);
+            $tooltipText = $missing." responses, ".$missing_column." missing";
+            $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$missingPercent.'</div></td>';
 
             #OVERAL MISSING
-            $missingOverall += $missingTop;
+            $missingOverall += $missing_column;
             $tooltipText = count($recordsoverall)." responses, ".$missingOverall." missing";
             $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$overall.'</div></td>';
             $table .= $table_b;
