@@ -200,8 +200,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             }
 
             #OVERAL MISSING
+            $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''");
+            $score_is_5O_overall_missing = count(ProjectData::getProjectInfoArray($RecordSetOverall5Missing));
+
             $missingOverall += $missing_column;
-            $tooltipTextArray[$indexQuestion][0] = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall." not applicable";
+            $tooltipTextArray[$indexQuestion][0] = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall_missing." not applicable";
 
             #MULTIPLE
             if($study == 61) {
@@ -310,6 +313,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             #OVERAL MISSING
             $missingOverall += $missing_column;
+
             $tooltipText = count($recordsoverall)." responses, ".$missingOverall." missing";
             $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$overall.'</div></td>';
             $table .= $table_b;
