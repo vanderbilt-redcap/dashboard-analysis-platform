@@ -26,7 +26,7 @@
 
   "no-auth-pages":["index"],
 
-  "description": "This module’s main use is to create an auto-generated, web-browsable version of a Data Exchange Standard, a common data model for sharing.",
+  "description": "A dashboard to visualize participant perception scores from the Research Participant Perception Survey (RPPS). This module works with any of the RPPS instruments in the REDCap Instrument Library.",
 
   "project-settings": [
 
