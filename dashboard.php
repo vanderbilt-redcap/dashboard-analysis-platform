@@ -85,7 +85,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 <thead>
                     <tr>
                     <th class="question"><strong>'.$score_title.'</strong></th>'.
-                    '<th>OVERALL</th>';
+                    '<th>TOTAL</th>';
     foreach ($study_options as $col_title) {
         $table .= '<th>' . $col_title . '</th>';
     }

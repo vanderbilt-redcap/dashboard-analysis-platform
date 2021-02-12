@@ -49,11 +49,11 @@ use ExternalModules\ExternalModules;
     <meta name="theme-color" content="#fff">
     <link rel="icon" href="">
 
-    <title>Dashboard Analysis Platform</title>
+    <title>At-A-Glance Dashboard - Empowering the Participant Voice</title>
 </head>
 <body>
 <div class="container">
-    <h3 class="header">Dashboard Analysis Platform</h3>
+    <h3 class="header">At-A-Glance Dashboard - Empowering the Participant Voice</h3>
     <?php include_once ('dashboard.php');?>
 </div>
 </body>
