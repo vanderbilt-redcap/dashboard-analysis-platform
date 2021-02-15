@@ -120,12 +120,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     $topScoreFoundO += 1;
                 }
             }
-            $overall = 0;
-            if($topScoreFoundO > 0){
-                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall)*100),0);
-            }
+//            $overall = 0;
+//            if($topScoreFoundO > 0){
+//                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall)*100),0);
+//            }
             $missingOverall = 0;
-            $array_colors[$indexQuestion][0] = $overall;
+//            $array_colors[$indexQuestion][0] = $overall;
 
             #NORMAL STUDY
             foreach ($study_options as $index => $col_title) {
@@ -199,12 +199,18 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $max = $missingPercent;
             }
 
-            #OVERAL MISSING
+            #OVERAL COL MISSING
             $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'");
             $score_is_5O_overall_missing = count(ProjectData::getProjectInfoArray($RecordSetOverall5Missing));
 
             $missingOverall += $missing_column;
             $tooltipTextArray[$indexQuestion][0] = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall_missing." not applicable";
+
+            $overall = 0;
+            if($topScoreFoundO > 0){
+                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall_missing)*100),0);
+            }
+            $array_colors[$indexQuestion][0] = $overall;
 
             #MULTIPLE
             if($study == 61) {
