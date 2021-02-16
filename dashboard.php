@@ -189,7 +189,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             $missingPercent = 0;
             if($missingTop > 0){
-                $missingPercent = number_format(($missingTop/$missing)*100);
+                $missingPercent = number_format(($missingTop/($missing-$score_is_5O_overall))*100);
             }
             $missing_column = ($missingStudyTotal-$missing);
             $array_colors[$indexQuestion][$index+1] = $missingPercent;
@@ -199,7 +199,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $max = $missingPercent;
             }
 
-            #OVERAL COL MISSING
+            #OVERALL COL MISSING
             $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'");
             $score_is_5O_overall_missing = count(ProjectData::getProjectInfoArray($RecordSetOverall5Missing));
 

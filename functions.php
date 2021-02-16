@@ -2,11 +2,11 @@
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
 function isTopScore($value,$topScoreMax,$var =""){
-    if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 4){
+    if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 1 && ($var == "rpps_s_q21" || $var == "rpps_s_q25")){
         return true;
-    }else if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 1 && ($var == "rpps_s_q21" || $var == "rpps_s_q25")) {
+    } else if(($topScoreMax == 4 || $topScoreMax == 5) && $value == 4 && ($var != "rpps_s_q21" && $var != "rpps_s_q25")){
         return true;
-    }else if($topScoreMax == 11 && ($value == 9 || $value == 10)) {
+    } else if($topScoreMax == 11 && ($value == 9 || $value == 10)) {
         return true;
     }
     return false;
