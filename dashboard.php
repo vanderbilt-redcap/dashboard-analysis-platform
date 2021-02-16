@@ -120,12 +120,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     $topScoreFoundO += 1;
                 }
             }
-//            $overall = 0;
-//            if($topScoreFoundO > 0){
-//                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall)*100),0);
-//            }
             $missingOverall = 0;
-//            $array_colors[$indexQuestion][0] = $overall;
 
             #NORMAL STUDY
             foreach ($study_options as $index => $col_title) {
