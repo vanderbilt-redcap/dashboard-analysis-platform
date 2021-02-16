@@ -53,6 +53,7 @@ use ExternalModules\ExternalModules;
 </head>
 <body>
 <div class="container">
+    <img src="<?=$module->getUrl('epv-2colorhorizontal1300__1_.jpg')?>" width="300px" style="padding-top: 20px"/>
     <h3 class="header">At-A-Glance Dashboard - Empowering the Participant Voice</h3>
     <?php include_once ('dashboard.php');?>
 </div>
