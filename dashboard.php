@@ -23,6 +23,77 @@ $array_study = array(
     58 => "Demand of study"
 );
 ?>
+<script>
+    $( document ).ready(function() {
+        var maxWidthth = Math.max.apply(null, $('.dal>thead th.dal_task>div').map(function() {
+            return $(this).outerWidth(true);
+        }).get());
+        $('.dal>thead th.dal_task>div').width(maxWidthth);
+        $('.dal').css('margin-top', maxWidthth * .75);
+
+        function RGBToHSL(rgb) {
+
+            var rgb = rgb.split(",");
+
+            r = rgb[0];
+            g = rgb[1];
+            b = rgb[2];
+
+            r /= 255;
+            g /= 255;
+            b /= 255;
+
+            let cmin = Math.min(r, g, b),
+                cmax = Math.max(r, g, b),
+                delta = cmax - cmin,
+                h = 0,
+                s = 0,
+                l = 0;
+
+            if (delta == 0)
+                h = 0;
+            // Red is max
+            else if (cmax == r)
+                h = ((g - b) / delta) % 6;
+            // Green is max
+            else if (cmax == g)
+                h = (b - r) / delta + 2;
+            // Blue is max
+            else
+                h = (r - g) / delta + 4;
+
+            h = Math.round(h * 60);
+
+            // Make negative hues positive behind 360°
+            if (h < 0)
+                h += 360;
+
+            l = (cmax + cmin) / 2;
+
+            // Calculate saturation
+            s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+
+            // Multiply l and s by 100
+            s = +(s * 100).toFixed(1);
+            l = +(l * 100).toFixed(1);
+
+            return "hsl(" + h + ",70%," + (l + 13) + "%)";
+
+        }
+
+
+
+        $('tr td:nth-of-type(1) ~ td').each(function(index, value) {
+            clr = $(this).css("background-color");
+            clr = clr.replace(/ /g, '', clr);
+            clr = clr.replace(')', '', clr);
+            if (clr != 'rgba(0,0,0,0') {
+                $(this).css('background-color', RGBToHSL(clr.replace('rgb(', '', clr)));
+            }
+            $(this).addClass('perc');
+        });
+    });
+</script>
 <div class="optionSelect">
     <div class="alert alert-danger fade in col-md-12" id="errMsgContainerModal" style="display:none"></div>
     <div style="padding-bottom: 10px">
@@ -81,18 +152,18 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
         $score_title = "% Best score";
     }
     $table = '<div class="optionSelect" style="padding-top: 20px" id="loadTable">
-                <table class="table table-bordered pull-left" id="table_archive">
+                <table class="table dal table-bordered pull-left" id="table_archive">
                 <thead>
                     <tr>
                     <th class="question"><strong>'.$score_title.'</strong></th>'.
-                    '<th>TOTAL</th>';
+                    '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
     foreach ($study_options as $col_title) {
-        $table .= '<th>' . $col_title . '</th>';
+        $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
     }
-    $table .= '<th>MISSING</th>';
+    $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MISSING</span></div></th>';
 
     if($study == 61){
-        $table .= '<th>MULTIPLE</th>';
+        $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
         $RecordSetMultiple = \REDCap::getData($project_id, 'array');
         $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
     }
