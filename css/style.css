@@ -118,9 +118,7 @@ option {
 .dropdown-check-list.visible .items {
     display: block;
 }
-#table_archive td{
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif !important;
-}
+
 #table_archive th{
     background-color: #f5f5f5;
 }
@@ -166,7 +164,7 @@ option {
 }
 /**** CHAD CODE***/
 #table_archive * {
-    /*font-family: proxima-soft;*/
+    font-family: proxima-soft !important;
 }
 
 .dal>thead th.dal_task {

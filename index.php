@@ -25,7 +25,7 @@ use ExternalModules\ExternalModules;
 <link type='text/css' href='<?=$module->getUrl('css/jquery-ui.min.css')?>' rel='stylesheet' media='screen' />
 <link type='text/css' href='<?=$module->getUrl('css/jquery.dataTables.min.css')?>' rel='stylesheet' media='screen' />
 
-<link rel=“stylesheet” href=“https://use.typekit.net/nxh7lyk.css”>
+<link rel='stylesheet' href='https://use.typekit.net/nxh7lyk.css'>
 
 <?php include_once ("functions.php");?>
 
