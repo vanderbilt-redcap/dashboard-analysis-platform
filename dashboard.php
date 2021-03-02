@@ -125,7 +125,7 @@ $array_study = array(
                 <option value="">RPPS administration timing</option>
                 <option value="">RPPS sampling approach</option>
             </select>
-            <input type="daterange" class="form-control" id="daterange" name="daterange" value="">
+<!--            <input type="daterange" class="form-control" id="daterange" name="daterange" value="">-->
             <button onclick='loadTable(<?=json_encode($module->getUrl("loadTable.php"))?>);' class="btn btn-primary" id="loadTablebtn">Load Table</button>
         </div>
     </div>
@@ -286,7 +286,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $array_colors[$indexQuestion][$index+1] = $missingPercent;
             }
 
-            $tooltipTextArray[$indexQuestion][$index+1] = $missing." responses, ".$missing_column." missing, ".$score_is_5O_overall." not applicable";
+            $responses = $missing - $missing_column;
+            $tooltipTextArray[$indexQuestion][$index+1] = $responses." responses, ".$missing_column." missing, ".$score_is_5O_overall." not applicable";
 
             if($missingPercent > $max){
                 $max = $missingPercent;
@@ -320,7 +321,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 foreach ($multipleRecords as $multirecord){
                     if(array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2){
                         $multiple += 1;
-                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1)) {
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
                             $multipleTop += 1;
                         }
                         if($multirecord[$question_1] == '' || !array_key_exists($question_1,$multirecord)){
@@ -331,12 +332,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                         }
                     }
                 }
-                $tooltipTextArray[$indexQuestion][$index+2] = $multiple." responses, ".$multiple_missing." missing, ".$multiple_not_applicable." not applicable";
+                $responses = $multiple - $multiple_missing;
+                $tooltipTextArray[$indexQuestion][$index+2] = $responses." responses, ".$multiple_missing." missing, ".$multiple_not_applicable." not applicable";
                 $multiplePercent = 0;
                 if($missingTop > 0){
                     $multiplePercent = number_format(($multipleTop/($multiple-$multiple_not_applicable))*100);
                 }
-                if($multiple == 0){
+                if($responses == 0){
                     $array_colors[$indexQuestion][$index+2] = "-";
                 }else{
                     $array_colors[$indexQuestion][$index+2] = $multiplePercent;
