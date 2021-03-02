@@ -32,53 +32,54 @@ $array_study = array(
         $('.dal').css('margin-top', maxWidthth * .75);
 
         function RGBToHSL(rgb) {
+            //If grey do not convert
+            if(rgb != "196,196,196") {
+                var rgb = rgb.split(",");
 
-            var rgb = rgb.split(",");
+                r = rgb[0];
+                g = rgb[1];
+                b = rgb[2];
 
-            r = rgb[0];
-            g = rgb[1];
-            b = rgb[2];
+                r /= 255;
+                g /= 255;
+                b /= 255;
 
-            r /= 255;
-            g /= 255;
-            b /= 255;
+                let cmin = Math.min(r, g, b),
+                    cmax = Math.max(r, g, b),
+                    delta = cmax - cmin,
+                    h = 0,
+                    s = 0,
+                    l = 0;
 
-            let cmin = Math.min(r, g, b),
-                cmax = Math.max(r, g, b),
-                delta = cmax - cmin,
-                h = 0,
-                s = 0,
-                l = 0;
+                if (delta == 0)
+                    h = 0;
+                // Red is max
+                else if (cmax == r)
+                    h = ((g - b) / delta) % 6;
+                // Green is max
+                else if (cmax == g)
+                    h = (b - r) / delta + 2;
+                // Blue is max
+                else
+                    h = (r - g) / delta + 4;
 
-            if (delta == 0)
-                h = 0;
-            // Red is max
-            else if (cmax == r)
-                h = ((g - b) / delta) % 6;
-            // Green is max
-            else if (cmax == g)
-                h = (b - r) / delta + 2;
-            // Blue is max
-            else
-                h = (r - g) / delta + 4;
+                h = Math.round(h * 60);
 
-            h = Math.round(h * 60);
+                // Make negative hues positive behind 360°
+                if (h < 0)
+                    h += 360;
 
-            // Make negative hues positive behind 360°
-            if (h < 0)
-                h += 360;
+                l = (cmax + cmin) / 2;
 
-            l = (cmax + cmin) / 2;
+                // Calculate saturation
+                s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
 
-            // Calculate saturation
-            s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+                // Multiply l and s by 100
+                s = +(s * 100).toFixed(1);
+                l = +(l * 100).toFixed(1);
 
-            // Multiply l and s by 100
-            s = +(s * 100).toFixed(1);
-            l = +(l * 100).toFixed(1);
-
-            return "hsl(" + h + ",70%," + (l + 13) + "%)";
-
+                return "hsl(" + h + ",70%," + (l + 13) + "%)";
+            }
         }
 
 
@@ -97,33 +98,36 @@ $array_study = array(
 <div class="optionSelect">
     <div class="alert alert-danger fade in col-md-12" id="errMsgContainerModal" style="display:none"></div>
     <div style="padding-bottom: 10px">
-        <select class="form-control" id="question">
-            <option value="">Question type</option>
-            <?php
-            foreach ($array_questions as $index => $squestion){
-                $selected = "";
-                if($index == $_SESSION[$_GET['pid'] . "_question"]){
-                    $selected = "selected";
+        <div>
+            <select class="form-control" id="question">
+                <option value="">Question type</option>
+                <?php
+                foreach ($array_questions as $index => $squestion){
+                    $selected = "";
+                    if($index == $_SESSION[$_GET['pid'] . "_question"]){
+                        $selected = "selected";
+                    }
+                    echo '<option value="'.$index.'" '.$selected.'>'.$squestion.'</option>';
                 }
-                echo '<option value="'.$index.'" '.$selected.'>'.$squestion.'</option>';
-            }
-            ?>
-        </select>
-        <select class="form-control" id="study">
-            <option value="">Study type</option>
-            <?php
-            foreach ($array_study as $index => $sstudy){
-                $selected = "";
-                if($index == $_SESSION[$_GET['pid'] . "_study"]){
-                    $selected = "selected";
+                ?>
+            </select>
+            <select class="form-control" id="study">
+                <option value="">Study type</option>
+                <?php
+                foreach ($array_study as $index => $sstudy){
+                    $selected = "";
+                    if($index == $_SESSION[$_GET['pid'] . "_study"]){
+                        $selected = "selected";
+                    }
+                    echo '<option value="'.$index.'" '.$selected.'>'.$sstudy.'</option>';
                 }
-                echo '<option value="'.$index.'" '.$selected.'>'.$sstudy.'</option>';
-            }
-            ?>
-            <option value="">RPPS administration timing</option>
-            <option value="">RPPS sampling approach</option>
-        </select>
-        <button onclick='loadTable(<?=json_encode($module->getUrl("loadTable.php"))?>);' class="btn btn-primary" style="float:right" id="loadTablebtn">Load Table</button>
+                ?>
+                <option value="">RPPS administration timing</option>
+                <option value="">RPPS sampling approach</option>
+            </select>
+            <input type="daterange" class="form-control" id="daterange" name="daterange" value="">
+            <button onclick='loadTable(<?=json_encode($module->getUrl("loadTable.php"))?>);' class="btn btn-primary" id="loadTablebtn">Load Table</button>
+        </div>
     </div>
 </div>
 <?php
@@ -141,9 +145,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     $graph_top_score_month = array();
     $graph_top_score_quarter = array();
     $years = array();
+    $startDate = $_SESSION[$_GET['pid'] . "_startDate"];
+    $endDate = $_SESSION[$_GET['pid'] . "_endDate"];
+    $conditionDate = "";
+    if($endDate != "" && $startDate != ""){
+        $conditionDate = " AND [survey_datetime] >= '".$startDate. "' AND [survey_datetime] <= '".$endDate."'";
+    }
+
 
     $RecordSetMissingStudy = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-        "[rpps_s_q" . $study."] = ''"
+        "[rpps_s_q" . $study."] = ''".$conditionDate
     );
     $missingStudyTotal = count(ProjectData::getProjectInfoArray($RecordSetMissingStudy));
 
@@ -179,15 +190,15 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $topScoreMax = count($outcome_labels);
 
             #OVERALL
-            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''");
+            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
 
-            $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''");
+            $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''".$conditionDate);
             $score_is_5O_overall = count(ProjectData::getProjectInfoArray($RecordSetOverall5));
 
             $topScoreFoundO = 0;
             foreach ($recordsoverall as $recordo){
-                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1],$topScoreMax,$question_1)) {
+                if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
                     $topScoreFoundO += 1;
                 }
             }
@@ -197,37 +208,43 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             foreach ($study_options as $index => $col_title) {
                 $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
-                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition);
+                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
 
-                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND [".$question_1."] = ''");
+                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND [".$question_1."] = ''".$conditionDate);
                 $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
 
                 $topScoreFound = 0;
                 $score_is_5 = 0;
                 foreach ($records as $record){
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1],$topScoreMax,$question_1)) {
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                         $topScoreFound += 1;
-                        $graph_top_score[date("Y-m",strtotime($record['survey_datetime']))] += 1;
-                        $graph_top_score_year[date("Y",strtotime($record['survey_datetime']))] += 1;
-                        $graph_top_score_month[strtotime(date("Y-m",strtotime($record['survey_datetime'])))] += 1;
+                        $graph_top_score[date("Y-m", strtotime($record['survey_datetime']))] += 1;
+                        $graph_top_score_year[date("Y", strtotime($record['survey_datetime']))] += 1;
+                        $graph_top_score_month[strtotime(date("Y-m", strtotime($record['survey_datetime'])))] += 1;
                         $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
-                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph_top_score_quarter,$record['survey_datetime']);
-                        $years[date("Y",strtotime($record['survey_datetime']))] = 0;
+                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph_top_score_quarter, $record['survey_datetime']);
+                        $years[date("Y", strtotime($record['survey_datetime']))] = 0;
                     }
-                    if($record[$question_1] == 5 && $topScoreMax == 5){
+                    if ($record[$question_1] == 5 && $topScoreMax == 5) {
                         $score_is_5 += 1;
                     }
+
                 }
                 $missingOverall += $missing_InfoLabel;
-                $tooltipTextArray[$indexQuestion][$index] = count($records)." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
+                $responses = count($records) - $missing_InfoLabel;
+                $tooltipTextArray[$indexQuestion][$index] = $responses." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
                 if($topScoreFound > 0){
                     $topScore = number_format(($topScoreFound/(count($records)-$score_is_5-$missing_InfoLabel)*100),0);
                 }else{
                     $topScore = 0;
                 }
+                if($responses == 0){
+                    $array_colors[$indexQuestion][$index] = "-";
+                }else{
+                    $array_colors[$indexQuestion][$index] = $topScore;
+                }
 
-                $array_colors[$indexQuestion][$index] = $topScore;
                 if($topScore > $max){
                     $max = $topScore;
                 }
@@ -236,19 +253,19 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             #MISSING
             $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-                "[".$question_1."] != ''"
+                "[".$question_1."] != ''".$conditionDate
             );
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             $missing = 0;
             $missingTop = 0;
             $missingTopAll = 0;
             foreach ($missingRecords as $mrecord){
-                if(($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)){
+                if (($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)) {
                     $missing += 1;
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1],$topScoreMax,$question_1)) {
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
                         $missingTop += 1;
                     }
-                }else{
+                } else {
                     $missingTopAll += 1;
                 }
             }
@@ -257,8 +274,18 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($missingTop > 0){
                 $missingPercent = number_format(($missingTop/($missing-$score_is_5O_overall))*100);
             }
-            $missing_column = ($missingStudyTotal-$missing);
-            $array_colors[$indexQuestion][$index+1] = $missingPercent;
+            if($missingStudyTotal >= $missing){
+                $missing_column = ($missingStudyTotal-$missing);
+            }else{
+                $missing_column = ($missing-$missingStudyTotal);
+            }
+
+            if($missing == 0){
+                $array_colors[$indexQuestion][$index+1] = "-";
+            }else{
+                $array_colors[$indexQuestion][$index+1] = $missingPercent;
+            }
+
             $tooltipTextArray[$indexQuestion][$index+1] = $missing." responses, ".$missing_column." missing, ".$score_is_5O_overall." not applicable";
 
             if($missingPercent > $max){
@@ -266,7 +293,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             }
 
             #OVERALL COL MISSING
-            $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'");
+            $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
             $score_is_5O_overall_missing = count(ProjectData::getProjectInfoArray($RecordSetOverall5Missing));
 
             $missingOverall += $missing_column;
@@ -276,17 +303,44 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             if($topScoreFoundO > 0){
                 $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall_missing)*100),0);
             }
-            $array_colors[$indexQuestion][0] = $overall;
+
+            if(count($recordsoverall) == 0){
+                $array_colors[$indexQuestion][0] = "-";
+            }else{
+                $array_colors[$indexQuestion][0] = $overall;
+            }
+
 
             #MULTIPLE
             if($study == 61) {
                 $multiple = 0;
+                $multipleTop = 0;
+                $multiple_not_applicable = 0;
+                $multiple_missing = 0;
                 foreach ($multipleRecords as $multirecord){
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1],$topScoreMax,$question_1) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
+                    if(array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2){
                         $multiple += 1;
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1)) {
+                            $multipleTop += 1;
+                        }
+                        if($multirecord[$question_1] == '' || !array_key_exists($question_1,$multirecord)){
+                            $multiple_missing += 1;
+                        }
+                        if($multirecord[$question_1] == "5"){
+                            $multiple_not_applicable += 1;
+                        }
                     }
                 }
-                $array_colors[$indexQuestion][$index+2] = $multiple;
+                $tooltipTextArray[$indexQuestion][$index+2] = $multiple." responses, ".$multiple_missing." missing, ".$multiple_not_applicable." not applicable";
+                $multiplePercent = 0;
+                if($missingTop > 0){
+                    $multiplePercent = number_format(($multipleTop/($multiple-$multiple_not_applicable))*100);
+                }
+                if($multiple == 0){
+                    $array_colors[$indexQuestion][$index+2] = "-";
+                }else{
+                    $array_colors[$indexQuestion][$index+2] = $multiplePercent;
+                }
             }
         }
         #COLOR
@@ -297,8 +351,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
-                $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
-                $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                if($array_colors[$indexQuestion][$i] == "-" && $array_colors[$indexQuestion][$i] != "0"){
+                    $color = "#c4c4c4";
+                }else{
+                    $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
+                    $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                }
                 $table .= '<td style="background-color:'.$color.'"><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipTextArray[$indexQuestion][$i].'">'.$array_colors[$indexQuestion][$i].'</div></td>';
             }
             $table .= '</tr>';
@@ -309,7 +367,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).'</td>';
 
             #OVERALL
-            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q".$i."] <> ''");
+            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q".$i."] <> ''".$conditionDate);
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
 
             $topScoreFoundO = 0;
@@ -332,10 +390,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             foreach ($study_options as $index => $col_title) {
                 $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
-                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,$condition);
+                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,$condition.$conditionDate);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
 
-                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND ["."rpps_s_q".$i."] = ''");
+                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND ["."rpps_s_q".$i."] = ''".$conditionDate);
                 $missingSingle = count(ProjectData::getProjectInfoArray($RecordSetMissing));
 
                 $topScoreFound = 0;
@@ -357,12 +415,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     $topScore = 0;
                 }
                 $missingOverall += $missingSingle;
-                $tooltipText = count($records)." responses, ".$missingSingle." missing";
+                $responses = count($records) - $missingSingle;
+                $tooltipText = $responses." responses, ".$missingSingle." missing";
                 $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$topScore.'</div></td>';
             }
             #MISSING
             $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-                "[rpps_s_q".$i."] != ''"
+                "[rpps_s_q".$i."] != ''".$conditionDate
             );
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             $missing = 0;
