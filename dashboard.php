@@ -171,7 +171,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     foreach ($study_options as $col_title) {
         $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
     }
-    $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MISSING</span></div></th>';
+    $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO '.strtoupper($array_study[$study]).' REPORTED</span></div></th>';
 
     if($study == 61){
         $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
