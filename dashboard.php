@@ -194,7 +194,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
 
             $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''".$conditionDate);
-            $score_is_5O_overall = count(ProjectData::getProjectInfoArray($RecordSetOverall5));
+            $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
+            $score_is_5O_overall = 0;
+            foreach($missingRecords as $misRecord){
+                if ($topScoreMax == 5) {
+                    $score_is_5O_overall += 1;
+                }
+            }
 
             $topScoreFoundO = 0;
             foreach ($recordsoverall as $recordo){
@@ -296,7 +302,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
             #OVERALL COL MISSING
             $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
-            $score_is_5O_overall_missing = count(ProjectData::getProjectInfoArray($RecordSetOverall5Missing));
+            $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5Missing);
+            $score_is_5O_overall_missing = 0;
+            foreach($missingRecords as $misRecord){
+                if ($topScoreMax == 5) {
+                    $score_is_5O_overall_missing += 1;
+                }
+            }
 
             $missingOverall += $missing_col;
             $tooltipTextArray[$indexQuestion][0] = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall_missing." not applicable";
@@ -328,7 +340,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                         if($multirecord[$question_1] == '' || !array_key_exists($question_1,$multirecord)){
                             $multiple_missing += 1;
                         }
-                        if($multirecord[$question_1] == "5"){
+                        if($multirecord[$question_1] == "5" && $topScoreMax == 5){
                             $multiple_not_applicable += 1;
                         }
                     }
