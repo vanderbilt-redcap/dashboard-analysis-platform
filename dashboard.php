@@ -270,6 +270,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 }
             }
 
+            $missing_col = 0;
+            foreach ($multipleRecords as $mmrecord){
+                if($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord) && ($mmrecord["rpps_s_q" . $study])[1] == 0 || !array_key_exists("rpps_s_q" . $study,$mmrecord)){
+                    $missing_col += 1;
+                }
+            }
+
             $missingPercent = 0;
             if($missingTop > 0){
                 $missingPercent = number_format(($missingTop/($missing-$score_is_5O_overall))*100);
@@ -287,7 +294,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             }
 
             $responses = $missing - $missing_column;
-            $tooltipTextArray[$indexQuestion][$index+1] = $responses." responses, ".$missing_column." missing, ".$score_is_5O_overall." not applicable";
+            $tooltipTextArray[$indexQuestion][$index+1] = $missing." responses, ".$missing_col." missing, ".$score_is_5O_overall." not applicable";
 
             if($missingPercent > $max){
                 $max = $missingPercent;
