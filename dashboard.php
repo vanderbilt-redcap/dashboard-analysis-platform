@@ -175,10 +175,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
     if($study == 61){
         $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
-        $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
     }
     $table .= '</tr>';
+
+    $RecordSetMultiple = \REDCap::getData($project_id, 'array');
+    $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
 
     if ($question == 1) {
         $array_colors = array();
