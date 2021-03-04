@@ -189,174 +189,32 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $tooltipTextArray[$indexQuestion] = array();
             $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
             $topScoreMax = count($outcome_labels);
-
-            #OVERALL
-            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
-            $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
-
-            $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''".$conditionDate);
-            $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
-            $score_is_5O_overall = 0;
-            foreach($missingRecords as $misRecord){
-                if ($topScoreMax == 5) {
-                    $score_is_5O_overall += 1;
-                }
-            }
-
-            $topScoreFoundO = 0;
-            foreach ($recordsoverall as $recordo){
-                if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
-                    $topScoreFoundO += 1;
-                }
-            }
             $missingOverall = 0;
 
             #NORMAL STUDY
-            foreach ($study_options as $index => $col_title) {
-                $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
-
-                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
-                $records = ProjectData::getProjectInfoArray($RecordSet);
-
-                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND [".$question_1."] = ''".$conditionDate);
-                $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
-
-                $topScoreFound = 0;
-                $score_is_5 = 0;
-                foreach ($records as $record){
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
-                        $topScoreFound += 1;
-                        $graph_top_score[date("Y-m", strtotime($record['survey_datetime']))] += 1;
-                        $graph_top_score_year[date("Y", strtotime($record['survey_datetime']))] += 1;
-                        $graph_top_score_month[strtotime(date("Y-m", strtotime($record['survey_datetime'])))] += 1;
-                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
-                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph_top_score_quarter, $record['survey_datetime']);
-                        $years[date("Y", strtotime($record['survey_datetime']))] = 0;
-                    }
-                    if ($record[$question_1] == 5 && $topScoreMax == 5) {
-                        $score_is_5 += 1;
-                    }
-
-                }
-                $missingOverall += $missing_InfoLabel;
-                $responses = count($records) - $missing_InfoLabel;
-                $tooltipTextArray[$indexQuestion][$index] = $responses." responses, ".$missing_InfoLabel." missing, ".$score_is_5." not applicable";
-                if($topScoreFound > 0){
-                    $topScore = number_format(($topScoreFound/(count($records)-$score_is_5-$missing_InfoLabel)*100),0);
-                }else{
-                    $topScore = 0;
-                }
-                if($responses == 0){
-                    $array_colors[$indexQuestion][$index] = "-";
-                }else{
-                    $array_colors[$indexQuestion][$index] = $topScore;
-                }
-
-                if($topScore > $max){
-                    $max = $topScore;
-                }
-
-            }
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max);
+            $tooltipTextArray = $normalStudyCol[0];
+            $array_colors = $normalStudyCol[1];
+            $max = $normalStudyCol[2];
+            $index = $normalStudyCol[3];
 
             #MISSING
-            $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-                "[".$question_1."] != ''".$conditionDate
-            );
-            $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
-            $missing = 0;
-            $missingTop = 0;
-            $missingTopAll = 0;
-            foreach ($missingRecords as $mrecord){
-                if (($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)) {
-                    $missing += 1;
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
-                        $missingTop += 1;
-                    }
-                } else {
-                    $missingTopAll += 1;
-                }
-            }
-
-            $missing_col = 0;
-            foreach ($multipleRecords as $mmrecord){
-                if($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord) && ($mmrecord["rpps_s_q" . $study])[1] == 0 || !array_key_exists("rpps_s_q" . $study,$mmrecord)){
-                    $missing_col += 1;
-                }
-            }
-
-            $missingPercent = 0;
-            if($missingTop > 0){
-                $missingPercent = number_format(($missingTop/($missing-$score_is_5O_overall))*100);
-            }
-
-            if($missing == 0){
-                $array_colors[$indexQuestion][$index+1] = "-";
-            }else{
-                $array_colors[$indexQuestion][$index+1] = $missingPercent;
-            }
-
-            $tooltipTextArray[$indexQuestion][$index+1] = $missing." responses, ".$missing_col." missing, ".$score_is_5O_overall." not applicable";
-
-            if($missingPercent > $max){
-                $max = $missingPercent;
-            }
+            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
+            $tooltipTextArray = $missingCol[0];
+            $array_colors = $missingCol[1];
+            $missing_col = $missingCol[2];
+            $max = $missingCol[3];
 
             #OVERALL COL MISSING
-            $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
-            $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5Missing);
-            $score_is_5O_overall_missing = 0;
-            foreach($missingRecords as $misRecord){
-                if ($topScoreMax == 5) {
-                    $score_is_5O_overall_missing += 1;
-                }
-            }
-
-            $missingOverall += $missing_col;
-            $tooltipTextArray[$indexQuestion][0] = count($recordsoverall)." responses, ".$missingOverall." missing, ".$score_is_5O_overall_missing." not applicable";
-
-            $overall = 0;
-            if($topScoreFoundO > 0){
-                $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall_missing)*100),0);
-            }
-
-            if(count($recordsoverall) == 0){
-                $array_colors[$indexQuestion][0] = "-";
-            }else{
-                $array_colors[$indexQuestion][0] = $overall;
-            }
-
+            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors);
+            $tooltipTextArray = $totalCol[0];
+            $array_colors = $totalCol[1];
 
             #MULTIPLE
             if($study == 61) {
-                $multiple = 0;
-                $multipleTop = 0;
-                $multiple_not_applicable = 0;
-                $multiple_missing = 0;
-                foreach ($multipleRecords as $multirecord){
-                    if(array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2){
-                        $multiple += 1;
-                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
-                            $multipleTop += 1;
-                        }
-                        if($multirecord[$question_1] == '' || !array_key_exists($question_1,$multirecord)){
-                            $multiple_missing += 1;
-                        }
-                        if($multirecord[$question_1] == "5" && $topScoreMax == 5){
-                            $multiple_not_applicable += 1;
-                        }
-                    }
-                }
-                $responses = $multiple - $multiple_missing;
-                $tooltipTextArray[$indexQuestion][$index+2] = $responses." responses, ".$multiple_missing." missing, ".$multiple_not_applicable." not applicable";
-                $multiplePercent = 0;
-                if($missingTop > 0){
-                    $multiplePercent = number_format(($multipleTop/($multiple-$multiple_not_applicable))*100);
-                }
-                if($responses == 0){
-                    $array_colors[$indexQuestion][$index+2] = "-";
-                }else{
-                    $array_colors[$indexQuestion][$index+2] = $multiplePercent;
-                }
+                $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray, $array_colors);
+                $tooltipTextArray = $multipleCol[0];
+                $array_colors = $multipleCol[1];
             }
         }
         #COLOR
@@ -381,99 +239,29 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
         $option = explode("-",$row_questions[$question]);
         for($i=$option[0];$i<$option[1];$i++) {
             $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).'</td>';
-
-            #OVERALL
-            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q".$i."] <> ''".$conditionDate);
-            $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
-
-            $topScoreFoundO = 0;
-            $notTopScoreFoundO = 0;
-            foreach ($recordsoverall as $recordo){
-                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo["rpps_s_q".$i])) {
-                    $topScoreFoundO += 1;
-                }else{
-                    $notTopScoreFoundO += 1;
-                }
-            }
-            $overall = 0;
-            if($topScoreFoundO > 0){
-                $overall = number_format(($topScoreFoundO/(count($recordsoverall))*100),0);
-            }
             $missingOverall = 0;
 
             #NORMAL STUDY
-            $table_b = '';
-            foreach ($study_options as $index => $col_title) {
-                $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","");
+            $table_b = $normalStudyCol[0];
+            $index = $normalStudyCol[1];
+            $missingOverall = $normalStudyCol[2];
 
-                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,$condition.$conditionDate);
-                $records = ProjectData::getProjectInfoArray($RecordSet);
-
-                $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND ["."rpps_s_q".$i."] = ''".$conditionDate);
-                $missingSingle = count(ProjectData::getProjectInfoArray($RecordSetMissing));
-
-                $topScoreFound = 0;
-                foreach ($records as $record){
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
-                        $topScoreFound += 1;
-                        $graph_top_score[date("Y-m",strtotime($record['survey_datetime']))] += 1;
-                        $graph_top_score_year[date("Y",strtotime($record['survey_datetime']))] += 1;
-                        $graph_top_score_month[strtotime(date("Y-m",strtotime($record['survey_datetime'])))] += 1;
-                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
-                        $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQUarter($graph_top_score_quarter,$record['survey_datetime']);
-                        $years[date("Y",strtotime($record['survey_datetime']))] = 0;
-                    }
-                }
-
-                if($topScoreFound > 0){
-                    $topScore = number_format(($topScoreFound/(count($records)-$missingSingle)*100),0);
-                }else{
-                    $topScore = 0;
-                }
-                $missingOverall += $missingSingle;
-                $responses = count($records) - $missingSingle;
-                $tooltipText = $responses." responses, ".$missingSingle." missing";
-                $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$topScore.'</div></td>';
-            }
             #MISSING
-            $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-                "[rpps_s_q".$i."] != ''".$conditionDate
-            );
-            $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
-            $missing = 0;
-            $missingTop = 0;
-            foreach ($missingRecords as $mrecord){
-                if(($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)){
-                    $missing += 1;
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record["rpps_s_q".$i])) {
-                        $missingTop += 1;
-                    }
-                }
-            }
-            $missingPercent = 0;
-            if($missingTop > 0){
-                $missingPercent = number_format(($missingTop/$missing)*100);
-            }
-            $missing_column = ($missingStudyTotal-$missing);
-            $tooltipText = $missing." responses, ".$missing_column." missing";
-            $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$missingPercent.'</div></td>';
+            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
+            $missing_col = $missingCol[2];
+            $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$missingCol[1].'">'.$missingCol[0].'</div></td>';
 
             #OVERAL MISSING
-            $missingOverall += $missing_column;
-
-            $tooltipText = count($recordsoverall)." responses, ".$missingOverall." missing";
-            $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipText.'">'.$overall.'</div></td>';
+            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","");
+            $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$totalCol[1].'">'.$totalCol[0].'</div></td>';
             $table .= $table_b;
 
             #MULTIPLE
             if($study == 61) {
-                $multiple = 0;
-                foreach ($multipleRecords as $multirecord){
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord["rpps_s_q".$i]) && array_count_values($multirecord["rpps_s_q" . $study])[1] == 0){
-                        $multiple += 1;
-                    }
-                }
-                $table .= '<td>'.$multiple.'</td>';
+                $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
+                $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
+
             }
             $table .= '</tr>';
         }
