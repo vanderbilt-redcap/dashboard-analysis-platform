@@ -195,8 +195,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max);
             $tooltipTextArray = $normalStudyCol[0];
             $array_colors = $normalStudyCol[1];
-            $max = $normalStudyCol[2];
-            $index = $normalStudyCol[3];
+            $missingOverall = $normalStudyCol[2];
+            $max = $normalStudyCol[3];
+            $index = $normalStudyCol[4];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);

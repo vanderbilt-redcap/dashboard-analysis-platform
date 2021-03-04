@@ -31,8 +31,8 @@ function GetColorFromRedYellowGreenGradient($percentage)
     $red = ($percentage > 50 ? 1 - 2 * ($percentage - 50) / 100.0 : 1.0) * 255;
     $green = ($percentage > 50 ? 1.0 : 2 * $percentage / 100.0) * 255;
     $blue = 0.0;
-    $result = sprintf("#%02x%02x%02x", $red, $green, $blue);
-    return $result;
+    $hexa = sprintf("#%02x%02x%02x", $red, $green, $blue);
+    return $hexa;
 }
 
 function date_compare($element1, $element2) {
@@ -130,7 +130,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }
     }
     if($question == 1) {
-        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$max,3=>$index);
+        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index);
     }else{
         $aux = array(0=>$table_b,1=>$index,2=>$missingOverall);
     }
@@ -153,6 +153,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
         "[".$question_1."] != ''".$conditionDate
     );
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
+
     $missing = 0;
     $missingTop = 0;
     $missingTopAll = 0;
@@ -174,8 +175,9 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }
 
     $missing_col = 0;
+    $type = \REDCap::getFieldType("rpps_s_q" . $study);
     foreach ($multipleRecords as $mmrecord){
-        if($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord) && ($mmrecord["rpps_s_q" . $study])[1] == 0 || !array_key_exists("rpps_s_q" . $study,$mmrecord)){
+        if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord["rpps_s_q" . $study] == '' || !array_key_exists("rpps_s_q" . $study,$mmrecord) || (array_count_values($mmrecord["rpps_s_q" . $study])[1] == 0 && $type == "checkbox"))){
             $missing_col += 1;
         }
     }
