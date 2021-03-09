@@ -5,6 +5,9 @@ body {
     color: #333;
     background-color: #fff;
 }
+.form-control{
+    width: 25% !important;
+}
 @media (min-width: 992px) {
     .container {
         width: 970px;
@@ -175,7 +178,7 @@ option {
 
 .dal>thead>tr>th {
     letter-spacing: -0.5px;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .table>thead>tr>th {
@@ -233,8 +236,8 @@ th {
 
 #table_archive .question {
     text-align: justify;
-    font-size: 13px;
-    line-height: 15px;
+    font-size: 16px;
+    line-height: 16px;
     letter-spacing: -0.4px;
 }
 

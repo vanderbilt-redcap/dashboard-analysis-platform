@@ -3,6 +3,11 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/classes/ProjectData.php");
 $project_id = $_GET['pid'];
 
+$daterange = $_SESSION[$_GET['pid'] . "_startDate"]." - ".$_SESSION[$_GET['pid'] . "_endDate"];
+if((empty($_GET['dash']) || !empty($_GET['dash']))&& !ProjectData::startTest($_GET['dash'], $secret_key, $secret_iv, $_SESSION[$project_id."_dash_timestamp"])){
+    $daterange = "Select a date range...";
+}
+
 $array_questions = array(
         1 => "Participant perception",
         2 => "Reasons for joining a study",
@@ -125,7 +130,7 @@ $array_study = array(
                 <option value="">RPPS administration timing</option>
                 <option value="">RPPS sampling approach</option>
             </select>
-<!--            <input type="daterange" class="form-control" id="daterange" name="daterange" value="">-->
+            <input type="daterange" class="form-control" id="daterange" name="daterange" value="<?=$daterange?>">
             <button onclick='loadTable(<?=json_encode($module->getUrl("loadTable.php"))?>);' class="btn btn-primary" id="loadTablebtn">Load Table</button>
         </div>
     </div>
@@ -145,13 +150,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     $graph_top_score_month = array();
     $graph_top_score_quarter = array();
     $years = array();
-    $startDate = $_SESSION[$_GET['pid'] . "_startDate"];
-    $endDate = $_SESSION[$_GET['pid'] . "_endDate"];
+    $startDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_startDate"]));
+    $endDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_endDate"]));
     $conditionDate = "";
     if($endDate != "" && $startDate != ""){
         $conditionDate = " AND [survey_datetime] >= '".$startDate. "' AND [survey_datetime] <= '".$endDate."'";
     }
-
 
     $RecordSetMissingStudy = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
         "[rpps_s_q" . $study."] = ''".$conditionDate
@@ -160,7 +164,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
 
     $score_title = "% Responding Very or Somewhat Important";
     if ($question == 1) {
-        $score_title = "% Best score";
+        $score_title = "% Top Box";
     }
     $table = '<div class="optionSelect" style="padding-top: 20px" id="loadTable">
                 <table class="table dal table-bordered pull-left" id="table_archive">

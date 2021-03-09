@@ -21,8 +21,10 @@ function loadTable(url){
     if(allfieldsSelecter()) {
         var question = "&question=" + $('#question option:selected').val();
         var study = "&study=" + $('#study option:selected').val();
-        // var daterange = "&daterange=" + $('#daterange').val();
-        var daterange = "";
+        var daterange = "&daterange=" + $('#daterange').val();
+        if(daterange == "Select a date range..."){
+            daterange == "";
+        }
         var data = question + study + daterange;
 
         $('#loadTablebtn').prop('disabled', true);
