@@ -21,9 +21,11 @@ function loadTable(url){
     if(allfieldsSelecter()) {
         var question = "&question=" + $('#question option:selected').val();
         var study = "&study=" + $('#study option:selected').val();
-        var daterange = "&daterange=" + $('#daterange').val();
-        if(daterange == "Select a date range..."){
-            daterange == "";
+
+        if($('#daterange').val() == "Select a date range..."){
+            daterange = "&daterange=";
+        }else{
+            var daterange = "&daterange=" + $('#daterange').val();
         }
         var data = question + study + daterange;
 

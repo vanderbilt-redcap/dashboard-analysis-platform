@@ -4,7 +4,7 @@ require_once (dirname(__FILE__)."/classes/ProjectData.php");
 $project_id = $_GET['pid'];
 
 $daterange = $_SESSION[$_GET['pid'] . "_startDate"]." - ".$_SESSION[$_GET['pid'] . "_endDate"];
-if((empty($_GET['dash']) || !empty($_GET['dash']))&& !ProjectData::startTest($_GET['dash'], $secret_key, $secret_iv, $_SESSION[$project_id."_dash_timestamp"])){
+if(($_SESSION[$_GET['pid'] . "_startDate"] == "" || $_SESSION[$_GET['pid'] . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], $secret_key, $secret_iv, $_SESSION[$project_id."_dash_timestamp"])){
     $daterange = "Select a date range...";
 }
 
@@ -150,8 +150,17 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     $graph_top_score_month = array();
     $graph_top_score_quarter = array();
     $years = array();
-    $startDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_startDate"]));
-    $endDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_endDate"]));
+    if($_SESSION[$_GET['pid'] . "_startDate"] != ""){
+        $startDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_startDate"]));
+    }else{
+        $startDate = "";
+    }
+    if($_SESSION[$_GET['pid'] . "_endDate"] != ""){
+        $endDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_endDate"]));
+    }else{
+        $endDate = "";
+    }
+
     $conditionDate = "";
     if($endDate != "" && $startDate != ""){
         $conditionDate = " AND [survey_datetime] >= '".$startDate. "' AND [survey_datetime] <= '".$endDate."'";
