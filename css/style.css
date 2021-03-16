@@ -8,6 +8,16 @@ body {
 .form-control{
     width: 25% !important;
 }
+.infoIcon{
+    color:#5592c6;
+}
+a[data-toggle="popover"]:focus{
+    outline: 0 !important;
+}
+.popover {
+    max-width : 800px;
+    z-index   : 1060;
+}
 @media (min-width: 992px) {
     .container {
         width: 970px;
