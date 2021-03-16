@@ -257,7 +257,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
     }else {
         $option = explode("-",$row_questions[$question]);
         for($i=$option[0];$i<$option[1];$i++) {
-            $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).'</td>';
+            $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels("rpps_s_q".$i,$module->getChoiceLabels("rpps_s_q".$i, $project_id));
+            $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-placement="top" title="Field: ['."rpps_s_q".$i.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
             $missingOverall = 0;
 
             #NORMAL STUDY
