@@ -135,14 +135,22 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }else{
             $percent = $topScore;
         }
+        if(($responses + $missing_InfoLabel + $score_is_5) < 5){
+            $percent = "<5";
+        }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
             $array_colors[$indexQuestion][$index] = $percent;
         }else{
-            $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltip.'">'.$percent.'</div></td>';
-
+            $attibute = "";
+            $class = "";
+            if($study == 62 && $index> 1 && $index < 5){
+                $class = "hide";
+                $attibute = "etnicity = '1'";
+            }
+            $table_b .= '<td class="'.$class.'" '.$attibute.'><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltip.'">'.$percent.'</div></td>';
         }
     }
     if($question == 1) {

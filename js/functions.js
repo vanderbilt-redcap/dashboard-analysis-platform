@@ -71,3 +71,17 @@ function selectOnlyOneGroup(element){
         });
     }
 }
+
+function etnicity_change_icon(id){
+    if($('#'+id).attr('symbol') == 0){
+        $('#'+id).attr('symbol',1);
+        $('#'+id).removeClass('fa-plus-circle');
+        $('#'+id).addClass('fa-minus-circle');
+        $('[etnicity=1]').removeClass('hide');
+    }else{
+        $('#'+id).attr('symbol',0);
+        $('#'+id).removeClass('fa-minus-circle');
+        $('#'+id).addClass('fa-plus-circle');
+        $("[etnicity=1]").addClass('hide');
+    }
+}

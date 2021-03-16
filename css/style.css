@@ -5,6 +5,9 @@ body {
     color: #333;
     background-color: #fff;
 }
+.hide{
+    display:none;
+}
 .form-control{
     width: 25% !important;
 }

@@ -185,8 +185,23 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                     <tr>
                     <th class="question"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></th>'.
                     '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
-    foreach ($study_options as $col_title) {
-        $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
+    if($study == 62){
+        foreach ($study_options as $indexstudy => $col_title) {
+            $class = "";
+            $showIcon = "";
+            $attibute = "";
+            if($indexstudy == 5){
+                $showIcon = '<i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i>';
+            }else  if($indexstudy != 1){
+                $class = "hide";
+                $attibute = "etnicity='1'";
+            }
+            $table .= '<th class="dal_task '.$class.'" '.$attibute.'><div style="width: 197.719px;"><span>' . $col_title .'</span>'. $showIcon. '</div></th>';
+        }
+    }else {
+        foreach ($study_options as $indexstudy => $col_title) {
+            $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
+        }
     }
     $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO '.strtoupper($array_study[$study]).' REPORTED</span></div></th>';
 
@@ -244,13 +259,19 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
-                if($array_colors[$indexQuestion][$i] == "-" && $array_colors[$indexQuestion][$i] != "0"){
+                if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "<5") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
                 }else{
                     $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
                     $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
                 }
-                $table .= '<td style="background-color:'.$color.'"><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipTextArray[$indexQuestion][$i].'">'.$array_colors[$indexQuestion][$i].'</div></td>';
+                $class = "";
+                $attibute = "";
+                if($study == 62 && $i > 1 && $i < 5){
+                    $class = "hide";
+                    $attibute = "etnicity = '1'";
+                }
+                $table .= '<td style="background-color:'.$color.'" class="'.$class.'" '.$attibute.'><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipTextArray[$indexQuestion][$i].'">'.$array_colors[$indexQuestion][$i].'</div></td>';
             }
             $table .= '</tr>';
         }
