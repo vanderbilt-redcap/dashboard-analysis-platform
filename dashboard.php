@@ -4,7 +4,7 @@ require_once (dirname(__FILE__)."/classes/ProjectData.php");
 $project_id = $_GET['pid'];
 
 $daterange = $_SESSION[$_GET['pid'] . "_startDate"]." - ".$_SESSION[$_GET['pid'] . "_endDate"];
-if(($_SESSION[$_GET['pid'] . "_startDate"] == "" || $_SESSION[$_GET['pid'] . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], $secret_key, $secret_iv, $_SESSION[$project_id."_dash_timestamp"])){
+if(($_SESSION[$_GET['pid'] . "_startDate"] == "" || $_SESSION[$_GET['pid'] . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
     $daterange = "Select a date range...";
 }
 
@@ -33,7 +33,7 @@ $array_study = array(
         var maxWidthth = Math.max.apply(null, $('.dal>thead th.dal_task>div').map(function() {
             return $(this).outerWidth(true);
         }).get());
-        $('.dal>thead th.dal_task>div').width(maxWidthth);
+        $('.dal>thead th.dal_task>div').width(maxWidthth + 100);
         $('.dal').css('margin-top', maxWidthth * .75);
 
         function RGBToHSL(rgb) {
@@ -138,7 +138,7 @@ $array_study = array(
     </div>
 </div>
 <?php
-if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $secret_iv, $_SESSION[$project_id."_dash_timestamp"])) {
+if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])) {
     $project_id = $_GET['pid'];
     $question = $_SESSION[$_GET['pid'] . "_question"];
     $study = $_SESSION[$_GET['pid'] . "_study"];
@@ -196,7 +196,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], $secret_key, $
                 $class = "hide";
                 $attibute = "etnicity='1'";
             }
-            $table .= '<th class="dal_task '.$class.'" '.$attibute.'><div style="width: 197.719px;"><span>' . $col_title .'</span>'. $showIcon. '</div></th>';
+            $table .= '<th class="dal_task '.$class.'" '.$attibute.'><div style="width: 197.719px;"><span>' . $showIcon.' '. $col_title .'</span></div></th>';
         }
     }else {
         foreach ($study_options as $indexstudy => $col_title) {
