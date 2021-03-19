@@ -175,7 +175,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $score_title = "% Responding Very or Somewhat Important";
     if ($question == 1) {
-        $score_title = "% Top Box";
+        $score_title = "Top Box Score";
     }
     $top_box_popover_content = "<div style='padding-bottom: 20px'><strong>Definitions:</strong> “Top box” scores are created by calculating the percentage of survey respondents who chose the most positive score for a given item response scale.  A variation, the  'Top 2 box' score is the total of the top two categories in a table. For example, the overall Rating question is scores using a Top 2 Box score; participants reply using a numeric scale from “0 (Worst)” to “10 (Best)”.  The Top 2 Box scores based on the combination of the responses “9” and “10”.</div>
                                 <div><strong>Top-Box versus mean scores:</strong> Top Box scores are easy to understand because they clearly identify the respondents who fall into a given category, usually the optimal category from a marketing or customer experience perspective. However, taken alone, Top Box scores leave out important information about how many respondents were close to, or far from the top category. In contrast, mean scores provide a summary measure that includes all the data, including lower and lowest scores, but it may be harder to interpret the significance of a 0.1  or 1 or 5 point difference between two mean scores, especially if the sample size is large. The frequency distribution of all of the response data provides the richest data about the range and number of responses, but lacks the simplicity of summary scores. It can be most valuable to use summary scores like Top Box or Means to follow overall trends, and frequency distributions to understand the details when designing interventions for change. When assessing change in a score, it is important to compare measures of the same type.</div>";
@@ -183,15 +183,14 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 <table class="table dal table-bordered pull-left" id="table_archive">
                 <thead>
                     <tr>
-                    <th class="question"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></th>'.
+                    <th class="question"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></th>'.
                     '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
     if($study == 62){
         foreach ($study_options as $indexstudy => $col_title) {
             $class = "";
-            $showIcon = "";
             $attibute = "";
             if($indexstudy == 5){
-                $showIcon = '<i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i>';
+
             }else if($indexstudy != 1){
                 $class = "hide";
                 $attibute = "etnicity='1'";
@@ -274,7 +273,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         }
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "<5") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
@@ -360,70 +359,70 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     ?>
     <script>
         $(function () {
-            var labels_year = <?=json_encode($labels_year)?>;
-            var labels_month = <?=json_encode($labels_month)?>;
-            var labels_quarter = <?=json_encode($labels_quarter)?>;
-
-            var results_year = <?=json_encode($graph_top_score_year)?>;
-            var results_month = <?=json_encode($graph_top_score_month_values)?>;
-            var results_quarter = <?=json_encode($graph_top_score_quarter_values)?>;
-
-            var  ctx_dash = $("#DashChart");
-            var config_dash = {
-                type: 'line',
-                data: {
-                    labels: labels_month,
-                    datasets: [
-                        {
-                            label:'Data',
-                            fill: false,
-                            borderColor:'#337ab7',
-                            backgroundColor:'#337ab7',
-                            data:results_month
-                        }
-                    ]
-                },
-                options: {
-                    elements: {
-                        line: {
-                            tension: 0, // disables bezier curves
-                        }
-                    },
-                    tooltips: {
-                        mode:'index',
-                        intersect: false
-                    }
-                }
-            }
-
-            var dash_chart = new Chart(ctx_dash, config_dash);
-
-            $('[data-toggle="tooltip"]').tooltip();
-
-            $("#options td").click(function(){
-                if($(this).attr('id') == "month"){
-                    $('#quarter').removeClass('selected');
-                    $('#year').removeClass('selected');
-                    $('#month').addClass('selected');
-                    dash_chart.data.labels = labels_month;
-                    dash_chart.data.datasets[0].data = results_month;
-                    dash_chart.update();
-                }else if($(this).attr('id') == "quarter"){
-                    $('#month').removeClass('selected');
-                    $('#year').removeClass('selected');
-                    $('#quarter').addClass('selected');
-                    dash_chart.data.labels = labels_quarter;
-                    dash_chart.data.datasets[0].data = results_quarter;
-                    dash_chart.update();
-                }else if($(this).attr('id') == "year"){
-                    $('#quarter').removeClass('selected');
-                    $('#month').removeClass('selected');
-                    $('#year').addClass('selected');
-                    dash_chart.data.labels = labels_year;
-                    dash_chart.data.datasets[0].data = results_year;
-                    dash_chart.update();
-                }
-            });
+            //var labels_year = <?//=json_encode($labels_year)?>//;
+            //var labels_month = <?//=json_encode($labels_month)?>//;
+            //var labels_quarter = <?//=json_encode($labels_quarter)?>//;
+            //
+            //var results_year = <?//=json_encode($graph_top_score_year)?>//;
+            //var results_month = <?//=json_encode($graph_top_score_month_values)?>//;
+            //var results_quarter = <?//=json_encode($graph_top_score_quarter_values)?>//;
+            //
+            //var  ctx_dash = $("#DashChart");
+            //var config_dash = {
+            //    type: 'line',
+            //    data: {
+            //        labels: labels_month,
+            //        datasets: [
+            //            {
+            //                label:'Data',
+            //                fill: false,
+            //                borderColor:'#337ab7',
+            //                backgroundColor:'#337ab7',
+            //                data:results_month
+            //            }
+            //        ]
+            //    },
+            //    options: {
+            //        elements: {
+            //            line: {
+            //                tension: 0, // disables bezier curves
+            //            }
+            //        },
+            //        tooltips: {
+            //            mode:'index',
+            //            intersect: false
+            //        }
+            //    }
+            //}
+            //
+            //var dash_chart = new Chart(ctx_dash, config_dash);
+            //
+            //$('[data-toggle="tooltip"]').tooltip();
+            //
+            //$("#options td").click(function(){
+            //    if($(this).attr('id') == "month"){
+            //        $('#quarter').removeClass('selected');
+            //        $('#year').removeClass('selected');
+            //        $('#month').addClass('selected');
+            //        dash_chart.data.labels = labels_month;
+            //        dash_chart.data.datasets[0].data = results_month;
+            //        dash_chart.update();
+            //    }else if($(this).attr('id') == "quarter"){
+            //        $('#month').removeClass('selected');
+            //        $('#year').removeClass('selected');
+            //        $('#quarter').addClass('selected');
+            //        dash_chart.data.labels = labels_quarter;
+            //        dash_chart.data.datasets[0].data = results_quarter;
+            //        dash_chart.update();
+            //    }else if($(this).attr('id') == "year"){
+            //        $('#quarter').removeClass('selected');
+            //        $('#month').removeClass('selected');
+            //        $('#year').addClass('selected');
+            //        dash_chart.data.labels = labels_year;
+            //        dash_chart.data.datasets[0].data = results_year;
+            //        dash_chart.update();
+            //    }
+            //});
         });
     </script>
     <div class="optionSelect">
