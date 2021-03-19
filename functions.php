@@ -13,16 +13,16 @@ function isTopScore($value,$topScoreMax,$var =""){
 }
 function returnTopScoresLabels($var,$outcome_labels){
     $topScoreMax = count($outcome_labels);
-    $question_popover_content = "Top Score: ";
+    $question_popover_content = "";
     if($topScoreMax == 4 || $topScoreMax == 5 || $topScoreMax == 11){
         if($topScoreMax == 5 || $topScoreMax == 4){
             if($var == "rpps_s_q21" || $var == "rpps_s_q25"){
-                $question_popover_content .= $outcome_labels[1];
+                $question_popover_content .= "Top Score: ".$outcome_labels[1];
             }else{
-                $question_popover_content .= $outcome_labels[4];
+                $question_popover_content .= "Top Score: ".$outcome_labels[4];
             }
         }else if($topScoreMax == 11){
-            $question_popover_content .= $outcome_labels[9]." | ".$outcome_labels[10];
+            $question_popover_content .= "Top Two: ".$outcome_labels[9]." | ".$outcome_labels[10];
         }
     }
     return $question_popover_content;
