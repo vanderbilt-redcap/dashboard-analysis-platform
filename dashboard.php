@@ -33,7 +33,7 @@ $array_study = array(
         var maxWidthth = Math.max.apply(null, $('.dal>thead th.dal_task>div').map(function() {
             return $(this).outerWidth(true);
         }).get());
-        $('.dal>thead th.dal_task>div').width(maxWidthth + 100);
+        $('.dal>thead th.dal_task>div').width(maxWidthth+30);
         $('.dal').css('margin-top', maxWidthth * .75);
 
         function RGBToHSL(rgb) {
@@ -192,11 +192,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $attibute = "";
             if($indexstudy == 5){
                 $showIcon = '<i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i>';
-            }else  if($indexstudy != 1){
+            }else if($indexstudy != 1){
                 $class = "hide";
                 $attibute = "etnicity='1'";
             }
-            $table .= '<th class="dal_task '.$class.'" '.$attibute.'><div style="width: 197.719px;"><span>' . $showIcon.' '. $col_title .'</span></div></th>';
+            $table .= '<th class="dal_task '.$class.'" '.$attibute.'><div style="width: 197.719px;"><span>'.$col_title .'</span></div></th>';
         }
     }else {
         foreach ($study_options as $indexstudy => $col_title) {
@@ -209,6 +209,23 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
     }
     $table .= '</tr>';
+    if($study == 62){
+        $table .= '<tr>';
+        $table .= '<td class="question"></td>';
+        $table .= '<td></td>';
+        foreach ($study_options as $indexstudy => $col_title) {
+            if($indexstudy == 5){
+                $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
+            }else if($indexstudy != 1){
+                $table .= '<td class="hide" etnicity="1"></td>';
+            }else if($indexstudy == 1){
+                $table .= '<td></td>';
+            }
+        }
+        $table .= '<td></td>';
+        $table .= '</tr>';
+    }
+    $table .= '</thead>';
 
     $RecordSetMultiple = \REDCap::getData($project_id, 'array');
     $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
