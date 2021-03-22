@@ -221,6 +221,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $table .= '<td></td>';
         foreach ($study_options as $indexstudy => $col_title) {
             if($study == 62) {
+                $table .="<style>.dal_task>div>span {
+                            display: block;
+                            margin-left: 38px;
+                            color: #5592c6;
+                        }</style>";
                 if ($indexstudy == 5) {
                     $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
                 } else if ($indexstudy != 1) {
@@ -229,6 +234,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $table .= '<td></td>';
                 }
             }else{
+                $table .="<style>.dal_task>div>span {
+                            display: block;
+                            margin-left: 20px;
+                            color: #5592c6;
+                        }</style>";
                 $table .= '<td>&nbsp;</td>';
             }
         }

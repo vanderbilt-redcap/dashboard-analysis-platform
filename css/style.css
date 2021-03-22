@@ -237,12 +237,6 @@ th {
     border-bottom: 0px;
 }
 
-.dal_task>div>span {
-    display: block;
-    margin-left: 38px;
-    color: #5592c6;
-}
-
 .dal th.question {
     color: #5592c6;
 }
