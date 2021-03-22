@@ -229,7 +229,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $table .= '<td></td>';
                 }
             }else{
-                $table .= '<td></td>';
+                $table .= '<td>&nbsp;</td>';
             }
         }
         $table .= '<td></td>';
