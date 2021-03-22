@@ -22,7 +22,7 @@ function returnTopScoresLabels($var,$outcome_labels){
                 $question_popover_content .= "Top Score: ".$outcome_labels[4];
             }
         }else if($topScoreMax == 11){
-            $question_popover_content .= "Top Two: ".$outcome_labels[9]." | ".$outcome_labels[10];
+            $question_popover_content .= "Top box 2: ".$outcome_labels[9]." | ".$outcome_labels[10];
         }
     }
     return $question_popover_content;

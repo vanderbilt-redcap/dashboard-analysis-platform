@@ -6,6 +6,10 @@ $project_id = $_GET['pid'];
 $daterange = $_SESSION[$_GET['pid'] . "_startDate"]." - ".$_SESSION[$_GET['pid'] . "_endDate"];
 if(($_SESSION[$_GET['pid'] . "_startDate"] == "" || $_SESSION[$_GET['pid'] . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
     $daterange = "Select a date range...";
+    if($_SESSION[$_GET['pid'] . "_question"] == "" || $_SESSION[$_GET['pid'] . "_study"] == "" || empty($_GET['dash'])){
+        $_SESSION[$_GET['pid'] . "_question"] = "1";
+        $_SESSION[$_GET['pid'] . "_study"] = "nofilter";
+    }
 }
 
 $array_questions = array(
@@ -120,6 +124,7 @@ $array_study = array(
             </select>
             <select class="form-control" id="study">
                 <option value="">Study type</option>
+                <option value="nofilter" selected>No filter</option>
                 <?php
                 foreach ($array_study as $index => $sstudy){
                     $selected = "";
@@ -138,7 +143,7 @@ $array_study = array(
     </div>
 </div>
 <?php
-if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])) {
+if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"]) || ($_SESSION[$_GET['pid'] . "_study"] == "nofilter" && $_SESSION[$_GET['pid'] . "_question"] == "1")) {
     $project_id = $_GET['pid'];
     $question = $_SESSION[$_GET['pid'] . "_question"];
     $study = $_SESSION[$_GET['pid'] . "_study"];
@@ -185,45 +190,51 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     <tr>
                     <th class="question"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></th>'.
                     '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
-    if($study == 62){
-        foreach ($study_options as $indexstudy => $col_title) {
-            $class = "";
-            $attibute = "";
-            if($indexstudy == 5){
+    if($study != "nofilter") {
+        if ($study == 62) {
+            foreach ($study_options as $indexstudy => $col_title) {
+                $class = "";
+                $attibute = "";
+                if ($indexstudy == 5) {
 
-            }else if($indexstudy != 1){
-                $class = "hide";
-                $attibute = "etnicity='1'";
+                } else if ($indexstudy != 1) {
+                    $class = "hide";
+                    $attibute = "etnicity='1'";
+                }
+                $table .= '<th class="dal_task ' . $class . '" ' . $attibute . '><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
             }
-            $table .= '<th class="dal_task '.$class.'" '.$attibute.'><div style="width: 197.719px;"><span>'.$col_title .'</span></div></th>';
+        } else {
+            foreach ($study_options as $indexstudy => $col_title) {
+                $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
+            }
         }
-    }else {
-        foreach ($study_options as $indexstudy => $col_title) {
-            $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
-        }
-    }
-    $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO '.strtoupper($array_study[$study]).' REPORTED</span></div></th>';
+        $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO ' . strtoupper($array_study[$study]) . ' REPORTED</span></div></th>';
 
-    if($study == 61){
-        $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
+        if ($study == 61) {
+            $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
+        }
     }
     $table .= '</tr>';
-    if($study == 62){
+
         $table .= '<tr>';
         $table .= '<td class="question"></td>';
         $table .= '<td></td>';
         foreach ($study_options as $indexstudy => $col_title) {
-            if($indexstudy == 5){
-                $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
-            }else if($indexstudy != 1){
-                $table .= '<td class="hide" etnicity="1"></td>';
-            }else if($indexstudy == 1){
+            if($study == 62) {
+                if ($indexstudy == 5) {
+                    $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
+                } else if ($indexstudy != 1) {
+                    $table .= '<td class="hide" etnicity="1"></td>';
+                } else if ($indexstudy == 1) {
+                    $table .= '<td></td>';
+                }
+            }else{
                 $table .= '<td></td>';
             }
         }
         $table .= '<td></td>';
         $table .= '</tr>';
-    }
+
     $table .= '</thead>';
 
     $RecordSetMultiple = \REDCap::getData($project_id, 'array');
@@ -287,7 +298,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $class = "hide";
                     $attibute = "etnicity = '1'";
                 }
-                $table .= '<td style="background-color:'.$color.'" class="'.$class.'" '.$attibute.'><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltipTextArray[$indexQuestion][$i].'">'.$array_colors[$indexQuestion][$i].'</div></td>';
+                if($study != "nofilter" || ($study == "nofilter" && $i == 0)) {
+                    $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attibute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray[$indexQuestion][$i] . '">' . $array_colors[$indexQuestion][$i] . '</div></td>';
+                }
             }
             $table .= '</tr>';
         }
@@ -295,7 +308,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $option = explode("-",$row_questions[$question]);
         for($i=$option[0];$i<$option[1];$i++) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels("rpps_s_q".$i,$module->getChoiceLabels("rpps_s_q".$i, $project_id));
-            $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-placement="top" title="Field: ['."rpps_s_q".$i.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
+            $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['."rpps_s_q".$i.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
             $missingOverall = 0;
 
             #NORMAL STUDY
