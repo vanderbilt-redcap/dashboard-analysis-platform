@@ -188,7 +188,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 <table class="table dal table-bordered pull-left" id="table_archive">
                 <thead>
                     <tr>
-                    <th class="question"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></th>'.
+                    <th class="question"><span style="position: relative; top:23px"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></span></th>'.
                     '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
     if($study != "nofilter") {
         if ($study == 62) {
