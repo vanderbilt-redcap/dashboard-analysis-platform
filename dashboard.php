@@ -305,7 +305,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 $class = "";
                 $attibute = "";
-                if($study == 62 && $i > 1 && $i < 5){
+                if($study == 62 && $i > 1 && $i < 6){
                     $class = "hide";
                     $attibute = "etnicity = '1'";
                 }
