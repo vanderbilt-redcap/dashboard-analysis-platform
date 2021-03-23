@@ -85,6 +85,14 @@ function createQuartersForYear($graph_top_score_quarter, $date){
 
 function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max){
     $table_b = '';
+    $missingOverall = 0;
+    $study_62_array = array(
+        "topscore" => 0,
+        "totalcount" => 0,
+        "responses" => 0,
+        "missing" => 0,
+        "score5" => 0,
+    );
     foreach ($study_options as $index => $col_title) {
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
@@ -130,6 +138,22 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
 
         $missingOverall += $missing_InfoLabel;
         $responses = count($records) - $missing_InfoLabel;
+
+        #Etnicity Case
+        if($study == 62) {
+            if ($index > 1 && $index < 6) {
+                $study_62_array['topscore'] += $topScoreFound;
+                $study_62_array['totalcount'] += count($records);
+                $study_62_array['responses'] += $responses;
+                $study_62_array['missing'] += $missing_InfoLabel;
+                $study_62_array['score5'] += $score_is_5;
+            } else if ($index == 6) {
+                $responses = $study_62_array['responses'];
+                $topScore = number_format(($study_62_array['topscore'] / ($study_62_array['responses'] - $study_62_array['score5']) * 100), 0);
+                $missing_InfoLabel = $study_62_array['missing'];
+                $score_is_5 = $study_62_array['score5'];
+            }
+        }
         if($responses == 0){
             $percent = "-";
         }else{
