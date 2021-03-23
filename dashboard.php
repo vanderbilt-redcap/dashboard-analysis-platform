@@ -152,6 +152,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         6 => "rpps_up_q66", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_up_q65",
                         12 => "rpps_up_q67", 13 => "rpps_s_q57");
     $study_options = $module->getChoiceLabels("rpps_s_q" . $study, $project_id);
+    if($study == 62){
+        array_push($study_options,"Yes - Spanish/Hispanic/Latino");
+    }
     $graph_top_score = array();
     $graph_top_score_year = array();
     $graph_top_score_month = array();
@@ -195,9 +198,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             foreach ($study_options as $indexstudy => $col_title) {
                 $class = "";
                 $attibute = "";
-                if ($indexstudy == 5) {
-
-                } else if ($indexstudy != 1) {
+                if ($indexstudy != 1 && $indexstudy < 6) {
                     $class = "hide";
                     $attibute = "etnicity='1'";
                 }
@@ -226,7 +227,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             margin-left: 38px;
                             color: #5592c6;
                         }</style>";
-                if ($indexstudy == 5) {
+                if ($indexstudy == 6) {
                     $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
                 } else if ($indexstudy != 1) {
                     $table .= '<td class="hide" etnicity="1"></td>';
