@@ -182,16 +182,18 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $missingStudyTotal = count(ProjectData::getProjectInfoArray($RecordSetMissingStudy));
 
     $score_title = "% Responding Very or Somewhat Important";
+    $top_box_popover_info = '';
     if ($question == 1) {
         $score_title = "Top Box Score";
-    }
-    $top_box_popover_content = "<div style='padding-bottom: 20px'><strong>Definitions:</strong> “Top box” scores are created by calculating the percentage of survey respondents who chose the most positive score for a given item response scale.  A variation, the  'Top 2 box' score is the total of the top two categories in a table. For example, the overall Rating question is scores using a Top 2 Box score; participants reply using a numeric scale from “0 (Worst)” to “10 (Best)”.  The Top 2 Box scores based on the combination of the responses “9” and “10”.</div>
+        $top_box_popover_content = "<div style='padding-bottom: 20px'><strong>Definitions:</strong> “Top box” scores are created by calculating the percentage of survey respondents who chose the most positive score for a given item response scale.  A variation, the  'Top 2 box' score is the total of the top two categories in a table. For example, the overall Rating question is scores using a Top 2 Box score; participants reply using a numeric scale from “0 (Worst)” to “10 (Best)”.  The Top 2 Box scores based on the combination of the responses “9” and “10”.</div>
                                 <div><strong>Top-Box versus mean scores:</strong> Top Box scores are easy to understand because they clearly identify the respondents who fall into a given category, usually the optimal category from a marketing or customer experience perspective. However, taken alone, Top Box scores leave out important information about how many respondents were close to, or far from the top category. In contrast, mean scores provide a summary measure that includes all the data, including lower and lowest scores, but it may be harder to interpret the significance of a 0.1  or 1 or 5 point difference between two mean scores, especially if the sample size is large. The frequency distribution of all of the response data provides the richest data about the range and number of responses, but lacks the simplicity of summary scores. It can be most valuable to use summary scores like Top Box or Means to follow overall trends, and frequency distributions to understand the details when designing interventions for change. When assessing change in a score, it is important to compare measures of the same type.</div>";
+        $top_box_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
+    }
     $table = '<div class="optionSelect" style="padding-top: 20px" id="loadTable">
                 <table class="table dal table-bordered pull-left" id="table_archive">
                 <thead>
                     <tr>
-                    <th class="question"><span style="position: relative; top:23px"><strong>'.$score_title.'</strong> <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></span></th>'.
+                    <th class="question"><span style="position: relative; top:23px"><strong>'.$score_title.$top_box_popover_info.'</strong></span></th>'.
                     '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
     if($study != "nofilter") {
         if ($study == 62) {
@@ -295,9 +297,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         }
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
+            $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
-                if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "<5") && $array_colors[$indexQuestion][$i] != "0"){
+                if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "X") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
                 }else{
                     $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
@@ -318,8 +321,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }else {
         $option = explode("-",$row_questions[$question]);
         for($i=$option[0];$i<$option[1];$i++) {
-            $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels("rpps_s_q".$i,$module->getChoiceLabels("rpps_s_q".$i, $project_id));
-            $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['."rpps_s_q".$i.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a></td>';
+            $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).'</td>';
             $missingOverall = 0;
 
             #NORMAL STUDY

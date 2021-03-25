@@ -160,7 +160,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             $percent = $topScore;
         }
         if(($responses + $missing_InfoLabel + $score_is_5) < 5){
-            $percent = "<5";
+            $percent = "X";
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
@@ -170,7 +170,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }else{
             $attibute = "";
             $class = "";
-            if($study == 62 && $index> 1 && $index < 5){
+            if($study == 62 && $index> 1 && $index < 6){
                 $class = "hide";
                 $attibute = "etnicity = '1'";
             }
