@@ -79,7 +79,7 @@ use ExternalModules\ExternalModules;
 <div class="container">
     <img src="<?=$module->getUrl('epv-2colorhorizontal1300__1_.jpg')?>" width="300px" style="padding-top: 20px"/>
     <div style="float: right;padding-top: 50px;">
-        <a class="btn btn-default" target="_blank" href="<?="http://localhost/redcap_v10.8.0/DataExport/index.php?pid=".$_GET['pid']."&report_id=ALL&stats_charts=1"?>">Stats & Charts</a>
+        <a class="btn btn-default" target="_blank" href="<?="http://localhost/redcap_v10.8.0/DataExport/index.php?pid=".$_GET['pid']."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp"?>">Stats & Charts</a>
     </div>
     <h3 class="header">At-A-Glance Dashboard - Empowering the Participant Voice</h3>
     <?php include_once ('dashboard.php');?>
