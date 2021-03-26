@@ -160,7 +160,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             $percent = $topScore;
         }
         if(($responses + $missing_InfoLabel + $score_is_5) < 5){
-            $percent = "X";
+            $percent = "x";
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 

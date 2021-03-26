@@ -298,7 +298,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).'</td>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'</td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "X") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
