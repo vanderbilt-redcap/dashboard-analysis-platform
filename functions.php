@@ -77,13 +77,23 @@ function createQuartersForYear($graph_top_score_quarter, $date){
     $year = date("Y",strtotime($date));
     for($i=1; $i<5 ; $i++){
         if(!array_key_exists("Q".$i." ".$year,$graph_top_score_quarter)){
-            $graph_top_score_quarter["Q".$i." ".$year] = 0;
+            $graph['graph_top_score_quarter']["Q".$i." ".$year] = 0;
         }
     }
     return $graph_top_score_quarter;
 }
 
-function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max){
+function addGraph($graph,$survey_datetime){
+    $graph['graph_top_score'][date("Y-m", strtotime($survey_datetime))] += 1;
+    $graph['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
+    $graph['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
+    $graph['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph['graph_top_score_quarter'], $survey_datetime);
+    $graph['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph['graph_top_score_quarter'], $survey_datetime);
+    $graph['years'][date("Y", strtotime($survey_datetime))] = 0;
+    return $graph;
+}
+
+function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph){
     $table_b = '';
     $missingOverall = 0;
     $study_62_array = array(
@@ -108,13 +118,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             if($question == 1) {
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                     $topScoreFound += 1;
-                    /*$graph_top_score[date("Y-m", strtotime($record['survey_datetime']))] += 1;
-                    $graph_top_score_year[date("Y", strtotime($record['survey_datetime']))] += 1;
-                    $graph_top_score_month[strtotime(date("Y-m", strtotime($record['survey_datetime'])))] += 1;
-                    $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph_top_score_quarter, $record['survey_datetime']);
-                    $graph_top_score_quarter = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph_top_score_quarter, $record['survey_datetime']);
-                    $years[date("Y", strtotime($record['survey_datetime']))] = 0;
-                    */
+                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$record['survey_datetime']);
                 }
                 if ($record[$question_1] == 5 && $topScoreMax == 5) {
                     $score_is_5 += 1;
@@ -122,6 +126,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             }else{
                 if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
                     $topScoreFound += 1;
+                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$record['survey_datetime']);
                 }
             }
         }
@@ -178,9 +183,9 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }
     }
     if($question == 1) {
-        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index);
+        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index,5=>$graph);
     }else{
-        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall);
+        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,3=>$graph);
     }
 
     return $aux;

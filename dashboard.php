@@ -155,11 +155,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     if($study == 62){
         array_push($study_options,"Yes - Spanish/Hispanic/Latino");
     }
-    $graph_top_score = array();
-    $graph_top_score_year = array();
-    $graph_top_score_month = array();
-    $graph_top_score_quarter = array();
-    $years = array();
+    $graph = array();
+    $graph['graph_top_score'] = array();
+    $graph['graph_top_score_year'] = array();
+    $graph['graph_top_score_month'] = array();
+    $graph['graph_top_score_quarter'] = array();
+    $graph['years ']= array();
     if($_SESSION[$_GET['pid'] . "_startDate"] != ""){
         $startDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_startDate"]));
     }else{
@@ -264,12 +265,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $missingOverall = 0;
 
             #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max);
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph);
             $tooltipTextArray = $normalStudyCol[0];
             $array_colors = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
             $max = $normalStudyCol[3];
             $index = $normalStudyCol[4];
+            $graph = $normalStudyCol[5];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
@@ -325,10 +327,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $missingOverall = 0;
 
             #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","");
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","",$graph);
             $table_b = $normalStudyCol[0];
             $index = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
+            $graph = $normalStudyCol[3];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
@@ -354,25 +357,25 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     echo $table;
 
     #YEAR
-    ksort($graph_top_score_year);
-    $labels_year = array_keys($graph_top_score_year);
-    $graph_top_score_year = array_values($graph_top_score_year);
+    ksort($graph['graph_top_score_year']);
+    $labels_year = array_keys($graph['graph_top_score_year']);
+    $graph['graph_top_score_year'] = array_values($graph['graph_top_score_year']);
 
     #MONTH
-    ksort($graph_top_score_month);
+    ksort($graph['graph_top_score_month']);
     $labels_month = array();
     $graph_top_score_month_values = array();
-    foreach($graph_top_score_month as $date => $value){
+    foreach($graph['graph_top_score_month'] as $date => $value){
         array_push($labels_month,date("Y-m",$date));
         array_push($graph_top_score_month_values,$value);
     }
 
     #QUARTER
-    ksort($years);
+    ksort($graph['years']);
     $labels_quarter = array();
     $graph_top_score_quarter_values = array();
-    foreach ($years as $year => $valY) {
-        foreach ($graph_top_score_quarter as $date => $value) {
+    foreach ($graph['years'] as $year => $valY) {
+        foreach ($graph['graph_top_score_quarter'] as $date => $value) {
             $year_quarter = explode(" ", $date)[1];
             if($year_quarter == $year){
                 array_push($graph_top_score_quarter_values, $value);
@@ -385,78 +388,78 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     ?>
     <script>
         $(function () {
-            //var labels_year = <?//=json_encode($labels_year)?>//;
-            //var labels_month = <?//=json_encode($labels_month)?>//;
-            //var labels_quarter = <?//=json_encode($labels_quarter)?>//;
-            //
-            //var results_year = <?//=json_encode($graph_top_score_year)?>//;
-            //var results_month = <?//=json_encode($graph_top_score_month_values)?>//;
-            //var results_quarter = <?//=json_encode($graph_top_score_quarter_values)?>//;
-            //
-            //var  ctx_dash = $("#DashChart");
-            //var config_dash = {
-            //    type: 'line',
-            //    data: {
-            //        labels: labels_month,
-            //        datasets: [
-            //            {
-            //                label:'Data',
-            //                fill: false,
-            //                borderColor:'#337ab7',
-            //                backgroundColor:'#337ab7',
-            //                data:results_month
-            //            }
-            //        ]
-            //    },
-            //    options: {
-            //        elements: {
-            //            line: {
-            //                tension: 0, // disables bezier curves
-            //            }
-            //        },
-            //        tooltips: {
-            //            mode:'index',
-            //            intersect: false
-            //        }
-            //    }
-            //}
-            //
-            //var dash_chart = new Chart(ctx_dash, config_dash);
-            //
-            //$('[data-toggle="tooltip"]').tooltip();
-            //
-            //$("#options td").click(function(){
-            //    if($(this).attr('id') == "month"){
-            //        $('#quarter').removeClass('selected');
-            //        $('#year').removeClass('selected');
-            //        $('#month').addClass('selected');
-            //        dash_chart.data.labels = labels_month;
-            //        dash_chart.data.datasets[0].data = results_month;
-            //        dash_chart.update();
-            //    }else if($(this).attr('id') == "quarter"){
-            //        $('#month').removeClass('selected');
-            //        $('#year').removeClass('selected');
-            //        $('#quarter').addClass('selected');
-            //        dash_chart.data.labels = labels_quarter;
-            //        dash_chart.data.datasets[0].data = results_quarter;
-            //        dash_chart.update();
-            //    }else if($(this).attr('id') == "year"){
-            //        $('#quarter').removeClass('selected');
-            //        $('#month').removeClass('selected');
-            //        $('#year').addClass('selected');
-            //        dash_chart.data.labels = labels_year;
-            //        dash_chart.data.datasets[0].data = results_year;
-            //        dash_chart.update();
-            //    }
-            //});
+            var labels_year = <?=json_encode($labels_year)?>;
+            var labels_month = <?=json_encode($labels_month)?>;
+            var labels_quarter = <?=json_encode($labels_quarter)?>;
+
+            var results_year = <?=json_encode($graph['graph_top_score_year'])?>;
+            var results_month = <?=json_encode($graph_top_score_month_values)?>;
+            var results_quarter = <?=json_encode($graph_top_score_quarter_values)?>;
+
+            var  ctx_dash = $("#DashChart");
+            var config_dash = {
+                type: 'line',
+                data: {
+                    labels: labels_month,
+                    datasets: [
+                        {
+                            label:'Data',
+                            fill: false,
+                            borderColor:'#337ab7',
+                            backgroundColor:'#337ab7',
+                            data:results_month
+                        }
+                    ]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            tension: 0, // disables bezier curves
+                        }
+                    },
+                    tooltips: {
+                        mode:'index',
+                        intersect: false
+                    }
+                }
+            }
+
+            var dash_chart = new Chart(ctx_dash, config_dash);
+
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $("#options td").click(function(){
+                if($(this).attr('id') == "month"){
+                    $('#quarter').removeClass('selected');
+                    $('#year').removeClass('selected');
+                    $('#month').addClass('selected');
+                    dash_chart.data.labels = labels_month;
+                    dash_chart.data.datasets[0].data = results_month;
+                    dash_chart.update();
+                }else if($(this).attr('id') == "quarter"){
+                    $('#month').removeClass('selected');
+                    $('#year').removeClass('selected');
+                    $('#quarter').addClass('selected');
+                    dash_chart.data.labels = labels_quarter;
+                    dash_chart.data.datasets[0].data = results_quarter;
+                    dash_chart.update();
+                }else if($(this).attr('id') == "year"){
+                    $('#quarter').removeClass('selected');
+                    $('#month').removeClass('selected');
+                    $('#year').addClass('selected');
+                    dash_chart.data.labels = labels_year;
+                    dash_chart.data.datasets[0].data = results_year;
+                    dash_chart.update();
+                }
+            });
         });
     </script>
     <div class="optionSelect">
         <div class="pull-left">
-<!--            <canvas id="DashChart" class="canvas_statistics" height="400px" width="700px"></canvas>-->
+            <canvas id="DashChart" class="canvas_statistics" height="400px" width="700px"></canvas>
         </div>
         <?php
-           /* echo "<table class='table table-bordered pull-right' id='options'>
+            echo "<table class='table table-bordered pull-right' id='options'>
                         <tr>
                             <td class='selected' id='month'>Month</td>
                         </tr>
@@ -467,7 +470,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             <td id='year'>Year</td>
                         </tr>
                   </table>";
-           */
+
         }
         ?>
     </div>
