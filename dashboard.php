@@ -300,7 +300,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'</td>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'<canvas id="DashChart_'.$question_1.'" class="infoChart" onclick="openBigGraph(\''.$question_1.'\')"></canvas></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
@@ -388,6 +388,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     ?>
     <script>
         $(function () {
+            var array_questions = <?=json_encode($row_questions_1)?>;
+
             var labels_year = <?=json_encode($labels_year)?>;
             var labels_month = <?=json_encode($labels_month)?>;
             var labels_quarter = <?=json_encode($labels_quarter)?>;
@@ -396,39 +398,43 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             var results_month = <?=json_encode($graph_top_score_month_values)?>;
             var results_quarter = <?=json_encode($graph_top_score_quarter_values)?>;
 
-            var  ctx_dash = $("#DashChart");
-            var config_dash = {
-                type: 'line',
-                data: {
-                    labels: labels_month,
-                    datasets: [
-                        {
-                            label:'Data',
-                            fill: false,
-                            borderColor:'#337ab7',
-                            backgroundColor:'#337ab7',
-                            data:results_month
-                        }
-                    ]
-                },
-                options: {
-                    elements: {
-                        line: {
-                            tension: 0, // disables bezier curves
-                        }
+            Object.keys(array_questions).forEach(function (index) {
+                var ctx_dash = $("#DashChart_"+array_questions[index]);
+                var config_dash = {
+                    type: 'line',
+                    data: {
+                        labels: labels_month,
+                        datasets: [
+                            {
+                                label: 'Data',
+                                fill: false,
+                                borderColor: '#337ab7',
+                                backgroundColor: '#337ab7',
+                                data: results_month
+                            }
+                        ]
                     },
-                    tooltips: {
-                        mode:'index',
-                        intersect: false
+                    options: {
+                        elements: {
+                            line: {
+                                tension: 0, // disables bezier curves
+                            }
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false
+                        }
                     }
                 }
-            }
 
-            var dash_chart = new Chart(ctx_dash, config_dash);
-
+                var dash_chart = new Chart(ctx_dash, config_dash);
+                if(index == 0){
+                    var dash_chart_big = new Chart($("#modal-big-graph-body"), config_dash);
+                }
+            });
             $('[data-toggle="tooltip"]').tooltip();
 
-            $("#options td").click(function(){
+            /*$("#options td").click(function(){
                 if($(this).attr('id') == "month"){
                     $('#quarter').removeClass('selected');
                     $('#year').removeClass('selected');
@@ -451,7 +457,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     dash_chart.data.datasets[0].data = results_year;
                     dash_chart.update();
                 }
-            });
+            });*/
         });
     </script>
     <div class="optionSelect">
@@ -459,18 +465,35 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             <canvas id="DashChart" class="canvas_statistics" height="400px" width="700px"></canvas>
         </div>
         <?php
-            echo "<table class='table table-bordered pull-right' id='options'>
-                        <tr>
-                            <td class='selected' id='month'>Month</td>
-                        </tr>
-                        <tr>
-                            <td id='quarter'>Quarter</td>
-                        </tr>
-                         <tr>
-                            <td id='year'>Year</td>
-                        </tr>
-                  </table>";
+//            echo "<table class='table table-bordered pull-right' id='options'>
+//                        <tr>
+//                            <td class='selected' id='month'>Month</td>
+//                        </tr>
+//                        <tr>
+//                            <td id='quarter'>Quarter</td>
+//                        </tr>
+//                         <tr>
+//                            <td id='year'>Year</td>
+//                        </tr>
+//                  </table>";
 
         }
         ?>
     </div>
+<!-- MODAL GRAPH-->
+<div class="modal fade" id="modal-big-graph" tabindex="-1" role="dialog" aria-labelledby="Codes">
+    <div class="modal-dialog" role="document" style="width: 800px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal-big-graph-title"></h4>
+            </div>
+            <div class="modal-body" style="margin: 0 auto">
+                <canvas id="modal-big-graph-body" class="infoChartBig"></canvas>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

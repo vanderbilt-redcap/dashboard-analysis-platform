@@ -286,3 +286,20 @@ table thead tr:nth-of-type(2) td {
     margin-bottom: 4px;
     cursor: pointer;
 }
+
+.infoChart{
+    width: 40px !important;
+    height: 20px !important;
+    border: 1px dotted #ddd;
+    display: inline-block !important;
+    margin-left:7px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.infoChartBig{
+    width: 700px !important;
+    height: 350px !important;
+    display: block;
+    margin: 0 auto;
+}
