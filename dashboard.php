@@ -460,40 +460,35 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             });*/
         });
     </script>
-    <div class="optionSelect">
-        <div class="pull-left">
-            <canvas id="DashChart" class="canvas_statistics" height="400px" width="700px"></canvas>
-        </div>
-        <?php
-//            echo "<table class='table table-bordered pull-right' id='options'>
-//                        <tr>
-//                            <td class='selected' id='month'>Month</td>
-//                        </tr>
-//                        <tr>
-//                            <td id='quarter'>Quarter</td>
-//                        </tr>
-//                         <tr>
-//                            <td id='year'>Year</td>
-//                        </tr>
-//                  </table>";
+    <!-- MODAL GRAPH-->
+    <div class="modal fade" id="modal-big-graph" tabindex="-1" role="dialog" aria-labelledby="Codes">
+        <div class="modal-dialog" role="document" style="width:900px !important;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modal-big-graph-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <canvas id="modal-big-graph-body" class="infoChartBig pull-left"></canvas>
 
-        }
-        ?>
-    </div>
-<!-- MODAL GRAPH-->
-<div class="modal fade" id="modal-big-graph" tabindex="-1" role="dialog" aria-labelledby="Codes">
-    <div class="modal-dialog" role="document" style="width: 800px">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="modal-big-graph-title"></h4>
-            </div>
-            <div class="modal-body" style="margin: 0 auto">
-                <canvas id="modal-big-graph-body" class="infoChartBig"></canvas>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <table class='pull-righ table table-bordered' id='options'>
+                        <tr>
+                            <td class='selected' id='month'>Month</td>
+                        </tr>
+                        <tr>
+                            <td id='quarter'>Quarter</td>
+                        </tr>
+                        <tr>
+                            <td id='year'>Year</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer" style="padding-top: 30px">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+<?php
+}
+?>
