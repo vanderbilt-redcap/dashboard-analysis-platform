@@ -85,8 +85,3 @@ function etnicity_change_icon(id){
         $("[etnicity=1]").addClass('hide');
     }
 }
-
-function openBigGraph(question){
-    $('#modal-big-graph-title').text('Graph for ['+question+']');
-    $('#modal-big-graph').modal('show');
-}

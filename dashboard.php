@@ -152,15 +152,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         6 => "rpps_up_q66", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_up_q65",
                         12 => "rpps_up_q67", 13 => "rpps_s_q57");
     $study_options = $module->getChoiceLabels("rpps_s_q" . $study, $project_id);
+    $graph = array();
+
     if($study == 62){
         array_push($study_options,"Yes - Spanish/Hispanic/Latino");
     }
-    $graph = array();
-    $graph['graph_top_score'] = array();
-    $graph['graph_top_score_year'] = array();
-    $graph['graph_top_score_month'] = array();
-    $graph['graph_top_score_quarter'] = array();
-    $graph['years ']= array();
     if($_SESSION[$_GET['pid'] . "_startDate"] != ""){
         $startDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_startDate"]));
     }else{
@@ -264,14 +260,19 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $topScoreMax = count($outcome_labels);
             $missingOverall = 0;
 
+            $graph[$question_1] = array();
+            $graph[$question_1]['graph_top_score_year'] = array();
+            $graph[$question_1]['graph_top_score_month'] = array();
+            $graph[$question_1]['graph_top_score_quarter'] = array();
+            $graph[$question_1]['years']= array();
+
             #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph);
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max);
             $tooltipTextArray = $normalStudyCol[0];
             $array_colors = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
             $max = $normalStudyCol[3];
             $index = $normalStudyCol[4];
-            $graph = $normalStudyCol[5];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
@@ -281,9 +282,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $max = $missingCol[3];
 
             #OVERALL COL MISSING
-            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors);
+            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$graph);
             $tooltipTextArray = $totalCol[0];
             $array_colors = $totalCol[1];
+            $graph = $totalCol[2];
 
             #MULTIPLE
             if($study == 61) {
@@ -300,7 +302,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'<canvas id="DashChart_'.$question_1.'" class="infoChart" onclick="openBigGraph(\''.$question_1.'\')"></canvas></td>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'<canvas id="DashChart_'.$question_1.'" class="infoChart"></canvas></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
@@ -327,11 +329,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $missingOverall = 0;
 
             #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","",$graph);
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","");
             $table_b = $normalStudyCol[0];
             $index = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
-            $graph = $normalStudyCol[3];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
@@ -339,9 +340,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$missingCol[1].'">'.$missingCol[0].'</div></td>';
 
             #OVERAL MISSING
-            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","");
+            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","",$graph);
             $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$totalCol[1].'">'.$totalCol[0].'</div></td>';
             $table .= $table_b;
+            $graph = $totalCol[2];
 
             #MULTIPLE
             if($study == 61) {
@@ -356,61 +358,84 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $table .= '</table></div>';
     echo $table;
 
-    #YEAR
-    ksort($graph['graph_top_score_year']);
-    $labels_year = array_keys($graph['graph_top_score_year']);
-    $graph['graph_top_score_year'] = array_values($graph['graph_top_score_year']);
+    foreach ($graph as $question=>$single_graph){
+        #YEAR
+        ksort($graph[$question]['graph_top_score_year']);
+        $graph_top_score_year_values[$question] = array();
+        $labels_year[$question] = array_keys($graph[$question]['graph_top_score_year']);
+        $graph_top_score_year_values[$question]  = array_values($graph[$question]['graph_top_score_year']);
 
-    #MONTH
-    ksort($graph['graph_top_score_month']);
-    $labels_month = array();
-    $graph_top_score_month_values = array();
-    foreach($graph['graph_top_score_month'] as $date => $value){
-        array_push($labels_month,date("Y-m",$date));
-        array_push($graph_top_score_month_values,$value);
-    }
+        #MONTH
+        ksort($graph[$question]['graph_top_score_month']);
+        $labels_month[$question] = array();
+        $graph_top_score_month_values[$question] = array();
+        foreach($graph[$question]['graph_top_score_month'] as $date => $value){
+            array_push($labels_month[$question],date("Y-m",$date));
+            array_push($graph_top_score_month_values[$question],$value);
+        }
 
-    #QUARTER
-    ksort($graph['years']);
-    $labels_quarter = array();
-    $graph_top_score_quarter_values = array();
-    foreach ($graph['years'] as $year => $valY) {
-        foreach ($graph['graph_top_score_quarter'] as $date => $value) {
-            $year_quarter = explode(" ", $date)[1];
-            if($year_quarter == $year){
-                array_push($graph_top_score_quarter_values, $value);
-                array_push($labels_quarter, $date);
+        #QUARTER
+        ksort($graph[$question]['years']);
+        $graph_top_score_quarter_values[$question] = array();
+        $labels_quarter[$question] = array();
+        foreach ($graph[$question]['years'] as $year => $value){
+            array_push($labels_quarter[$question], "Q1 ".$year);
+            array_push($labels_quarter[$question], "Q2 ".$year);
+            array_push($labels_quarter[$question], "Q3 ".$year);
+            array_push($labels_quarter[$question], "Q4 ".$year);
+
+            array_push($graph_top_score_quarter_values[$question], 0);
+            array_push($graph_top_score_quarter_values[$question], 0);
+            array_push($graph_top_score_quarter_values[$question], 0);
+            array_push($graph_top_score_quarter_values[$question], 0);
+
+            foreach ($graph[$question]['graph_top_score_quarter'] as $date => $value) {
+                $quarter = explode(" ",$date)[0];
+                $year_quarter = explode(" ",$date)[1];
+                if($year == $year_quarter){
+                    if($quarter == "Q1"){
+                        $position = 0;
+                    }else if($quarter == "Q2"){
+                        $position = 1;
+                    }else if($quarter == "Q3"){
+                        $position = 2;
+                    }else if($quarter == "Q4"){
+                        $position = 3;
+                    }
+                    $graph_top_score_quarter_values[$question][$position] = $value;
+                }
             }
-
-
         }
     }
     ?>
     <script>
         $(function () {
             var array_questions = <?=json_encode($row_questions_1)?>;
+            var array_graph = <?=json_encode($graph)?>;
 
             var labels_year = <?=json_encode($labels_year)?>;
             var labels_month = <?=json_encode($labels_month)?>;
             var labels_quarter = <?=json_encode($labels_quarter)?>;
 
-            var results_year = <?=json_encode($graph['graph_top_score_year'])?>;
+            var results_year = <?=json_encode($graph_top_score_year_values)?>;
             var results_month = <?=json_encode($graph_top_score_month_values)?>;
             var results_quarter = <?=json_encode($graph_top_score_quarter_values)?>;
+
+            var dash_chart = [];
 
             Object.keys(array_questions).forEach(function (index) {
                 var ctx_dash = $("#DashChart_"+array_questions[index]);
                 var config_dash = {
                     type: 'line',
                     data: {
-                        labels: labels_month,
+                        labels: labels_month[array_questions[index]],
                         datasets: [
                             {
                                 label: 'Data',
                                 fill: false,
                                 borderColor: '#337ab7',
                                 backgroundColor: '#337ab7',
-                                data: results_month
+                                data: results_month[array_questions[index]]
                             }
                         ]
                     },
@@ -427,37 +452,50 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     }
                 }
 
-                var dash_chart = new Chart(ctx_dash, config_dash);
+                dash_chart[array_questions[index]] = new Chart(ctx_dash, config_dash);
                 if(index == 0){
-                    var dash_chart_big = new Chart($("#modal-big-graph-body"), config_dash);
+                    dash_chart_big = new Chart($("#modal-big-graph-body"), config_dash);
                 }
             });
             $('[data-toggle="tooltip"]').tooltip();
 
-            /*$("#options td").click(function(){
+            $(".infoChart").click(function(){
+                var question = $(this).attr('id').split("DashChart_")[1];
+
+                $("#question_num").val(question);
+                $('#modal-big-graph-title').text('Graph for ['+question+']');
+                dash_chart_big.data.datasets[0].data = results_month[question];
+                dash_chart_big.data.labels = labels_month[question];
+                dash_chart_big.update();
+
+                $('#modal-big-graph').modal('show');
+            });
+
+            $("#options td").click(function(){
+                var question = $("#question_num").val();
                 if($(this).attr('id') == "month"){
                     $('#quarter').removeClass('selected');
                     $('#year').removeClass('selected');
                     $('#month').addClass('selected');
-                    dash_chart.data.labels = labels_month;
-                    dash_chart.data.datasets[0].data = results_month;
-                    dash_chart.update();
+                    dash_chart_big.data.labels = labels_month[question];
+                    dash_chart_big.data.datasets[0].data = results_month[question];
+                    dash_chart_big.update();
                 }else if($(this).attr('id') == "quarter"){
                     $('#month').removeClass('selected');
                     $('#year').removeClass('selected');
                     $('#quarter').addClass('selected');
-                    dash_chart.data.labels = labels_quarter;
-                    dash_chart.data.datasets[0].data = results_quarter;
-                    dash_chart.update();
+                    dash_chart_big.data.labels = labels_quarter[question];
+                    dash_chart_big.data.datasets[0].data = results_quarter[question];
+                    dash_chart_big.update();
                 }else if($(this).attr('id') == "year"){
                     $('#quarter').removeClass('selected');
                     $('#month').removeClass('selected');
                     $('#year').addClass('selected');
-                    dash_chart.data.labels = labels_year;
-                    dash_chart.data.datasets[0].data = results_year;
-                    dash_chart.update();
+                    dash_chart_big.data.labels = labels_year[question];
+                    dash_chart_big.data.datasets[0].data = results_year[question];
+                    dash_chart_big.update();
                 }
-            });*/
+            });
         });
     </script>
     <!-- MODAL GRAPH-->
@@ -467,10 +505,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 <div class="modal-header">
                     <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title" id="modal-big-graph-title"></h4>
+                    <input type="hidden" id="question_num" value=""/>
                 </div>
                 <div class="modal-body">
                     <canvas id="modal-big-graph-body" class="infoChartBig pull-left"></canvas>
-
                     <table class='pull-righ table table-bordered' id='options'>
                         <tr>
                             <td class='selected' id='month'>Month</td>
