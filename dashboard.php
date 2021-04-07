@@ -467,6 +467,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 dash_chart_big.data.datasets[0].data = results_month[question];
                 dash_chart_big.data.labels = labels_month[question];
                 dash_chart_big.update();
+                $('#quarter').removeClass('selected');
+                $('#year').removeClass('selected');
+                $('#month').addClass('selected');
 
                 $('#modal-big-graph').modal('show');
             });
