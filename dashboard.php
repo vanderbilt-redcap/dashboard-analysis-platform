@@ -459,6 +459,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             });
             $('[data-toggle="tooltip"]').tooltip();
 
+            $("#category").change(function(){
+              console.log("HEY")
+            });
+
             $(".infoChart").click(function(){
                 var question = $(this).attr('id').split("DashChart_")[1];
 
@@ -523,6 +527,19 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             <td id='year'>Year</td>
                         </tr>
                     </table>
+
+                        <?php /*if(!empty($study_options)){ ?>
+                            <div class='pull-righ table table-bordered' id='category'>
+                               <select>
+                                   <option>None</option>
+                                   <?php
+                                   foreach ($study_options as $indexstudy => $col_title) {
+                                       echo "<option value='".$indexstudy."'>".$col_title."</option>";
+                                   }
+                                   ?>
+                               </select>
+                            </div>
+                        <?php } */?>
                 </div>
                 <div class="modal-footer" style="padding-top: 30px">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
