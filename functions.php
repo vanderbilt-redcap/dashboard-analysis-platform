@@ -288,7 +288,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     }
     $tooltip = count($recordsoverall) . " responses, " . $missingOverall . " missing";
 
-    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1);
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,$topScoreMax);
 
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
@@ -308,7 +308,7 @@ function addGraph($graph,$question_1,$survey_datetime){
     return $graph;
 }
 
-function calculatePercentageGraph($project_id,$graph,$question_1){
+function calculatePercentageGraph($project_id,$graph,$question_1,$topScoreMax){
     foreach ($graph[$question_1] as $type=>$graphp){
         $percent = 0;
         foreach ($graphp as $date=>$topscore) {
@@ -336,10 +336,11 @@ function calculatePercentageGraph($project_id,$graph,$question_1){
                 $TotalRecordsGraph = count(ProjectData::getProjectInfoArray($RecordSetGraph));
 
                 $RecordSetisScore5Graph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate);
-                $isScore5Graph = count(ProjectData::getProjectInfoArray($RecordSetisScore5Graph));
+                $isScore5Graph = ProjectData::getProjectInfoArray($RecordSetisScore5Graph);
+
                 $score_is_5O_overall_missing = 0;
                 foreach ($isScore5Graph as $misRecord) {
-                    if ($misRecord[$question_1] == 5 && $isScore5Graph == 5) {
+                    if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
                         $score_is_5O_overall_missing += 1;
                     }
                 }
