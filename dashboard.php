@@ -471,8 +471,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 var question = $("#question_num").val();
                 var study = $("#category option:selected").val();
                 var timeline = $("#options td").closest(".selected").attr("id");
-                console.log("Study: "+study)
-                console.log("Timeline: "+timeline)
+
                 if(timeline == "month"){
                     dash_chart_big.data.labels = labels_month[question][study];
                     dash_chart_big.data.datasets[0].data = results_month[question][study];
@@ -490,6 +489,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             $(".infoChart").click(function(){
                 var question = $(this).attr('id').split("DashChart_")[1];
+                $("#category").val("total");
 
                 $("#question_num").val(question);
                 $('#modal-big-graph-title').text('Graph for ['+question+']');
