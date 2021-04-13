@@ -57,33 +57,33 @@ function date_compare($element1, $element2) {
     return $datetime1 - $datetime2;
 }
 
-function setQuarter($graph,$question_1,$date){
+function setQuarter($graph, $question_1, $study, $date){
     $month = date("m",strtotime($date));
     $year = date("Y",strtotime($date));
 
     if($month <= 3){
-        $graph[$question_1]['graph_top_score_quarter']["Q1 ".$year] += 1;
+        $graph[$question_1][$study]['graph_top_score_quarter']["Q1 ".$year] += 1;
     }else if($month > 3 && $month <= 6) {
-        $graph[$question_1]['graph_top_score_quarter']["Q2 ".$year] += 1;
+        $graph[$question_1][$study]['graph_top_score_quarter']["Q2 ".$year] += 1;
     }else if($month > 6 && $month <= 9) {
-        $graph[$question_1]['graph_top_score_quarter']["Q3 ".$year] += 1;
+        $graph[$question_1][$study]['graph_top_score_quarter']["Q3 ".$year] += 1;
     }else if($month > 9){
-        $graph[$question_1]['graph_top_score_quarter']["Q4 ".$year] += 1;
+        $graph[$question_1][$study]['graph_top_score_quarter']["Q4 ".$year] += 1;
     }
-    return $graph[$question_1]['graph_top_score_quarter'];
+    return $graph[$question_1][$study]['graph_top_score_quarter'];
 }
 
-function createQuartersForYear($graph,$question_1, $date){
+function createQuartersForYear($graph, $question_1, $study, $date){
     $year = date("Y",strtotime($date));
     for($i=1; $i<5 ; $i++){
         if(!array_key_exists("Q".$i." ".$year,$graph[$question_1]['graph_top_score_quarter'])){
-            $graph[$question_1]['graph_top_score_quarter']["Q".$i." ".$year] = 0;
+            $graph[$question_1][$study]['graph_top_score_quarter']["Q".$i." ".$year] = 0;
         }
     }
-    return $graph[$question_1]['graph_top_score_quarter'];
+    return $graph[$question_1][$study]['graph_top_score_quarter'];
 }
 
-function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max){
+function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph){
     $table_b = '';
     $missingOverall = 0;
     $study_62_array = array(
@@ -94,6 +94,12 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         "score5" => 0,
     );
     foreach ($study_options as $index => $col_title) {
+        $graph[$question_1][$index] = array();
+        $graph[$question_1][$index]['graph_top_score_year'] = array();
+        $graph[$question_1][$index]['graph_top_score_month'] = array();
+        $graph[$question_1][$index]['graph_top_score_quarter'] = array();
+        $graph[$question_1][$index]['years']= array();
+
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
@@ -108,6 +114,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             if($question == 1) {
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                     $topScoreFound += 1;
+                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$index,$record['survey_datetime']);
                 }
                 if ($record[$question_1] == 5 && $topScoreMax == 5) {
                     $score_is_5 += 1;
@@ -115,6 +122,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             }else{
                 if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
                     $topScoreFound += 1;
+                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$index,$record['survey_datetime']);
                 }
             }
         }
@@ -157,6 +165,8 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
+        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,$index,$topScoreMax,$condition);
+
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
             $array_colors[$indexQuestion][$index] = $percent;
@@ -171,9 +181,9 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }
     }
     if($question == 1) {
-        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index);
+        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index,5=>$graph);
     }else{
-        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall);
+        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,3=>$graph);
     }
 
     return $aux;
@@ -256,12 +266,12 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         if($question == 1){
             if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
                 $topScoreFoundO += 1;
-                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$recordo['survey_datetime']);
+                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,"total",$recordo['survey_datetime']);
             }
         }else{
             if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
                 $topScoreFoundO += 1;
-                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$recordo['survey_datetime']);
+                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,"total",$recordo['survey_datetime']);
             }
         }
     }
@@ -288,7 +298,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     }
     $tooltip = count($recordsoverall) . " responses, " . $missingOverall . " missing";
 
-    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,$topScoreMax);
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,"total",$topScoreMax,"");
 
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
@@ -299,17 +309,20 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     }
 }
 
-function addGraph($graph,$question_1,$survey_datetime){
-    $graph[$question_1]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
-    $graph[$question_1]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
-    $graph[$question_1]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph,$question_1, $survey_datetime);
-    $graph[$question_1]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph,$question_1, $survey_datetime);
-    $graph[$question_1]['years'][date("Y", strtotime($survey_datetime))] = 0;
+function addGraph($graph,$question_1,$study,$survey_datetime){
+    $graph[$question_1][$study]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
+    $graph[$question_1][$study]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
+    $graph[$question_1][$study]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph,$question_1,$study, $survey_datetime);
+    $graph[$question_1][$study]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph,$question_1,$study, $survey_datetime);
+    $graph[$question_1][$study]['years'][date("Y", strtotime($survey_datetime))] = 0;
     return $graph;
 }
 
-function calculatePercentageGraph($project_id,$graph,$question_1,$topScoreMax){
-    foreach ($graph[$question_1] as $type=>$graphp){
+function calculatePercentageGraph($project_id,$graph,$question_1,$study,$topScoreMax,$condition){
+    if($condition != ""){
+        $condition = " AND ".$condition;
+    }
+    foreach ($graph[$question_1][$study] as $type=>$graphp){
         $percent = 0;
         foreach ($graphp as $date=>$topscore) {
             if($type == 'graph_top_score_month'){
@@ -332,10 +345,10 @@ function calculatePercentageGraph($project_id,$graph,$question_1,$topScoreMax){
                 $conditionDate = " AND (contains([survey_datetime], \"".$date."\"))";
             }
             if($type != "years") {
-                $RecordSetGraph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+                $RecordSetGraph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''". $condition . $conditionDate);
                 $TotalRecordsGraph = count(ProjectData::getProjectInfoArray($RecordSetGraph));
 
-                $RecordSetisScore5Graph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate);
+                $RecordSetisScore5Graph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $question_1 . "] = '5'" . $condition . $conditionDate);
                 $isScore5Graph = ProjectData::getProjectInfoArray($RecordSetisScore5Graph);
 
                 $score_is_5O_overall_missing = 0;
@@ -344,9 +357,8 @@ function calculatePercentageGraph($project_id,$graph,$question_1,$topScoreMax){
                         $score_is_5O_overall_missing += 1;
                     }
                 }
-
-                $percent = number_format(($graph[$question_1][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
-                $graph[$question_1][$type][$date] = $percent;
+                $percent = number_format(($graph[$question_1][$study][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
+                $graph[$question_1][$study][$type][$date] = $percent;
             }
         }
     }

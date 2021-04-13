@@ -260,19 +260,21 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $topScoreMax = count($outcome_labels);
             $missingOverall = 0;
 
-            $graph[$question_1] = array();
-            $graph[$question_1]['graph_top_score_year'] = array();
-            $graph[$question_1]['graph_top_score_month'] = array();
-            $graph[$question_1]['graph_top_score_quarter'] = array();
-            $graph[$question_1]['years']= array();
+            #GRAPH
+            $graph[$question_1]["total"] = array();
+            $graph[$question_1]["total"]['graph_top_score_year'] = array();
+            $graph[$question_1]["total"]['graph_top_score_month'] = array();
+            $graph[$question_1]["total"]['graph_top_score_quarter'] = array();
+            $graph[$question_1]["total"]['years']= array();
 
             #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max);
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph);
             $tooltipTextArray = $normalStudyCol[0];
             $array_colors = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
             $max = $normalStudyCol[3];
             $index = $normalStudyCol[4];
+            $graph = $normalStudyCol[5];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
@@ -333,6 +335,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $table_b = $normalStudyCol[0];
             $index = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
+            $graph = $normalStudyCol[3];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
@@ -358,51 +361,56 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $table .= '</table></div>';
     echo $table;
 
+    $study_options_total = $study_options;
+    $study_options_total["total"] = "total";
+
     foreach ($graph as $question=>$single_graph){
-        #YEAR
-        ksort($graph[$question]['graph_top_score_year']);
-        $graph_top_score_year_values[$question] = array();
-        $labels_year[$question] = array_keys($graph[$question]['graph_top_score_year']);
-        $graph_top_score_year_values[$question]  = array_values($graph[$question]['graph_top_score_year']);
+        foreach ($study_options_total as $index => $col_title) {
+            #YEAR
+            ksort($graph[$question][$index]['graph_top_score_year']);
+            $graph_top_score_year_values[$question][$index] = array();
+            $labels_year[$question][$index] = array_keys($graph[$question][$index]['graph_top_score_year']);
+            $graph_top_score_year_values[$question][$index] = array_values($graph[$question][$index]['graph_top_score_year']);
 
-        #MONTH
-        ksort($graph[$question]['graph_top_score_month']);
-        $labels_month[$question] = array();
-        $graph_top_score_month_values[$question] = array();
-        foreach($graph[$question]['graph_top_score_month'] as $date => $value){
-            array_push($labels_month[$question],date("Y-m",$date));
-            array_push($graph_top_score_month_values[$question],$value);
-        }
+            #MONTH
+            ksort($graph[$question][$index]['graph_top_score_month']);
+            $labels_month[$question][$index] = array();
+            $graph_top_score_month_values[$question][$index] = array();
+            foreach($graph[$question][$index]['graph_top_score_month'] as $date => $value){
+                array_push($labels_month[$question][$index],date("Y-m",$date));
+                array_push($graph_top_score_month_values[$question][$index],$value);
+            }
 
-        #QUARTER
-        ksort($graph[$question]['years']);
-        $graph_top_score_quarter_values[$question] = array();
-        $labels_quarter[$question] = array();
-        foreach ($graph[$question]['years'] as $year => $value){
-            array_push($labels_quarter[$question], "Q1 ".$year);
-            array_push($labels_quarter[$question], "Q2 ".$year);
-            array_push($labels_quarter[$question], "Q3 ".$year);
-            array_push($labels_quarter[$question], "Q4 ".$year);
+            #QUARTER
+            ksort($graph[$question][$index]['years']);
+            $graph_top_score_quarter_values[$question][$index] = array();
+            $labels_quarter[$question][$index] = array();
+            foreach ($graph[$question][$index]['years'] as $year => $value){
+                array_push($labels_quarter[$question][$index], "Q1 ".$year);
+                array_push($labels_quarter[$question][$index], "Q2 ".$year);
+                array_push($labels_quarter[$question][$index], "Q3 ".$year);
+                array_push($labels_quarter[$question][$index], "Q4 ".$year);
 
-            array_push($graph_top_score_quarter_values[$question], 0);
-            array_push($graph_top_score_quarter_values[$question], 0);
-            array_push($graph_top_score_quarter_values[$question], 0);
-            array_push($graph_top_score_quarter_values[$question], 0);
+                array_push($graph_top_score_quarter_values[$question][$index], 0);
+                array_push($graph_top_score_quarter_values[$question][$index], 0);
+                array_push($graph_top_score_quarter_values[$question][$index], 0);
+                array_push($graph_top_score_quarter_values[$question][$index], 0);
 
-            foreach ($graph[$question]['graph_top_score_quarter'] as $date => $value) {
-                $quarter = explode(" ",$date)[0];
-                $year_quarter = explode(" ",$date)[1];
-                if($year == $year_quarter){
-                    if($quarter == "Q1"){
-                        $position = 0;
-                    }else if($quarter == "Q2"){
-                        $position = 1;
-                    }else if($quarter == "Q3"){
-                        $position = 2;
-                    }else if($quarter == "Q4"){
-                        $position = 3;
+                foreach ($graph[$question][$index]['graph_top_score_quarter'] as $date => $value) {
+                    $quarter = explode(" ",$date)[0];
+                    $year_quarter = explode(" ",$date)[1];
+                    if($year == $year_quarter){
+                        if($quarter == "Q1"){
+                            $position = 0;
+                        }else if($quarter == "Q2"){
+                            $position = 1;
+                        }else if($quarter == "Q3"){
+                            $position = 2;
+                        }else if($quarter == "Q4"){
+                            $position = 3;
+                        }
+                        $graph_top_score_quarter_values[$question][$index][$position] = $value;
                     }
-                    $graph_top_score_quarter_values[$question][$position] = $value;
                 }
             }
         }
@@ -428,14 +436,14 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 var config_dash = {
                     type: 'line',
                     data: {
-                        labels: labels_month[array_questions[index]],
+                        labels: labels_month[array_questions[index]]["total"],
                         datasets: [
                             {
                                 label: 'Data',
                                 fill: false,
                                 borderColor: '#337ab7',
                                 backgroundColor: '#337ab7',
-                                data: results_month[array_questions[index]]
+                                data: results_month[array_questions[index]]["total"]
                             }
                         ]
                     },
@@ -460,7 +468,24 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $('[data-toggle="tooltip"]').tooltip();
 
             $("#category").change(function(){
-              console.log("HEY")
+                var question = $("#question_num").val();
+                var study = $("#category option:selected").val();
+                var timeline = $("#options td").closest(".selected").attr("id");
+                console.log("Study: "+study)
+                console.log("Timeline: "+timeline)
+                if(timeline == "month"){
+                    dash_chart_big.data.labels = labels_month[question][study];
+                    dash_chart_big.data.datasets[0].data = results_month[question][study];
+                    dash_chart_big.update();
+                }else if(timeline == "quarter"){
+                    dash_chart_big.data.labels = labels_quarter[question][study];
+                    dash_chart_big.data.datasets[0].data = results_quarter[question][study];
+                    dash_chart_big.update();
+                }else if(timeline == "year"){
+                    dash_chart_big.data.labels = labels_year[question][study];
+                    dash_chart_big.data.datasets[0].data = results_year[question][study];
+                    dash_chart_big.update();
+                }
             });
 
             $(".infoChart").click(function(){
@@ -468,8 +493,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
                 $("#question_num").val(question);
                 $('#modal-big-graph-title').text('Graph for ['+question+']');
-                dash_chart_big.data.datasets[0].data = results_month[question];
-                dash_chart_big.data.labels = labels_month[question];
+                dash_chart_big.data.datasets[0].data = results_month[question]["total"];
+                dash_chart_big.data.labels = labels_month[question]["total"];
                 dash_chart_big.update();
                 $('#quarter').removeClass('selected');
                 $('#year').removeClass('selected');
@@ -480,26 +505,28 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             $("#options td").click(function(){
                 var question = $("#question_num").val();
+                var study = $("#category option:selected").val();
+
                 if($(this).attr('id') == "month"){
                     $('#quarter').removeClass('selected');
                     $('#year').removeClass('selected');
                     $('#month').addClass('selected');
-                    dash_chart_big.data.labels = labels_month[question];
-                    dash_chart_big.data.datasets[0].data = results_month[question];
+                    dash_chart_big.data.labels = labels_month[question][study];
+                    dash_chart_big.data.datasets[0].data = results_month[question][study];
                     dash_chart_big.update();
                 }else if($(this).attr('id') == "quarter"){
                     $('#month').removeClass('selected');
                     $('#year').removeClass('selected');
                     $('#quarter').addClass('selected');
-                    dash_chart_big.data.labels = labels_quarter[question];
-                    dash_chart_big.data.datasets[0].data = results_quarter[question];
+                    dash_chart_big.data.labels = labels_quarter[question][study];
+                    dash_chart_big.data.datasets[0].data = results_quarter[question][study];
                     dash_chart_big.update();
                 }else if($(this).attr('id') == "year"){
                     $('#quarter').removeClass('selected');
                     $('#month').removeClass('selected');
                     $('#year').addClass('selected');
-                    dash_chart_big.data.labels = labels_year[question];
-                    dash_chart_big.data.datasets[0].data = results_year[question];
+                    dash_chart_big.data.labels = labels_year[question][study];
+                    dash_chart_big.data.datasets[0].data = results_year[question][study];
                     dash_chart_big.update();
                 }
             });
@@ -528,10 +555,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         </tr>
                     </table>
 
-                        <?php /*if(!empty($study_options)){ ?>
-                            <div class='pull-righ table table-bordered' id='category'>
-                               <select>
-                                   <option>None</option>
+                        <?php if(!empty($study_options) && $study != "nofilter"){ ?>
+                            <div class='pull-righ table table-bordered'>
+                               <select id='category' class="form-control" style="width: 20% !important;">
+                                   <option value="total">Total</option>
                                    <?php
                                    foreach ($study_options as $indexstudy => $col_title) {
                                        echo "<option value='".$indexstudy."'>".$col_title."</option>";
@@ -539,7 +566,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                    ?>
                                </select>
                             </div>
-                        <?php } */?>
+                        <?php } ?>
                 </div>
                 <div class="modal-footer" style="padding-top: 30px">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
