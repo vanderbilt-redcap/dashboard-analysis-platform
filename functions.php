@@ -190,7 +190,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
 
 }
 
-function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max){
+function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max,$graph){
     $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
     $score_is_5O_overall = 0;
@@ -214,10 +214,13 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
             if($question == 1){
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
                     $missingTop += 1;
+                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,"no",$mrecord['survey_datetime']);
                 }
             }else{
                 if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1,$mrecord))) {
                     $missingTop += 1;
+                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,"no",$mrecord['survey_datetime']);
+
                 }
             }
         } else {
@@ -249,12 +252,14 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }
     $tooltip = $missing." responses, ".$missing_col." missing";
 
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,"no",$topScoreMax,"[rpps_s_q" . $study."] = ''");
+
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
         $array_colors[$indexQuestion][$index+1] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max);
+        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max,4=>$graph);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$missing_col);
+        return array(0=>$percent,1=>$tooltip,2=>$missing_col,3=>$graph);
     }
 }
 
@@ -357,6 +362,7 @@ function calculatePercentageGraph($project_id,$graph,$question_1,$study,$topScor
                         $score_is_5O_overall_missing += 1;
                     }
                 }
+
                 $percent = number_format(($graph[$question_1][$study][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
                 $graph[$question_1][$study][$type][$date] = $percent;
             }

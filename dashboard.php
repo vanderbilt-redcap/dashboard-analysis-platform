@@ -266,6 +266,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $graph[$question_1]["total"]['graph_top_score_month'] = array();
             $graph[$question_1]["total"]['graph_top_score_quarter'] = array();
             $graph[$question_1]["total"]['years']= array();
+            $graph[$question_1]["no"] = array();
+            $graph[$question_1]["no"]['graph_top_score_year'] = array();
+            $graph[$question_1]["no"]['graph_top_score_month'] = array();
+            $graph[$question_1]["no"]['graph_top_score_quarter'] = array();
+            $graph[$question_1]["no"]['years']= array();
 
             #NORMAL STUDY
             $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph);
@@ -277,11 +282,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $graph = $normalStudyCol[5];
 
             #MISSING
-            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
+            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max,$graph);
             $tooltipTextArray = $missingCol[0];
             $array_colors = $missingCol[1];
             $missing_col = $missingCol[2];
             $max = $missingCol[3];
+            $graph = $missingCol[4];
 
             #OVERALL COL MISSING
             $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$graph);
@@ -338,8 +344,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $graph = $normalStudyCol[3];
 
             #MISSING
-            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
+            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"",$graph);
             $missing_col = $missingCol[2];
+            $graph = $missingCol[3];
             $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$missingCol[1].'">'.$missingCol[0].'</div></td>';
 
             #OVERAL MISSING
@@ -363,6 +370,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $study_options_total = $study_options;
     $study_options_total["total"] = "total";
+    $study_options_total["no"] = "no";
 
     foreach ($graph as $question=>$single_graph){
         foreach ($study_options_total as $index => $col_title) {
@@ -564,6 +572,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                        echo "<option value='".$indexstudy."'>".$col_title."</option>";
                                    }
                                    ?>
+                                   <option value="no">NO <?=strtoupper($array_study[$study])?></option>
                                </select>
                             </div>
                         <?php } ?>
