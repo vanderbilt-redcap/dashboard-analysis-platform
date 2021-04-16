@@ -437,6 +437,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             var results_month = <?=json_encode($graph_top_score_month_values)?>;
             var results_quarter = <?=json_encode($graph_top_score_quarter_values)?>;
 
+            var studyOption = <?=json_encode($study)?>;
+
             var dash_chart = [];
 
             Object.keys(array_questions).forEach(function (index) {
@@ -464,6 +466,15 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         tooltips: {
                             mode: 'index',
                             intersect: false
+                        },
+                        scales : {
+                            yAxes : [{
+                                ticks: {
+                                    stepSize: 10,
+                                    beginAtZero:true,
+                                    max: 100
+                                }
+                            }]
                         }
                     }
                 }
@@ -514,6 +525,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $("#options td").click(function(){
                 var question = $("#question_num").val();
                 var study = $("#category option:selected").val();
+                if(studyOption == "nofilter"){
+                    study = "total";
+                }
 
                 if($(this).attr('id') == "month"){
                     $('#quarter').removeClass('selected');
