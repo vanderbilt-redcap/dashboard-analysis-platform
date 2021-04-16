@@ -288,12 +288,6 @@ table thead tr:nth-of-type(2) td {
 }
 
 .infoChart{
-    width: 40px !important;
-    height: 20px !important;
-    border: 1.5px dotted #999;
-    display: inline-block !important;
-    margin-left:7px;
-    vertical-align: middle;
     cursor: pointer;
 }
 

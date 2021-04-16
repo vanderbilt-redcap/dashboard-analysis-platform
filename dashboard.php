@@ -310,7 +310,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'<canvas id="DashChart_'.$question_1.'" class="infoChart"></canvas></td>';
+//            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'<canvas id="DashChart_'.$question_1.'" class="infoChart"></canvas></td>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'"></i></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
@@ -441,7 +442,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             var dash_chart = [];
 
-            Object.keys(array_questions).forEach(function (index) {
+            // Object.keys(array_questions).forEach(function (index) {
+            var index = 0;
                 var ctx_dash = $("#DashChart_"+array_questions[index]);
                 var config_dash = {
                     type: 'line',
@@ -479,11 +481,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     }
                 }
 
-                dash_chart[array_questions[index]] = new Chart(ctx_dash, config_dash);
+                // dash_chart[array_questions[index]] = new Chart(ctx_dash, config_dash);
                 if(index == 0){
                     dash_chart_big = new Chart($("#modal-big-graph-body"), config_dash);
                 }
-            });
+            // });
             $('[data-toggle="tooltip"]').tooltip();
 
             $("#category").change(function(){
@@ -586,7 +588,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                        echo "<option value='".$indexstudy."'>".$col_title."</option>";
                                    }
                                    ?>
-                                   <option value="no">NO <?=strtoupper($array_study[$study])?></option>
+                                   <option value="no">NO <?=strtoupper($array_study[$study])?> REPORTED</option>
                                </select>
                             </div>
                         <?php } ?>
