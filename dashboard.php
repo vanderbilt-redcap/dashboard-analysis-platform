@@ -297,9 +297,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             #MULTIPLE
             if($study == 61) {
-                $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray, $array_colors);
+                $graph[$question_1]["multiple"] = array();
+                $graph[$question_1]["multiple"]['graph_top_score_year'] = array();
+                $graph[$question_1]["multiple"]['graph_top_score_month'] = array();
+                $graph[$question_1]["multiple"]['graph_top_score_quarter'] = array();
+                $graph[$question_1]["multiple"]['years']= array();
+
+                $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray, $array_colors,$graph);
                 $tooltipTextArray = $multipleCol[0];
                 $array_colors = $multipleCol[1];
+                $graph = $multipleCol[2];
             }
         }
         #COLOR
@@ -310,7 +317,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-//            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.'<canvas id="DashChart_'.$question_1.'" class="infoChart"></canvas></td>';
             $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'"></i></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x") && $array_colors[$indexQuestion][$i] != "0"){
@@ -358,7 +364,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             #MULTIPLE
             if($study == 61) {
-                $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
+                $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "",$graph);
+                $graph = $multiple[2];
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
 
             }
@@ -368,10 +375,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
     $table .= '</table></div>';
     echo $table;
-
+//print_array($graph["rpps_s_q1"]);
     $study_options_total = $study_options;
     $study_options_total["total"] = "total";
     $study_options_total["no"] = "no";
+    $study_options_total["multiple"] = "multiple";
 
     foreach ($graph as $question=>$single_graph){
         foreach ($study_options_total as $index => $col_title) {
@@ -589,6 +597,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                    }
                                    ?>
                                    <option value="no">NO <?=strtoupper($array_study[$study])?> REPORTED</option>
+                                   <?php
+                                   if($study == 61){
+                                       echo "<option value='multiple'>MULTIPLE</option>";
+                                   }
+                                   ?>
                                </select>
                             </div>
                         <?php } ?>
