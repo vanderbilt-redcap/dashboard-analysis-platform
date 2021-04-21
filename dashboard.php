@@ -375,7 +375,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
     $table .= '</table></div>';
     echo $table;
-//print_array($graph["rpps_s_q1"]);
+
     $study_options_total = $study_options;
     $study_options_total["total"] = "total";
     $study_options_total["no"] = "no";
