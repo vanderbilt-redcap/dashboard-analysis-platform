@@ -76,7 +76,7 @@ function setQuarter($graph, $question_1, $study, $date){
 function createQuartersForYear($graph, $question_1, $study, $date){
     $year = date("Y",strtotime($date));
     for($i=1; $i<5 ; $i++){
-        if(!array_key_exists("Q".$i." ".$year,$graph[$question_1]['graph_top_score_quarter'])){
+        if(!array_key_exists("Q".$i." ".$year,$graph[$question_1][$study]['graph_top_score_quarter'])){
             $graph[$question_1][$study]['graph_top_score_quarter']["Q".$i." ".$year] = 0;
         }
     }
@@ -393,8 +393,8 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
 function addGraph($graph,$question_1,$study,$studyCol,$survey_datetime){
     $graph[$question_1][$studyCol]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
     $graph[$question_1][$studyCol]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
-    $graph[$question_1][$studyCol]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph,$question_1,$study, $survey_datetime);
-    $graph[$question_1][$studyCol]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph,$question_1,$study, $survey_datetime);
+    $graph[$question_1][$studyCol]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph,$question_1,$studyCol, $survey_datetime);
+    $graph[$question_1][$studyCol]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph,$question_1,$studyCol, $survey_datetime);
     $graph[$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
     if($study == 62 && $studyCol > 1 && $studyCol < 6) {
         $graph[$question_1][6]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
