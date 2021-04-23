@@ -380,7 +380,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $study_options_total["total"] = "total";
     $study_options_total["no"] = "no";
     $study_options_total["multiple"] = "multiple";
-
     foreach ($graph as $question=>$single_graph){
         foreach ($study_options_total as $index => $col_title) {
             #YEAR
