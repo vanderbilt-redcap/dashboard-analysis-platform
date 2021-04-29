@@ -129,7 +129,6 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             if($question == 1) {
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                     $topScoreFound += 1;
-                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
                 }
                 if ($record[$question_1] == 5 && $topScoreMax == 5) {
                     $score_is_5 += 1;
@@ -137,7 +136,6 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             }else{
                 if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
                     $topScoreFound += 1;
-                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
                 }
             }
         }
@@ -179,8 +177,6 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             $percent = "x";
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
-
-        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,$study,$index,$topScoreMax,$condition);
 
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
@@ -236,13 +232,10 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
             if($question == 1){
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
                     $missingTop += 1;
-                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$study,"no",$mrecord['survey_datetime']);
                 }
             }else{
                 if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1,$mrecord))) {
                     $missingTop += 1;
-                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$study,"no",$mrecord['survey_datetime']);
-
                 }
             }
         } else {
@@ -274,8 +267,6 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }
     $tooltip = $missing." responses, ".$missing_col." missing";
 
-    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,$study,"no",$topScoreMax,"[rpps_s_q" . $study."] = ''");
-
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
         $array_colors[$indexQuestion][$index+1] = $percent;
@@ -293,12 +284,10 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         if($question == 1){
             if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
                 $topScoreFoundO += 1;
-                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,"","total",$recordo['survey_datetime']);
             }
         }else{
             if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
                 $topScoreFoundO += 1;
-                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,"","total",$recordo['survey_datetime']);
             }
         }
     }
@@ -325,8 +314,6 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     }
     $tooltip = count($recordsoverall) . " responses, " . $missingOverall . " missing";
 
-    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,"","total",$topScoreMax,"");
-
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
         $array_colors[$indexQuestion][0] = $percent;
@@ -347,7 +334,6 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
             if($question == 1){
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
                     $multipleTop += 1;
-                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$study,"multiple",$multirecord['survey_datetime']);
                 }
                 if($multirecord[$question_1] == "5" && $topScoreMax == 5){
                     $multiple_not_applicable += 1;
@@ -355,7 +341,6 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
             }else{
                 if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
                     $multipleTop += 1;
-                    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addGraph($graph,$question_1,$study,"multiple",$multirecord['survey_datetime']);
                 }
             }
 
@@ -379,8 +364,6 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     }
     $tooltip = $responses . " responses, " . $multiple_missing . " missing";
 
-    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculatePercentageGraph($project_id,$graph,$question_1,$study,"multiple",$topScoreMax,"");
-
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+2] = $tooltip.", ".$multiple_not_applicable . " not applicable";
         $array_colors[$indexQuestion][$index+2] = $percent;
@@ -388,109 +371,5 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     }else{
         return array(0=>$percent,1=>$tooltip,2=>$graph);
     }
-}
-
-function addGraph($graph,$question_1,$study,$studyCol,$survey_datetime){
-    $graph[$question_1][$studyCol]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
-    $graph[$question_1][$studyCol]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
-    $graph[$question_1][$studyCol]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph,$question_1,$studyCol, $survey_datetime);
-    $graph[$question_1][$studyCol]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph,$question_1,$studyCol, $survey_datetime);
-    $graph[$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
-    if($study == 62 && $studyCol > 1 && $studyCol < 6) {
-        $graph[$question_1][6]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
-        $graph[$question_1][6]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
-        $graph[$question_1][6]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\createQuartersForYear($graph,$question_1,$study, $survey_datetime);
-        $graph[$question_1][6]['graph_top_score_quarter'] = \Vanderbilt\DashboardAnalysisPlatformExternalModule\setQuarter($graph,$question_1,$study, $survey_datetime);
-        $graph[$question_1][6]['years'][date("Y", strtotime($survey_datetime))] = 0;
-    }
-    return $graph;
-}
-
-function calculatePercentageGraph($project_id,$graph,$question_1,$study,$colType,$topScoreMax,$condition){
-    if($condition != ""){
-        $condition = " AND ".$condition;
-    }
-    foreach ($graph[$question_1][$colType] as $type=>$graphp){
-        $percent = 0;
-        foreach ($graphp as $date=>$topscore) {
-            if($type == 'graph_top_score_month'){
-                $month = date("Y-m",$date);
-                $conditionDate = " AND (contains([survey_datetime], \"".$month."\"))";
-            }else if($type == 'graph_top_score_quarter'){
-                $quarter = explode(" ",$date)[0];
-                $year = explode(" ",$date)[1];
-
-                if($quarter == "Q1"){
-                    $conditionDate = " AND [survey_datetime] >= '".$year."-01-01". "' AND [survey_datetime] < '".$year."-04-01". "'";
-                }else if($quarter == "Q2") {
-                    $conditionDate = " AND [survey_datetime] >= '".$year."-04-01". "' AND [survey_datetime] < '".$year."-07-01". "'";
-                }else if($quarter == "Q3") {
-                    $conditionDate = " AND [survey_datetime] >= '".$year."-07-01". "' AND [survey_datetime] < '".$year."-10-01". "'";
-                }else if($quarter == "Q4"){
-                    $conditionDate = " AND [survey_datetime] >= '".$year."-10-01"."'";
-                }
-            }else if($type == 'graph_top_score_year'){
-                $conditionDate = " AND (contains([survey_datetime], \"".$date."\"))";
-            }
-            if($type != "years" && $date != "totalrecords" && $date != "is5") {
-                $RecordSetGraph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''". $condition . $conditionDate);
-                $TotalRecordsGraph = 0;
-                $score_is_5O_overall_missing = 0;
-
-
-                if($colType == "multiple"){
-                    foreach (ProjectData::getProjectInfoArray($RecordSetGraph) as $totalR) {
-                        if(array_count_values($totalR["rpps_s_q61"])[1] >= 2){
-                            $TotalRecordsGraph += 1;
-                            if($totalR[$question_1] == "5" && $topScoreMax == 5){
-                                $score_is_5O_overall_missing += 1;
-                            }
-                        }
-                    }
-                }else{
-                    if($colType == "no"){
-                        $RecordSetMissingGraph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] != ''" .$conditionDate);
-                        $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissingGraph);
-                        foreach ($missingRecords as $mrecord) {
-                            if (($mrecord["rpps_s_q".$study] == '') || (is_array($mrecord["rpps_s_q".$study]) && array_count_values($mrecord["rpps_s_q".$study])[1] == 0)) {
-                                $TotalRecordsGraph += 1;
-                            }
-                        }
-                    }else{
-                        $TotalRecordsGraph = count(ProjectData::getProjectInfoArray($RecordSetGraph));
-                    }
-
-
-                    $RecordSetisScore5Graph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $question_1 . "] = '5'" . $condition . $conditionDate);
-                    $isScore5Graph = ProjectData::getProjectInfoArray($RecordSetisScore5Graph);
-                    foreach ($isScore5Graph as $misRecord) {
-                        if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
-                            $score_is_5O_overall_missing += 1;
-                        }
-                    }
-                }
-                if($study == 62){
-                    if($colType >1 && $colType < 6) {
-                        $TotalRecordsGraph_62 += $TotalRecordsGraph;
-                        $graph[$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
-                        $graph[$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
-                    }
-                }
-
-                $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
-                if($study == 62 && $colType == 6) {
-                    $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($graph[$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
-                }
-                $graph[$question_1][$colType][$type][$date] = $percent;
-            }
-        }
-    }
-    return $graph;
-}
-
-function addEthnicityCol($graph,$question_1){
-
-
-    return $graph;
 }
 ?>

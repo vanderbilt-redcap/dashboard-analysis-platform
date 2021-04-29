@@ -1,6 +1,7 @@
 <?php
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/classes/ProjectData.php");
+require_once (dirname(__FILE__)."/classes/GraphData.php");
 $project_id = $_GET['pid'];
 
 $daterange = $_SESSION[$_GET['pid'] . "_startDate"]." - ".$_SESSION[$_GET['pid'] . "_endDate"];
@@ -317,7 +318,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'"></i></td>';
+            $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
             for ($i = 0;$i<count($study_options)+$extras;$i++) {
                 if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
@@ -375,164 +376,107 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
     $table .= '</table></div>';
     echo $table;
-
-    $study_options_total = $study_options;
-    $study_options_total["total"] = "total";
-    $study_options_total["no"] = "no";
-    $study_options_total["multiple"] = "multiple";
-    foreach ($graph as $question=>$single_graph){
-        foreach ($study_options_total as $index => $col_title) {
-            #YEAR
-            ksort($graph[$question][$index]['graph_top_score_year']);
-            $graph_top_score_year_values[$question][$index] = array();
-            $labels_year[$question][$index] = array_keys($graph[$question][$index]['graph_top_score_year']);
-            $graph_top_score_year_values[$question][$index] = array_values($graph[$question][$index]['graph_top_score_year']);
-
-            #MONTH
-            ksort($graph[$question][$index]['graph_top_score_month']);
-            $labels_month[$question][$index] = array();
-            $graph_top_score_month_values[$question][$index] = array();
-            foreach($graph[$question][$index]['graph_top_score_month'] as $date => $value){
-                array_push($labels_month[$question][$index],date("Y-m",$date));
-                array_push($graph_top_score_month_values[$question][$index],$value);
-            }
-
-            #QUARTER
-            ksort($graph[$question][$index]['years']);
-            $graph_top_score_quarter_values[$question][$index] = array();
-            $labels_quarter[$question][$index] = array();
-            foreach ($graph[$question][$index]['years'] as $year => $value){
-                array_push($labels_quarter[$question][$index], "Q1 ".$year);
-                array_push($labels_quarter[$question][$index], "Q2 ".$year);
-                array_push($labels_quarter[$question][$index], "Q3 ".$year);
-                array_push($labels_quarter[$question][$index], "Q4 ".$year);
-
-                array_push($graph_top_score_quarter_values[$question][$index], 0);
-                array_push($graph_top_score_quarter_values[$question][$index], 0);
-                array_push($graph_top_score_quarter_values[$question][$index], 0);
-                array_push($graph_top_score_quarter_values[$question][$index], 0);
-
-                foreach ($graph[$question][$index]['graph_top_score_quarter'] as $date => $value) {
-                    $quarter = explode(" ",$date)[0];
-                    $year_quarter = explode(" ",$date)[1];
-                    if($year == $year_quarter){
-                        if($quarter == "Q1"){
-                            $position = 0;
-                        }else if($quarter == "Q2"){
-                            $position = 1;
-                        }else if($quarter == "Q3"){
-                            $position = 2;
-                        }else if($quarter == "Q4"){
-                            $position = 3;
-                        }
-                        $graph_top_score_quarter_values[$question][$index][$position] = $value;
-                    }
-                }
-            }
-        }
-    }
     ?>
     <script>
         $(function () {
-            var array_questions = <?=json_encode($row_questions_1)?>;
-            var array_graph = <?=json_encode($graph)?>;
-
-            var labels_year = <?=json_encode($labels_year)?>;
-            var labels_month = <?=json_encode($labels_month)?>;
-            var labels_quarter = <?=json_encode($labels_quarter)?>;
-
-            var results_year = <?=json_encode($graph_top_score_year_values)?>;
-            var results_month = <?=json_encode($graph_top_score_month_values)?>;
-            var results_quarter = <?=json_encode($graph_top_score_quarter_values)?>;
-
+            var datagraph;
+            var graph_url = <?=json_encode($module->getUrl("graph_ajax.php"))?>;
+            var study_options = <?=json_encode($study_options)?>;
+            var question = <?=json_encode($question)?>;
+            var conditionDate = <?=json_encode($conditionDate)?>;
             var studyOption = <?=json_encode($study)?>;
 
-            var dash_chart = [];
-
-            // Object.keys(array_questions).forEach(function (index) {
-            var index = 0;
-                var ctx_dash = $("#DashChart_"+array_questions[index]);
-                var config_dash = {
-                    type: 'line',
-                    data: {
-                        labels: labels_month[array_questions[index]]["total"],
-                        datasets: [
-                            {
-                                label: 'Data',
-                                fill: false,
-                                borderColor: '#337ab7',
-                                backgroundColor: '#337ab7',
-                                data: results_month[array_questions[index]]["total"]
-                            }
-                        ]
-                    },
-                    options: {
-                        elements: {
-                            line: {
-                                tension: 0, // disables bezier curves
-                            }
-                        },
-                        tooltips: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        scales : {
-                            yAxes : [{
-                                ticks: {
-                                    stepSize: 10,
-                                    beginAtZero:true,
-                                    max: 100
-                                }
-                            }]
+            var config_dash = {
+                type: 'line',
+                data: {
+                    labels: [""],
+                    datasets: [
+                        {
+                            label: 'Data',
+                            fill: false,
+                            borderColor: '#337ab7',
+                            backgroundColor: '#337ab7',
+                            data: [0]
                         }
+                    ]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            tension: 0, // disables bezier curves
+                        }
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales : {
+                        yAxes : [{
+                            ticks: {
+                                stepSize: 10,
+                                beginAtZero:true,
+                                max: 100
+                            }
+                        }]
                     }
                 }
+            }
+            dash_chart_big = new Chart($("#modal-big-graph-body"), config_dash);
 
-                // dash_chart[array_questions[index]] = new Chart(ctx_dash, config_dash);
-                if(index == 0){
-                    dash_chart_big = new Chart($("#modal-big-graph-body"), config_dash);
-                }
-            // });
             $('[data-toggle="tooltip"]').tooltip();
 
             $("#category").change(function(){
-                var question = $("#question_num").val();
+                var question_1 = $("#question_num").val();
                 var study = $("#category option:selected").val();
                 var timeline = $("#options td").closest(".selected").attr("id");
 
                 if(timeline == "month"){
-                    dash_chart_big.data.labels = labels_month[question][study];
-                    dash_chart_big.data.datasets[0].data = results_month[question][study];
+                    dash_chart_big.data.labels = datagraph["labels"]["month"][question_1][study];
+                    dash_chart_big.data.datasets[0].data = datagraph["results"]["month"][question_1][study];
                     dash_chart_big.update();
                 }else if(timeline == "quarter"){
-                    dash_chart_big.data.labels = labels_quarter[question][study];
-                    dash_chart_big.data.datasets[0].data = results_quarter[question][study];
+                    dash_chart_big.data.labels = datagraph["labels"]["quarter"][question_1][study];
+                    dash_chart_big.data.datasets[0].data = datagraph["results"]["quarter"][question_1][study];
                     dash_chart_big.update();
                 }else if(timeline == "year"){
-                    dash_chart_big.data.labels = labels_year[question][study];
-                    dash_chart_big.data.datasets[0].data = results_year[question][study];
+                    dash_chart_big.data.labels = datagraph["labels"]["year"][question_1][study];
+                    dash_chart_big.data.datasets[0].data = datagraph["results"]["year"][question_1][study];
                     dash_chart_big.update();
                 }
             });
 
             $(".infoChart").click(function(){
-                var question = $(this).attr('id').split("DashChart_")[1];
+                var question_1 = $(this).attr('id').split("DashChart_")[1];
+                var indexQuestion = $(this).attr('indexQuestion');
                 $("#category").val("total");
 
-                $("#question_num").val(question);
-                $('#modal-big-graph-title').text('Graph for ['+question+']');
-                dash_chart_big.data.datasets[0].data = results_month[question]["total"];
-                dash_chart_big.data.labels = labels_month[question]["total"];
-                dash_chart_big.update();
-                $('#quarter').removeClass('selected');
-                $('#year').removeClass('selected');
-                $('#month').addClass('selected');
+                $("#question_num").val(question_1);
+                $('#modal-big-graph-title').text('Graph for ['+question_1+']');
+                $('#modal-spinner').modal('show');
+                $.ajax({
+                    url: graph_url,
+                    data: "&studyOption="+studyOption+"&question="+question+"&question_1="+question_1+"&study="+studyOption+"&study_options="+JSON.stringify(study_options)+"&conditionDate="+conditionDate,
+                    type: 'POST',
+                    success: function(returnData) {
+                        var data = JSON.parse(returnData);
+                        $('#modal-spinner').modal('hide');
+                        if (data.status == 'success') {
+                            datagraph = JSON.parse(data.chartgraph);
 
-                $('#modal-big-graph').modal('show');
+                            dash_chart_big.data.datasets[0].data = datagraph["results"]["month"][question_1]["total"];
+                            dash_chart_big.data.labels = datagraph["labels"]["month"][question_1]["total"];
+                            dash_chart_big.update();
+                            $('#quarter').removeClass('selected');
+                            $('#year').removeClass('selected');
+                            $('#month').addClass('selected');
+                            $('#modal-big-graph').modal('show');
+                        }
+                    }
+                });
             });
 
             $("#options td").click(function(){
-                var question = $("#question_num").val();
+                var question_1 = $("#question_num").val();
                 var study = $("#category option:selected").val();
                 if(studyOption == "nofilter"){
                     study = "total";
@@ -542,22 +486,22 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $('#quarter').removeClass('selected');
                     $('#year').removeClass('selected');
                     $('#month').addClass('selected');
-                    dash_chart_big.data.labels = labels_month[question][study];
-                    dash_chart_big.data.datasets[0].data = results_month[question][study];
+                    dash_chart_big.data.labels = datagraph["labels"]["month"][question_1][study];
+                    dash_chart_big.data.datasets[0].data = datagraph["results"]["month"][question_1][study];
                     dash_chart_big.update();
                 }else if($(this).attr('id') == "quarter"){
                     $('#month').removeClass('selected');
                     $('#year').removeClass('selected');
                     $('#quarter').addClass('selected');
-                    dash_chart_big.data.labels = labels_quarter[question][study];
-                    dash_chart_big.data.datasets[0].data = results_quarter[question][study];
+                    dash_chart_big.data.labels = datagraph["labels"]["quarter"][question_1][study];
+                    dash_chart_big.data.datasets[0].data = datagraph["results"]["quarter"][question_1][study];
                     dash_chart_big.update();
                 }else if($(this).attr('id') == "year"){
                     $('#quarter').removeClass('selected');
                     $('#month').removeClass('selected');
                     $('#year').addClass('selected');
-                    dash_chart_big.data.labels = labels_year[question][study];
-                    dash_chart_big.data.datasets[0].data = results_year[question][study];
+                    dash_chart_big.data.labels = datagraph["labels"]["year"][question_1][study];
+                    dash_chart_big.data.datasets[0].data = datagraph["results"]["year"][question_1][study];
                     dash_chart_big.update();
                 }
             });
@@ -607,6 +551,26 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 </div>
                 <div class="modal-footer" style="padding-top: 30px">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL SPINNER-->
+    <div class="modal fade" id="modal-spinner" tabindex="-1" role="dialog" aria-labelledby="Codes">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Graph in Progress</h4>
+                </div>
+                <div class="modal-body">
+                    <div style="padding-top: 20px">
+                        <div class="alert alert-success">
+                            <em class="fa fa-spinner fa-spin"></em> Processing... Please wait until the process finishes.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
                 </div>
             </div>
         </div>
