@@ -385,7 +385,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             fill: false,
                             borderColor: '#337ab7',
                             backgroundColor: '#337ab7',
-                            data: [0]
+                            data: [0],
+                            spanGaps: true
                         }
                     ]
                 },
@@ -432,6 +433,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     dash_chart_big.data.datasets[0].data = datagraph["results"]["year"][question_1][study];
                     dash_chart_big.update();
                 }
+                //add new data set:do before update
+                // dash_chart_big.data.datasets.push({
+                //     label: 'label2',
+                //     backgroundColor: '#ff0000',
+                //     data: [1,2,3]
+                // });
             });
 
             $(".infoChart").click(function(){

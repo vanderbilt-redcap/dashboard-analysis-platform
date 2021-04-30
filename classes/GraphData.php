@@ -264,9 +264,21 @@ class GraphData
                 ksort($graph[$question][$index]['graph_top_score_month']);
                 $labels_month[$question][$index] = array();
                 $graph_top_score_month_values[$question][$index] = array();
-                foreach($graph[$question][$index]['graph_top_score_month'] as $date => $value){
-                    array_push($labels_month[$question][$index],date("Y-m",$date));
-                    array_push($graph_top_score_month_values[$question][$index],$value);
+                foreach ($labels_year[$question][$index] as $year) {
+                    for ($month = 1; $month < 13; $month++) {
+                        $found = false;
+                        foreach ($graph[$question][$index]['graph_top_score_month'] as $date => $value) {
+                            if($year."-".sprintf('%02d', $month) == date("Y-m", $date)) {
+                                $found = true;
+                                array_push($labels_month[$question][$index], date("Y-m", $date));
+                                array_push($graph_top_score_month_values[$question][$index], $value);
+                            }
+                        }
+                        if(!$found) {
+                            array_push($labels_month[$question][$index], $year . "-" . sprintf('%02d', $month));
+                            array_push($graph_top_score_month_values[$question][$index], null);
+                        }
+                    }
                 }
 
                 #QUARTER
