@@ -101,6 +101,28 @@ class GraphData
         return $graph;
     }
 
+    public static function getMultipleColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph){
+        $RecordSetMultiple = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
+        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+        foreach ($multipleRecords as $multirecord){
+            if(array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2){
+
+                if($question == 1){
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
+                        $graph = self::addGraph($graph,$question_1,$study,"multiple",$multirecord['survey_datetime']);
+                    }
+                }else{
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
+                        $graph = self::addGraph($graph,$question_1,$study,"multiple",$multirecord['survey_datetime']);
+                    }
+                }
+            }
+        }
+        $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,$study,"multiple",$topScoreMax,"");
+
+        return $graph;
+    }
+
     function createQuartersForYear($graph, $question_1, $study, $date){
         $year = date("Y",strtotime($date));
         for($i=1; $i<5 ; $i++){

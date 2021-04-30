@@ -561,7 +561,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Graph in Progress</h4>
+                    <h4 class="modal-title">Graph in progress</h4>
                 </div>
                 <div class="modal-body">
                     <div style="padding-top: 20px">
