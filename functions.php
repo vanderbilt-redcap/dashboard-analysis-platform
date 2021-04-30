@@ -51,39 +51,7 @@ function GetColorFromRedYellowGreenGradient($percentage)
     return $hexa;
 }
 
-function date_compare($element1, $element2) {
-    $datetime1 = strtotime($element1['datetime']);
-    $datetime2 = strtotime($element2['datetime']);
-    return $datetime1 - $datetime2;
-}
-
-function setQuarter($graph, $question_1, $study, $date){
-    $month = date("m",strtotime($date));
-    $year = date("Y",strtotime($date));
-
-    if($month <= 3){
-        $graph[$question_1][$study]['graph_top_score_quarter']["Q1 ".$year] += 1;
-    }else if($month > 3 && $month <= 6) {
-        $graph[$question_1][$study]['graph_top_score_quarter']["Q2 ".$year] += 1;
-    }else if($month > 6 && $month <= 9) {
-        $graph[$question_1][$study]['graph_top_score_quarter']["Q3 ".$year] += 1;
-    }else if($month > 9){
-        $graph[$question_1][$study]['graph_top_score_quarter']["Q4 ".$year] += 1;
-    }
-    return $graph[$question_1][$study]['graph_top_score_quarter'];
-}
-
-function createQuartersForYear($graph, $question_1, $study, $date){
-    $year = date("Y",strtotime($date));
-    for($i=1; $i<5 ; $i++){
-        if(!array_key_exists("Q".$i." ".$year,$graph[$question_1][$study]['graph_top_score_quarter'])){
-            $graph[$question_1][$study]['graph_top_score_quarter']["Q".$i." ".$year] = 0;
-        }
-    }
-    return $graph[$question_1][$study]['graph_top_score_quarter'];
-}
-
-function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph){
+function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max){
     $table_b = '';
     $missingOverall = 0;
     $study_62_array = array(
@@ -93,28 +61,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         "missing" => 0,
         "score5" => 0,
     );
-    if($study == 62){
-        $graph[$question_1][6] = array();
-        $graph[$question_1][6]['graph_top_score_year'] = array();
-        $graph[$question_1][6]['graph_top_score_month'] = array();
-        $graph[$question_1][6]['graph_top_score_quarter'] = array();
-        $graph[$question_1][6]['years']= array();
-        $graph[$question_1][6]['graph_top_score_year']["totalrecords"] = 0;
-        $graph[$question_1][6]['graph_top_score_year']["is5"] = 0;
-        $graph[$question_1][6]['graph_top_score_month']["totalrecords"] = 0;
-        $graph[$question_1][6]['graph_top_score_month']["is5"] = 0;
-        $graph[$question_1][6]['graph_top_score_quarter']["totalrecords"] = 0;
-        $graph[$question_1][6]['graph_top_score_quarter']["is5"] = 0;
-    }
     foreach ($study_options as $index => $col_title) {
-        if($study == 62 && $index != 6 || $study != 62){
-            $graph[$question_1][$index] = array();
-            $graph[$question_1][$index]['graph_top_score_year'] = array();
-            $graph[$question_1][$index]['graph_top_score_month'] = array();
-            $graph[$question_1][$index]['graph_top_score_quarter'] = array();
-            $graph[$question_1][$index]['years']= array();
-        }
-
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
 
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
@@ -191,26 +138,18 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             $table_b .= '<td class="'.$class.'" '.$attibute.'><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltip.'">'.$percent.'</div></td>';
         }
     }
-    if($study == 62) {
-        unset($graph[$question_1][6]["graph_top_score_year"]["totalrecords"]);
-        unset($graph[$question_1][6]["graph_top_score_year"]["is5"]);
-        unset($graph[$question_1][6]["graph_top_score_month"]["totalrecords"]);
-        unset($graph[$question_1][6]["graph_top_score_month"]["is5"]);
-        unset($graph[$question_1][6]["graph_top_score_quarter"]["totalrecords"]);
-        unset($graph[$question_1][6]["graph_top_score_quarter"]["is5"]);
-    }
 
     if($question == 1) {
-        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index,5=>$graph);
+        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index);
     }else{
-        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,3=>$graph);
+        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall);
     }
 
     return $aux;
 
 }
 
-function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max,$graph){
+function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max){
     $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
     $score_is_5O_overall = 0;
@@ -270,13 +209,13 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
         $array_colors[$indexQuestion][$index+1] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max,4=>$graph);
+        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$missing_col,3=>$graph);
+        return array(0=>$percent,1=>$tooltip,2=>$missing_col);
     }
 }
 
-function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$graph){
+function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors){
     $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
     $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
     $topScoreFoundO = 0;
@@ -317,13 +256,13 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
         $array_colors[$indexQuestion][0] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$graph);
+        return array(0=>$tooltipTextArray,1=>$array_colors);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$graph);
+        return array(0=>$percent,1=>$tooltip);
     }
 }
 
-function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray,$array_colors,$graph){
+function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray,$array_colors){
     $multiple = 0;
     $multipleTop = 0;
     $multiple_not_applicable = 0;
@@ -367,9 +306,9 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+2] = $tooltip.", ".$multiple_not_applicable . " not applicable";
         $array_colors[$indexQuestion][$index+2] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$graph);
+        return array(0=>$tooltipTextArray,1=>$array_colors);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$graph);
+        return array(0=>$percent,1=>$tooltip);
     }
 }
 ?>

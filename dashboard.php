@@ -174,11 +174,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $conditionDate = " AND [survey_datetime] >= '".$startDate. "' AND [survey_datetime] <= '".$endDate."'";
     }
 
-    $RecordSetMissingStudy = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false,
-        "[rpps_s_q" . $study."] = ''".$conditionDate
-    );
-    $missingStudyTotal = count(ProjectData::getProjectInfoArray($RecordSetMissingStudy));
-
     $score_title = "% Responding Very or Somewhat Important";
     $top_box_popover_info = '';
     if ($question == 1) {
@@ -274,16 +269,15 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $graph[$question_1]["no"]['years']= array();
 
             #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$graph);
+            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max);
             $tooltipTextArray = $normalStudyCol[0];
             $array_colors = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
             $max = $normalStudyCol[3];
             $index = $normalStudyCol[4];
-            $graph = $normalStudyCol[5];
 
             #MISSING
-            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max,$graph);
+            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
             $tooltipTextArray = $missingCol[0];
             $array_colors = $missingCol[1];
             $missing_col = $missingCol[2];
@@ -291,10 +285,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $graph = $missingCol[4];
 
             #OVERALL COL MISSING
-            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$graph);
+            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors);
             $tooltipTextArray = $totalCol[0];
             $array_colors = $totalCol[1];
-            $graph = $totalCol[2];
 
             #MULTIPLE
             if($study == 61) {
@@ -304,10 +297,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $graph[$question_1]["multiple"]['graph_top_score_quarter'] = array();
                 $graph[$question_1]["multiple"]['years']= array();
 
-                $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray, $array_colors,$graph);
+                $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray, $array_colors);
                 $tooltipTextArray = $multipleCol[0];
                 $array_colors = $multipleCol[1];
-                $graph = $multipleCol[2];
             }
         }
         #COLOR
@@ -349,23 +341,20 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $table_b = $normalStudyCol[0];
             $index = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
-            $graph = $normalStudyCol[3];
 
             #MISSING
-            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"",$graph);
+            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
             $missing_col = $missingCol[2];
-            $graph = $missingCol[3];
             $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$missingCol[1].'">'.$missingCol[0].'</div></td>';
 
             #OVERAL MISSING
-            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","",$graph);
+            $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","");
             $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$totalCol[1].'">'.$totalCol[0].'</div></td>';
             $table .= $table_b;
-            $graph = $totalCol[2];
 
             #MULTIPLE
             if($study == 61) {
-                $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "",$graph);
+                $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
                 $graph = $multiple[2];
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
 
