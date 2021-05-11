@@ -32,6 +32,8 @@ $array_study = array(
     66 => "Enrollment setting",
     58 => "Demand of study"
 );
+
+$array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
 ?>
 <script>
     $( document ).ready(function() {
@@ -355,7 +357,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             #MULTIPLE
             if($study == 61) {
                 $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
-                $graph = $multiple[2];
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
 
             }
@@ -379,16 +380,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 type: 'line',
                 data: {
                     labels: [""],
-                    datasets: [
-                        {
-                            label: 'Data',
-                            fill: false,
-                            borderColor: '#337ab7',
-                            backgroundColor: '#337ab7',
-                            data: [0],
-                            spanGaps: true
-                        }
-                    ]
+                    datasets: []
                 },
                 options: {
                     elements: {
@@ -415,30 +407,32 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             $('[data-toggle="tooltip"]').tooltip();
 
-            $("#category").change(function(){
+            $(".category").change(function(){
                 var question_1 = $("#question_num").val();
-                var study = $("#category option:selected").val();
+                var study = $(this).val();
                 var timeline = $("#options td").closest(".selected").attr("id");
+                var color = "#"+$(this).attr("color");
+                var ds1 = {
+                    label: $(this).attr("text"),
+                    fill: false,
+                    spanGaps: true,
+                    id: study,
+                    borderColor: color,
+                    backgroundColor: color,
+                    data: datagraph["results"][timeline][question_1][study]
+                };
 
-                if(timeline == "month"){
-                    dash_chart_big.data.labels = datagraph["labels"]["month"][question_1][study];
-                    dash_chart_big.data.datasets[0].data = datagraph["results"]["month"][question_1][study];
-                    dash_chart_big.update();
-                }else if(timeline == "quarter"){
-                    dash_chart_big.data.labels = datagraph["labels"]["quarter"][question_1][study];
-                    dash_chart_big.data.datasets[0].data = datagraph["results"]["quarter"][question_1][study];
-                    dash_chart_big.update();
-                }else if(timeline == "year"){
-                    dash_chart_big.data.labels = datagraph["labels"]["year"][question_1][study];
-                    dash_chart_big.data.datasets[0].data = datagraph["results"]["year"][question_1][study];
-                    dash_chart_big.update();
+                if($(this).is(":checked")){
+                    dash_chart_big.data.datasets.push(ds1);
+                }else{
+                    dash_chart_big.data.datasets.find((dataset, index) => {
+                        if (dataset.id === study) {
+                            dash_chart_big.data.datasets.splice(index, 1);
+                            return true; // stop searching
+                        }
+                    });
                 }
-                //add new data set:do before update
-                // dash_chart_big.data.datasets.push({
-                //     label: 'label2',
-                //     backgroundColor: '#ff0000',
-                //     data: [1,2,3]
-                // });
+                dash_chart_big.update();
             });
 
             $(".infoChart").click(function(){
@@ -459,8 +453,17 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         if (data.status == 'success') {
                             datagraph = JSON.parse(data.chartgraph);
 
-                            dash_chart_big.data.datasets[0].data = datagraph["results"]["month"][question_1]["total"];
                             dash_chart_big.data.labels = datagraph["labels"]["month"][question_1]["total"];
+                            var ds1 = {
+                                label: "Total",
+                                borderColor: '#337ab7',
+                                backgroundColor: '#337ab7',
+                                fill: false,
+                                spanGaps: true,
+                                id: "total",
+                                data: datagraph["results"]["month"][question_1]["total"]
+                            };
+                            dash_chart_big.data.datasets.push(ds1);
                             dash_chart_big.update();
                             $('#quarter').removeClass('selected');
                             $('#year').removeClass('selected');
@@ -473,33 +476,36 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             $("#options td").click(function(){
                 var question_1 = $("#question_num").val();
-                var study = $("#category option:selected").val();
-                if(studyOption == "nofilter"){
-                    study = "total";
-                }
+                var timeline = $(this).attr('id');
 
                 if($(this).attr('id') == "month"){
                     $('#quarter').removeClass('selected');
                     $('#year').removeClass('selected');
-                    $('#month').addClass('selected');
-                    dash_chart_big.data.labels = datagraph["labels"]["month"][question_1][study];
-                    dash_chart_big.data.datasets[0].data = datagraph["results"]["month"][question_1][study];
-                    dash_chart_big.update();
                 }else if($(this).attr('id') == "quarter"){
                     $('#month').removeClass('selected');
                     $('#year').removeClass('selected');
-                    $('#quarter').addClass('selected');
-                    dash_chart_big.data.labels = datagraph["labels"]["quarter"][question_1][study];
-                    dash_chart_big.data.datasets[0].data = datagraph["results"]["quarter"][question_1][study];
-                    dash_chart_big.update();
                 }else if($(this).attr('id') == "year"){
                     $('#quarter').removeClass('selected');
                     $('#month').removeClass('selected');
-                    $('#year').addClass('selected');
-                    dash_chart_big.data.labels = datagraph["labels"]["year"][question_1][study];
-                    dash_chart_big.data.datasets[0].data = datagraph["results"]["year"][question_1][study];
-                    dash_chart_big.update();
+
                 }
+                $(".category:checked").each(function() {
+                    var study = $(this).val();
+                    if(studyOption == "nofilter"){
+                        study = "total";
+                    }
+
+                    var indexdataset = 0;
+                    dash_chart_big.data.datasets.find((dataset, index) => {
+                        if (dataset.id === study) {
+                            indexdataset = index;
+                        }
+                    });
+                    dash_chart_big.data.labels = datagraph["labels"][timeline][question_1][study];
+                    dash_chart_big.data.datasets[indexdataset].data = datagraph["results"][timeline][question_1][study];
+                });
+                $('#'+timeline).addClass('selected');
+                dash_chart_big.update();
             });
         });
     </script>
@@ -525,23 +531,23 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             <td id='year'>Year</td>
                         </tr>
                     </table>
-
                         <?php if(!empty($study_options) && $study != "nofilter"){ ?>
                             <div class='pull-righ table table-bordered'>
-                               <select id='category' class="form-control" style="width: 20% !important;">
-                                   <option value="total">Total</option>
-                                   <?php
-                                   foreach ($study_options as $indexstudy => $col_title) {
-                                       echo "<option value='".$indexstudy."'>".$col_title."</option>";
-                                   }
-                                   ?>
-                                   <option value="no">NO <?=strtoupper($array_study[$study])?> REPORTED</option>
-                                   <?php
-                                   if($study == 61){
-                                       echo "<option value='multiple'>MULTIPLE</option>";
-                                   }
-                                   ?>
-                               </select>
+                                <div><input type="checkbox" value="total" class="category" text="Total" color="<?=$array_colors_graphs[0]?>" checked> Total</div>
+                                <?php
+                                $i = 1;
+                                foreach ($study_options as $indexstudy => $col_title) {
+                                    echo "<div><input type='checkbox' value='".$indexstudy."' class='category' text='".$col_title."' color='".$array_colors_graphs[$i]."'> ".$col_title."</div>";
+                                    $i++;
+                                }
+                                ?>
+                                <div><input type="checkbox" value="no" class="category" text="NO <?=strtoupper($array_study[$study])?> REPORTED" color="<?=$array_colors_graphs[$i]?>"> NO <?=strtoupper($array_study[$study])?> REPORTED</div>
+                               <?php
+                                if($study == 61){
+                                    $i++;
+                                    echo "<div><input type='checkbox' value='multiple' class='category' text='MULTIPLE' color='".$array_colors_graphs[$i]."'> MULTIPLE</div>";
+                                }
+                                ?>
                             </div>
                         <?php } ?>
                 </div>
