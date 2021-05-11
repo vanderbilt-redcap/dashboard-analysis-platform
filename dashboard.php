@@ -437,12 +437,27 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             $(".infoChart").click(function(){
                 var question_1 = $(this).attr('id').split("DashChart_")[1];
-                var indexQuestion = $(this).attr('indexQuestion');
                 $("#category").val("total");
 
                 $("#question_num").val(question_1);
                 $('#modal-big-graph-title').text('Graph for ['+question_1+']');
                 $('#modal-spinner').modal('show');
+
+                //Clean checkboxes & data in graph
+                $(".category:checked").each(function() {
+                    if($(this).attr("text") != "Total") {
+                        $(this).prop("checked", false);
+                    }
+                    dash_chart_big.data.datasets.find((dataset, index) => {
+                        if (dataset.id === $(this).val()) {
+                            dash_chart_big.data.datasets.splice(index, 1);
+                            console.log("clean "+dataset.id)
+                            return true; // stop searching
+                        }
+                    });
+                    dash_chart_big.update();
+                });
+
                 $.ajax({
                     url: graph_url,
                     data: "&studyOption="+studyOption+"&question="+question+"&question_1="+question_1+"&study="+studyOption+"&study_options="+JSON.stringify(study_options)+"&conditionDate="+conditionDate,
