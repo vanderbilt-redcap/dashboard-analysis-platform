@@ -437,10 +437,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
             $(".infoChart").click(function(){
                 var question_1 = $(this).attr('id').split("DashChart_")[1];
+                var question_text = $(this).parent("td").text();
                 $("#category").val("total");
 
                 $("#question_num").val(question_1);
-                $('#modal-big-graph-title').text('Graph for ['+question_1+']');
+                $('#modal-big-graph-title').text(question_text);
                 $('#modal-spinner').modal('show');
 
                 //Clean checkboxes & data in graph
