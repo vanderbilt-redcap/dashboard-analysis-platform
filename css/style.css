@@ -10,6 +10,13 @@ body {
 }
 .form-control{
     width: 25% !important;
+    padding: 6px 3px;
+    font-size: 12px;
+}
+.forme {
+    padding-bottom: 10px;
+    top: 55px;
+    position: relative;
 }
 .infoIcon{
     color:#5592c6;

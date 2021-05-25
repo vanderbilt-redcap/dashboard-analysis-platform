@@ -37,6 +37,7 @@ $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>
 ?>
 <script>
     $( document ).ready(function() {
+        $('.forme').width($('table.dal thead tr .question:first-of-type').width());
         var maxWidthth = Math.max.apply(null, $('.dal>thead th.dal_task>div').map(function() {
             return $(this).outerWidth(true);
         }).get());
@@ -111,39 +112,6 @@ $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>
 </script>
 <div class="optionSelect">
     <div class="alert alert-danger fade in col-md-12" id="errMsgContainerModal" style="display:none"></div>
-    <div style="padding-bottom: 10px">
-        <div>
-            <select class="form-control" id="question">
-                <option value="">Question type</option>
-                <?php
-                foreach ($array_questions as $index => $squestion){
-                    $selected = "";
-                    if($index == $_SESSION[$_GET['pid'] . "_question"]){
-                        $selected = "selected";
-                    }
-                    echo '<option value="'.$index.'" '.$selected.'>'.$squestion.'</option>';
-                }
-                ?>
-            </select>
-            <select class="form-control" id="study">
-                <option value="">Study type</option>
-                <option value="nofilter" selected>No filter</option>
-                <?php
-                foreach ($array_study as $index => $sstudy){
-                    $selected = "";
-                    if($index == $_SESSION[$_GET['pid'] . "_study"]){
-                        $selected = "selected";
-                    }
-                    echo '<option value="'.$index.'" '.$selected.'>'.$sstudy.'</option>';
-                }
-                ?>
-                <option value="">RPPS administration timing</option>
-                <option value="">RPPS sampling approach</option>
-            </select>
-            <input type="daterange" class="form-control" id="daterange" name="daterange" value="<?=$daterange?>">
-            <button onclick='loadTable(<?=json_encode($module->getUrl("loadTable.php"))?>);' class="btn btn-primary" id="loadTablebtn">Load Table</button>
-        </div>
-    </div>
 </div>
 <?php
 if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"]) || ($_SESSION[$_GET['pid'] . "_study"] == "nofilter" && $_SESSION[$_GET['pid'] . "_question"] == "1")) {
@@ -185,6 +153,39 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $top_box_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
     }
     $table = '<div class="optionSelect" style="padding-top: 20px" id="loadTable">
+                <div style="padding-bottom: 10px" class="forme">
+                    <div>
+                        <select class="form-control" id="question">
+                            <option value="">Question type</option>
+                           ';
+                            foreach ($array_questions as $index => $squestion){
+                                $selected = "";
+                                if($index == $_SESSION[$_GET['pid'] . "_question"]){
+                                    $selected = "selected";
+                                }
+                                $table .= '<option value="'.$index.'" '.$selected.'>'.$squestion.'</option>';
+                            }
+
+                       $table .= ' </select>
+                        <select class="form-control" id="study">
+                            <option value="">Study type</option>
+                            <option value="nofilter" selected>No filter</option>';
+
+                            foreach ($array_study as $index => $sstudy){
+                                $selected = "";
+                                if($index == $_SESSION[$_GET['pid'] . "_study"]){
+                                    $selected = "selected";
+                                }
+                                $table .= '<option value="'.$index.'" '.$selected.'>'.$sstudy.'</option>';
+                            }
+                            $table .='
+                            <option value="">RPPS administration timing</option>
+                            <option value="">RPPS sampling approach</option>
+                        </select>
+                        <input type="daterange" class="form-control" id="daterange" name="daterange" value="'.$daterange.'">
+                        <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php")).');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
+                    </div>
+                </div>
                 <table class="table dal table-bordered pull-left" id="table_archive">
                 <thead>
                     <tr>
@@ -452,7 +453,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     dash_chart_big.data.datasets.find((dataset, index) => {
                         if (dataset.id === $(this).val()) {
                             dash_chart_big.data.datasets.splice(index, 1);
-                            console.log("clean "+dataset.id)
                             return true; // stop searching
                         }
                     });
