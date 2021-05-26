@@ -110,7 +110,7 @@ $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>
         })
     });
 </script>
-<div class="optionSelect">
+<div class="optionSelect" style="margin-bottom: 0px;">
     <div class="alert alert-danger fade in col-md-12" id="errMsgContainerModal" style="display:none"></div>
 </div>
 <?php
@@ -152,8 +152,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 <div><strong>Top-Box versus mean scores:</strong> Top Box scores are easy to understand because they clearly identify the respondents who fall into a given category, usually the optimal category from a marketing or customer experience perspective. However, taken alone, Top Box scores leave out important information about how many respondents were close to, or far from the top category. In contrast, mean scores provide a summary measure that includes all the data, including lower and lowest scores, but it may be harder to interpret the significance of a 0.1  or 1 or 5 point difference between two mean scores, especially if the sample size is large. The frequency distribution of all of the response data provides the richest data about the range and number of responses, but lacks the simplicity of summary scores. It can be most valuable to use summary scores like Top Box or Means to follow overall trends, and frequency distributions to understand the details when designing interventions for change. When assessing change in a score, it is important to compare measures of the same type.</div>";
         $top_box_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
     }
-    $table = '<div class="optionSelect" style="padding-top: 20px" id="loadTable">
-                <div style="padding-bottom: 10px" class="forme">
+    $table = '<div class="optionSelect" id="loadTable">
+               <div style="/* padding-bottom: 10px; */width: 621px;" class="forme">
+                <img src="'.$module->getUrl('epv-2colorhorizontal1300__1_.jpg').'" width="300px" style="/* padding-top: 20px */">
+                <div style="float: right;padding-top: 23px;">
+                    <a class="btn btn-default" target="_blank" href="'.APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$_GET['pid']."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp".'">Stats &amp; Charts</a>
+                </div>
+                <h3 class="header">At-A-Glance Dashboard - Empowering the Participant Voice</h3>
                     <div>
                         <select class="form-control" id="question">
                             <option value="">Question type</option>

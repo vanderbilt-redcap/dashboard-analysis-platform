@@ -14,9 +14,13 @@ body {
     font-size: 12px;
 }
 .forme {
-    padding-bottom: 10px;
-    top: 55px;
+    /* padding-bottom: 10px; */
     position: relative;
+    top: 108px;
+    margin-top: -90px;
+}
+h3.header {
+    font-size: 22px;
 }
 .infoIcon{
     color:#5592c6;
