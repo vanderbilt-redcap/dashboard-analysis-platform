@@ -450,19 +450,28 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $('#modal-big-graph-title').text(question_text);
                 $('#modal-spinner').modal('show');
 
-                //Clean checkboxes & data in graph
-                $(".category:checked").each(function() {
-                    if($(this).attr("text") != "Total") {
-                        $(this).prop("checked", false);
-                    }
+                if(studyOption == "nofilter" && datagraph != "" && datagraph != undefined){
                     dash_chart_big.data.datasets.find((dataset, index) => {
-                        if (dataset.id === $(this).val()) {
+                        if (dataset.id === "total") {
                             dash_chart_big.data.datasets.splice(index, 1);
                             return true; // stop searching
                         }
                     });
-                    dash_chart_big.update();
-                });
+                }else {
+                    //Clean checkboxes & data in graph
+                    $(".category:checked").each(function () {
+                        if ($(this).attr("text") != "Total") {
+                            $(this).prop("checked", false);
+                        }
+                        dash_chart_big.data.datasets.find((dataset, index) => {
+                            if (dataset.id === $(this).val()) {
+                                dash_chart_big.data.datasets.splice(index, 1);
+                                return true; // stop searching
+                            }
+                        });
+                    });
+                }
+                dash_chart_big.update();
 
                 $.ajax({
                     url: graph_url,
