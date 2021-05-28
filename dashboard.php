@@ -158,7 +158,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 <div style="float: right;padding-top: 23px;">
                     <a class="btn btn-default" target="_blank" href="'.APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$_GET['pid']."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp".'">Stats &amp; Charts</a>
                 </div>
-                <h3 class="header">At-A-Glance Dashboard - Empowering the Participant Voice</h3>
+                <h3 class="header"></h3>
                     <div>
                         <select class="form-control" id="question">
                             <option value="">Question type</option>
