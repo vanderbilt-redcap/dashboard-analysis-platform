@@ -314,14 +314,15 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
 
 function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
     $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
-    if ($percent >= 0.6) {
-        $graph["any"][$index]++;
-    } else if ($percent < 0.6 && $percent >= 0.4) {
+    if ($percent >= 0.8) {
         $graph["complete"][$index]++;
-    } else if ($percent < 0.4 && $percent >= 0.15) {
+    } else if ($percent < 0.8 && $percent >= 0.5) {
         $graph["partial"][$index]++;
-    } else if ($percent < 0.15) {
+    } else if ($percent < 0.5 && $percent > 0) {
         $graph["breakoffs"][$index]++;
+    }
+    if($percent > 0){
+        $graph["any"][$index]++;
     }
     return $graph;
 }
