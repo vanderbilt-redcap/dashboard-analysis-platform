@@ -348,7 +348,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph);
-
+        if($study == 61) {
+            #MULTIPLE
+            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
+        }
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
             $question_popover_content = "";
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="'.$question_2.'" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
@@ -363,6 +366,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 #MISSING
                 $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["missing"], $graph["total_records"]["missing"]);
+                if($study == 61) {
+                    #MULTIPLE
+                    $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["multiple"], $graph["total_records"]["multiple"]);
+                }
             }
             $table .= '</tr>';
         }

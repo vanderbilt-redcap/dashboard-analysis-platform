@@ -332,14 +332,6 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     $graph["complete"] = array();
     $graph["partial"] = array();
     $graph["breakoffs"] = array();
-    $graph["any"]["missing"] = 0;
-    $graph["complete"]["missing"] = 0;
-    $graph["partial"]["missing"] = 0;
-    $graph["breakoffs"]["missing"] = 0;
-    $graph["any"]["total"] = 0;
-    $graph["complete"]["total"] = 0;
-    $graph["partial"]["total"] = 0;
-    $graph["breakoffs"]["total"] = 0;
     foreach ($study_options as $index => $col_title) {
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study, $index);
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
@@ -361,6 +353,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
 }
 
 function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study){
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\ addZeros($graph, "missing");
     $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q" . $study."] = ''".$conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
@@ -379,6 +372,7 @@ function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $
 }
 
 function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph){
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\ addZeros($graph, "total");
     $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
@@ -393,6 +387,36 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
         }
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "total", $graph);
     }
+    return $graph;
+}
+
+function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study){
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\ addZeros($graph, "multiple");
+    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
+    $allRecords = ProjectData::getProjectInfoArray($RecordSet);
+    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $total_questions = count($row_questions_1);
+    $graph["total_records"]["multiple"] = $total_records;
+    foreach ($allRecords as $record) {
+        if (array_count_values($record["rpps_s_q" . $study])[1] >= 2) {
+            $num_questions_answered = 0;
+            foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                if ($record[$question_1] != "") {
+                    $num_questions_answered++;
+                }
+            }
+            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "multiple", $graph);
+        }
+    }
+
+    return $graph;
+}
+
+function addZeros($graph, $index){
+    $graph["any"][$index] = 0;
+    $graph["complete"][$index] = 0;
+    $graph["partial"][$index] = 0;
+    $graph["breakoffs"][$index] = 0;
     return $graph;
 }
 
