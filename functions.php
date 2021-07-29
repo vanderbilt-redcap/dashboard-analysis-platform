@@ -336,6 +336,10 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     $graph["complete"]["missing"] = 0;
     $graph["partial"]["missing"] = 0;
     $graph["breakoffs"]["missing"] = 0;
+    $graph["any"]["total"] = 0;
+    $graph["complete"]["total"] = 0;
+    $graph["partial"]["total"] = 0;
+    $graph["breakoffs"]["total"] = 0;
     foreach ($study_options as $index => $col_title) {
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study, $index);
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
@@ -356,7 +360,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     return $graph;
 }
 
-function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options){
+function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study){
     $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q" . $study."] = ''".$conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
@@ -372,5 +376,33 @@ function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "missing", $graph);
     }
     return $graph;
+}
+
+function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph){
+    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
+    $allRecords = ProjectData::getProjectInfoArray($RecordSet);
+    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $total_questions = count($row_questions_1);
+    $graph["total_records"]["total"] = $total_records;
+    foreach ($allRecords as $record) {
+        $num_questions_answered = 0;
+        foreach ($row_questions_1 as $indexQuestion => $question_1) {
+            if ($record[$question_1] != "") {
+                $num_questions_answered++;
+            }
+        }
+        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "total", $graph);
+    }
+    return $graph;
+}
+
+function printResponseRate($questions, $total_records){
+    if ($questions == "") {
+        $questions = 0;
+    }
+    $percent = number_format((float)($questions / $total_records), 2, '.', '') * 100;
+    $tooltipTextArray = $questions . " questions answered out of " . $total_records . " records";
+    $table_row = '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray . '">' . $percent . '</td>';
+    return $table_row;
 }
 ?>

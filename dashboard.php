@@ -346,35 +346,24 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }else if($question == 2){
 
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
-        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
-
-//        Breakoffs= Any – (partial + Complete)
-//
-//         Then, “Any response” = breakoffs + partial + complete
+        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
+        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph);
 
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
             $question_popover_content = "";
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="'.$question_2.'" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
             $table .= '<tr><td class="question">'.ucfirst($question_2)." response ".$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
-            #TOTAL
-            $table .= "<td>0</td>";
-            foreach ($study_options as $index => $col_title) {
-                $questions = $graph[$question_2][$index];
-                if($questions == ""){
-                    $questions = 0;
-                }
-                $percent = number_format((float)($graph[$question_2][$index] / $graph["total_records"][$index]), 2, '.', '')*100;
-                $tooltipTextArray = $questions." questions answered out of ".$graph["total_records"][$index]." records";
-                $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray . '">' .$percent.'</td>';
-            }
-            $questions_missing = $graph[$question_2]["missing"];
-            if($questions_missing == ""){
-                $questions_missing = 0;
-            }
-            $percent = number_format((float)($graph[$question_2]["missing"] / $graph["total_records"]["missing"]), 2, '.', '')*100;
-            $tooltipTextArray = $questions_missing." questions answered out of ".$graph["total_records"]["missing"]." records";
-            $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray . '">' .$percent.'</td>';
 
+            #TOTAL
+            $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["total"], $graph["total_records"]["total"]);
+            if($study != "nofilter") {
+                #NORMAL
+                foreach ($study_options as $index => $col_title) {
+                   $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2][$index], $graph["total_records"][$index]);
+                }
+                #MISSING
+                $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["missing"], $graph["total_records"]["missing"]);
+            }
             $table .= '</tr>';
         }
     }else {
