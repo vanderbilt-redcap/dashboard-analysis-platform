@@ -38,7 +38,7 @@ class GraphData
                     if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                         $graph = self::addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
                     }
-                }else{
+                }else {
                     if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
                         $graph = self::addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
                     }
@@ -83,20 +83,40 @@ class GraphData
     }
 
     public static function getTotalColGraph($question,$project_id,$question_1,$conditionDate,$topScoreMax,$graph){
-        $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
-        $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
-        foreach ($recordsoverall as $recordo){
-            if($question == 1){
-                if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
-                    $graph = self::addGraph($graph,$question_1,"","total",$recordo['survey_datetime']);
+        if($question == 2){
+            $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
+            $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+            $total_questions = count($row_questions_1);
+            $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
+            $allRecords = ProjectData::getProjectInfoArray($RecordSet);
+            $graph["total_records"]["total"] = count(ProjectData::getProjectInfoArray($RecordSet));
+            foreach ($allRecords as $record) {
+                $num_questions_answered = 0;
+                foreach ($row_questions_1 as $indexQuestion => $question_2) {
+                    if ($record[$question_2] != "") {
+                        $num_questions_answered++;
+                    }
                 }
-            }else{
-                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
-                    $graph = self::addGraph($graph,$question_1,"","total",$recordo['survey_datetime']);
+                $graph = self::addGraphResponseRate($num_questions_answered, $total_questions, "total", $graph, "", $record['survey_datetime']);
+            }
+            $graph = self::calculatePercentageResponseRate($graph,count(ProjectData::getProjectInfoArray($RecordSet)), "total");
+        }else if($question == 1){
+            $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+            $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
+            foreach ($recordsoverall as $recordo){
+                if($question == 1){
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
+                        $graph = self::addGraph($graph,$question_1,"","total",$recordo['survey_datetime']);
+                    }
+                }else{
+                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
+                        $graph = self::addGraph($graph,$question_1,"","total",$recordo['survey_datetime']);
+                    }
                 }
             }
+            $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,"","total",$topScoreMax,"");
+
         }
-        $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,"","total",$topScoreMax,"");
 
         return $graph;
     }
@@ -164,6 +184,22 @@ class GraphData
         }
         return $graph;
     }
+
+    function addGraphResponseRate($num_questions_answered, $total_questions, $index, $graph, $study, $survey_datetime){
+        $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
+        if ($percent >= 0.8) {
+            $graph = self::addGraph($graph,"complete",$study,$index,$survey_datetime);
+        } else if ($percent < 0.8 && $percent >= 0.5) {
+            $graph = self::addGraph($graph,"partial",$study,$index,$survey_datetime);
+        } else if ($percent < 0.5 && $percent > 0) {
+            $graph = self::addGraph($graph,"breakoffs",$study,$index,$survey_datetime);
+        }
+        if($percent > 0){
+            $graph = self::addGraph($graph,"any",$study,$index,$survey_datetime);
+        }
+        return $graph;
+    }
+
 
     public static function calculatePercentageGraph($project_id,$graph,$question_1,$study,$colType,$topScoreMax,$condition){
         if($condition != ""){
@@ -241,6 +277,19 @@ class GraphData
                         $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($graph[$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
                     }
                     $graph[$question_1][$colType][$type][$date] = $percent;
+                }
+            }
+        }
+        return $graph;
+    }
+
+    public static function calculatePercentageResponseRate($graph,$total_records,$index){
+        $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
+        foreach ($row_questions_2 as $question_2) {
+            foreach ($graph[$question_2][$index] as $type=>$graphp){
+                foreach ($graphp as $date=>$topscore) {
+                    $percent = number_format(($graph[$question_2][$index][$type][$date] / $total_records * 100), 0);
+                    $graph[$question_2][$index][$type][$date] = $percent;
                 }
             }
         }

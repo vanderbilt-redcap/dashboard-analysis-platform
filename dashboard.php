@@ -119,11 +119,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $project_id = $_GET['pid'];
     $question = $_SESSION[$_GET['pid'] . "_question"];
     $study = $_SESSION[$_GET['pid'] . "_study"];
-    $row_questions = array(2 => "2-15", 3 => "26-39", 4 => "40-55");
-    $row_questions_1 = array(0 => "rpps_s_q1",1 => "rpps_s_q17", 2 => "rpps_s_q18", 3 => "rpps_s_q19", 4 => "rpps_s_q20", 5 => "rpps_s_q21",
-                        6 => "rpps_up_q66", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_up_q65",
-                        12 => "rpps_up_q67", 13 => "rpps_s_q57");
-    $row_questions_2 = array(1 => "any", 2 => "partial", 3 => "complete", 4 => "breakoffs");
+    $row_questions = ProjectData::getRowQuestions();
+    $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+    $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
     $study_options = $module->getChoiceLabels("rpps_s_q" . $study, $project_id);
     $graph = array();
 
@@ -355,7 +353,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
             $question_popover_content = "";
             $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="'.$question_2.'" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-            $table .= '<tr><td class="question">'.ucfirst($question_2)." response ".$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
+            $table .= '<tr><td class="question">'.ucfirst($question_2)." response ".$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_2.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 
             #TOTAL
             $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["total"], $graph["total_records"]["total"]);
@@ -407,6 +405,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
     $table .= '</table></div>';
     echo $table;
+
+    $graphTest = array();
+    $graphTest = GraphData::getTotalColGraph(2, $project_id, $question_1, $conditionDate, "", $graphTest);
+print_array($graphTest);
     ?>
     <script>
         $(function () {
@@ -517,7 +519,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $('#modal-spinner').modal('hide');
                         if (data.status == 'success') {
                             datagraph = JSON.parse(data.chartgraph);
-
                             dash_chart_big.data.labels = datagraph["labels"]["month"][question_1]["total"];
                             var ds1 = {
                                 label: "Total",

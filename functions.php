@@ -372,7 +372,7 @@ function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $
 }
 
 function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph){
-    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\ addZeros($graph, "total");
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
     $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));

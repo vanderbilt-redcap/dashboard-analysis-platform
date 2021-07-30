@@ -33,8 +33,12 @@ $graph[$question_1]["no"]['years']= array();
 
 
 if($studyOption != "nofilter"){
-    $graph = GraphData::getNormalStudyColGraph($question,$project_id,$study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph);
-    $graph = GraphData::getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph);
+    if($question == 2){
+
+    }else{
+        $graph = GraphData::getNormalStudyColGraph($question,$project_id,$study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph);
+        $graph = GraphData::getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph);
+    }
 }
 $graph = GraphData::getTotalColGraph($question,$project_id,$question_1,$conditionDate,$topScoreMax,$graph);
 if($study == 61){
