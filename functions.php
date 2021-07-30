@@ -425,7 +425,7 @@ function printResponseRate($questions, $total_records){
         $questions = 0;
     }
     $percent = number_format((float)($questions / $total_records), 2, '.', '') * 100;
-    $tooltipTextArray = $questions . " questions answered out of " . $total_records . " records";
+    $tooltipTextArray = $questions . " out of " . $total_records . " records";
     $table_row = '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray . '">' . $percent . '</td>';
     return $table_row;
 }
