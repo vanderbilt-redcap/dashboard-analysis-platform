@@ -60,46 +60,32 @@ class GraphData
     }
 
     public static function getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph){
-        $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
-        $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
-        foreach ($missingRecords as $mrecord){
-            if (($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)) {
-                if($question == 1){
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
-                        $graph = self::addGraph($graph,$question_1,$study,"no",$mrecord['survey_datetime']);
-                    }
-                }else{
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1,$mrecord))) {
-                        $graph = self::addGraph($graph,$question_1,$study,"no",$mrecord['survey_datetime']);
+        if($question == 2){
+            $graph = self::generateResponseRateGraph($project_id, "", "no", "[rpps_s_q" . $study."] = ''".$conditionDate, $graph);
+        }else if($question == 1) {
+            $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $question_1 . "] != ''" . $conditionDate);
+            $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
+            foreach ($missingRecords as $mrecord) {
+                if (($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)) {
+                    if ($question == 1) {
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
+                            $graph = self::addGraph($graph, $question_1, $study, "no", $mrecord['survey_datetime']);
+                        }
+                    } else {
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1, $mrecord))) {
+                            $graph = self::addGraph($graph, $question_1, $study, "no", $mrecord['survey_datetime']);
+                        }
                     }
                 }
             }
+            $graph = self::calculatePercentageGraph($project_id, $graph, $question_1, $study, "no", $topScoreMax, "[rpps_s_q" . $study . "] = ''");
         }
-
-
-        $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,$study,"no",$topScoreMax,"[rpps_s_q" . $study."] = ''");
-
         return $graph;
     }
 
     public static function getTotalColGraph($question,$project_id,$question_1,$conditionDate,$topScoreMax,$graph){
         if($question == 2){
-            $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-            $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
-            $total_questions = count($row_questions_1);
-            $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
-            $allRecords = ProjectData::getProjectInfoArray($RecordSet);
-            $graph["total_records"]["total"] = count(ProjectData::getProjectInfoArray($RecordSet));
-            foreach ($allRecords as $record) {
-                $num_questions_answered = 0;
-                foreach ($row_questions_1 as $indexQuestion => $question_2) {
-                    if ($record[$question_2] != "") {
-                        $num_questions_answered++;
-                    }
-                }
-                $graph = self::addGraphResponseRate($num_questions_answered, $total_questions, "total", $graph, "", $record['survey_datetime']);
-            }
-            $graph = self::calculatePercentageResponseRate($graph,count(ProjectData::getProjectInfoArray($RecordSet)), "total");
+            $graph = self::generateResponseRateGraph($project_id, "", "total", $conditionDate,  $graph);
         }else if($question == 1){
             $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
@@ -122,24 +108,26 @@ class GraphData
     }
 
     public static function getMultipleColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph){
-        $RecordSetMultiple = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
-        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-        foreach ($multipleRecords as $multirecord){
-            if(array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2){
-
-                if($question == 1){
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
-                        $graph = self::addGraph($graph,$question_1,$study,"multiple",$multirecord['survey_datetime']);
-                    }
-                }else{
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
-                        $graph = self::addGraph($graph,$question_1,$study,"multiple",$multirecord['survey_datetime']);
+        if($question == 2){
+            $graph = self::generateResponseRateGraph($project_id, $study, "multiple", $conditionDate, $graph);
+        }else {
+            $RecordSetMultiple = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
+            $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+            foreach ($multipleRecords as $multirecord) {
+                if (array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2) {
+                    if ($question == 1) {
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
+                            $graph = self::addGraph($graph, $question_1, $study, "multiple", $multirecord['survey_datetime']);
+                        }
+                    } else {
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
+                            $graph = self::addGraph($graph, $question_1, $study, "multiple", $multirecord['survey_datetime']);
+                        }
                     }
                 }
             }
+            $graph = self::calculatePercentageGraph($project_id, $graph, $question_1, $study, "multiple", $topScoreMax, "");
         }
-        $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,$study,"multiple",$topScoreMax,"");
-
         return $graph;
     }
 
@@ -293,6 +281,27 @@ class GraphData
                 }
             }
         }
+        return $graph;
+    }
+
+    public static function generateResponseRateGraph($project_id, $study, $type, $condition, $graph){
+        $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+        $total_questions = count($row_questions_1);
+        $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition);
+        $allRecords = ProjectData::getProjectInfoArray($RecordSet);
+        $graph["total_records"][$type] = count(ProjectData::getProjectInfoArray($RecordSet));
+        foreach ($allRecords as $record) {
+            if ($type == "total" || $type == "no" || ($type == "multiple" && array_count_values($record["rpps_s_q" . $study])[1] >= 2)) {
+                $num_questions_answered = 0;
+                foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                    if ($record[$question_1] != "") {
+                        $num_questions_answered++;
+                    }
+                }
+                $graph = self::addGraphResponseRate($num_questions_answered, $total_questions, $type, $graph, "", $record['survey_datetime']);
+            }
+        }
+        $graph = self::calculatePercentageResponseRate($graph,count(ProjectData::getProjectInfoArray($RecordSet)), $type);
         return $graph;
     }
 
