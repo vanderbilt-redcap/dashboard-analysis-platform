@@ -405,10 +405,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
     $table .= '</table></div>';
     echo $table;
-
-    $graphTest = array();
-    $graphTest = GraphData::getTotalColGraph(2, $project_id, $question_1, $conditionDate, "", $graphTest);
-print_array($graphTest);
     ?>
     <script>
         $(function () {
