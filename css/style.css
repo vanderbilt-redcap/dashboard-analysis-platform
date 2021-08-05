@@ -180,7 +180,6 @@ option {
     background-color: #dc3545;
 }
 #table_archive{
-    height:100%;
     width: 100%;
     border-collapse:collapse;
 }

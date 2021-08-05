@@ -8,12 +8,12 @@ class GraphData
      * Function that returns the graph array from a specific question
      */
     public static function getNormalStudyColGraph($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph){
-        if($study == 62){
+        if ($study == 62) {
             $graph[$question_1][6] = array();
             $graph[$question_1][6]['graph_top_score_year'] = array();
             $graph[$question_1][6]['graph_top_score_month'] = array();
             $graph[$question_1][6]['graph_top_score_quarter'] = array();
-            $graph[$question_1][6]['years']= array();
+            $graph[$question_1][6]['years'] = array();
             $graph[$question_1][6]['graph_top_score_year']["totalrecords"] = 0;
             $graph[$question_1][6]['graph_top_score_year']["is5"] = 0;
             $graph[$question_1][6]['graph_top_score_month']["totalrecords"] = 0;
@@ -30,24 +30,27 @@ class GraphData
                 $graph[$question_1][$index]['years']= array();
             }
             $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
-
-            $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
-            $records = ProjectData::getProjectInfoArray($RecordSet);
-            foreach ($records as $record){
-                if($question == 1) {
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
-                        $graph = self::addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
-                    }
-                }else {
-                    if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
-                        $graph = self::addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
+            if($question == 2){
+                $graph = self::generateResponseRateGraph($project_id, "", $index, $condition.$conditionDate, $graph);
+            }else{
+                $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
+                $records = ProjectData::getProjectInfoArray($RecordSet);
+                foreach ($records as $record){
+                    if($question == 1) {
+                        if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
+                            $graph = self::addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
+                        }
+                    }else {
+                        if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
+                            $graph = self::addGraph($graph,$question_1,$study,$index,$record['survey_datetime']);
+                        }
                     }
                 }
-            }
 
-            $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,$study,$index,$topScoreMax,$condition);
+                $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,$study,$index,$topScoreMax,$condition);
+            }
         }
-        if($study == 62) {
+        if ($study == 62) {
             unset($graph[$question_1][6]["graph_top_score_year"]["totalrecords"]);
             unset($graph[$question_1][6]["graph_top_score_year"]["is5"]);
             unset($graph[$question_1][6]["graph_top_score_month"]["totalrecords"]);
@@ -55,7 +58,6 @@ class GraphData
             unset($graph[$question_1][6]["graph_top_score_quarter"]["totalrecords"]);
             unset($graph[$question_1][6]["graph_top_score_quarter"]["is5"]);
         }
-
         return $graph;
     }
 
@@ -291,7 +293,7 @@ class GraphData
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
         $graph["total_records"][$type] = count(ProjectData::getProjectInfoArray($RecordSet));
         foreach ($allRecords as $record) {
-            if ($type == "total" || $type == "no" || ($type == "multiple" && array_count_values($record["rpps_s_q" . $study])[1] >= 2)) {
+            if ($type != "multiple" || ($type == "multiple" && array_count_values($record["rpps_s_q" . $study])[1] >= 2)) {
                 $num_questions_answered = 0;
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
                     if ($record[$question_1] != "") {
