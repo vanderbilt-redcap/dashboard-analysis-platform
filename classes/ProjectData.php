@@ -136,6 +136,7 @@ class ProjectData
         $row_questions = array(2 => "2-15", 3 => "26-39", 4 => "40-55");
         return $row_questions;
     }
+
     public static function getRowQuestionsParticipantPerception()
     {
         $row_questions_1 = array(0 => "rpps_s_q1", 1 => "rpps_s_q17", 2 => "rpps_s_q18", 3 => "rpps_s_q19", 4 => "rpps_s_q20", 5 => "rpps_s_q21",
@@ -143,8 +144,19 @@ class ProjectData
             12 => "rpps_up_q67", 13 => "rpps_s_q57");
         return $row_questions_1;
     }
+
     public static function getRowQuestionsResponseRate(){
         $row_questions_2 = array(1 => "any", 2 => "partial", 3 => "complete", 4 => "breakoffs");
+        return $row_questions_2;
+    }
+
+    public static function getRowQuestionsResponseRateInfo(){
+        $row_questions_2 = array(
+            1 => "A survey returned with a non-null response provided for at least 1 core question is counted in the calculation of “Any” response.",
+            2 => "A survey returned with a non-null response provided for 50-80% of the core questions is considered a “Partial” response.",
+            3 => "A survey returned with a non-null response provided for 80-100% of the core questions is considered a “Complete” response.",
+            4 => "A survey returned with a non-null response provided for between <50% of the core questions is considered a “Breakoff” response."
+        );
         return $row_questions_2;
     }
 }
