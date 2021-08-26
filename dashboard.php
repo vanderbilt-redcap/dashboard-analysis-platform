@@ -2,14 +2,14 @@
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/classes/ProjectData.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
-$project_id = $_GET['pid'];
+$project_id = (int)$_GET['pid'];
 
-$daterange = $_SESSION[$_GET['pid'] . "_startDate"]." - ".$_SESSION[$_GET['pid'] . "_endDate"];
-if(($_SESSION[$_GET['pid'] . "_startDate"] == "" || $_SESSION[$_GET['pid'] . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
+$daterange = $_SESSION[$project_id . "_startDate"]." - ".$_SESSION[$project_id . "_endDate"];
+if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
     $daterange = "Select a date range...";
-    if($_SESSION[$_GET['pid'] . "_question"] == "" || $_SESSION[$_GET['pid'] . "_study"] == "" || empty($_GET['dash'])){
-        $_SESSION[$_GET['pid'] . "_question"] = "1";
-        $_SESSION[$_GET['pid'] . "_study"] = "nofilter";
+    if($_SESSION[$project_id . "_question"] == "" || $_SESSION[$project_id . "_study"] == "" || empty($_GET['dash'])){
+        $_SESSION[$project_id . "_question"] = "1";
+        $_SESSION[$project_id . "_study"] = "nofilter";
     }
 }
 
@@ -115,10 +115,9 @@ $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>
     <div class="alert alert-danger fade in col-md-12" id="errMsgContainerModal" style="display:none"></div>
 </div>
 <?php
-if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"]) || ($_SESSION[$_GET['pid'] . "_study"] == "nofilter" && $_SESSION[$_GET['pid'] . "_question"] == "1")) {
-    $project_id = $_GET['pid'];
-    $question = $_SESSION[$_GET['pid'] . "_question"];
-    $study = $_SESSION[$_GET['pid'] . "_study"];
+if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"]) || ($_SESSION[$project_id . "_study"] == "nofilter" && $_SESSION[$project_id . "_question"] == "1")) {
+    $question = $_SESSION[$project_id . "_question"];
+    $study = $_SESSION[$project_id . "_study"];
     $row_questions = ProjectData::getRowQuestions();
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
@@ -128,13 +127,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     if($study == 62){
         array_push($study_options,"Yes - Spanish/Hispanic/Latino");
     }
-    if($_SESSION[$_GET['pid'] . "_startDate"] != ""){
-        $startDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_startDate"]));
+    if($_SESSION[$project_id . "_startDate"] != ""){
+        $startDate = date("Y-m-d",strtotime($_SESSION[$project_id . "_startDate"]));
     }else{
         $startDate = "";
     }
-    if($_SESSION[$_GET['pid'] . "_endDate"] != ""){
-        $endDate = date("Y-m-d",strtotime($_SESSION[$_GET['pid'] . "_endDate"]));
+    if($_SESSION[$project_id . "_endDate"] != ""){
+        $endDate = date("Y-m-d",strtotime($_SESSION[$project_id . "_endDate"]));
     }else{
         $endDate = "";
     }
@@ -167,7 +166,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                <div style="/* padding-bottom: 10px; */width: 621px;" class="forme">
                 <img src="'.$module->getUrl('epv-2colorhorizontal1300__1_.jpg').'" width="300px" style="/* padding-top: 20px */">
                 <div style="float: right;padding-top: 23px;">
-                    <a class="btn btn-default" target="_blank" href="'.APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$_GET['pid']."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp".'">Stats &amp; Charts</a>
+                    <a class="btn btn-default" target="_blank" href="'.APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$project_id."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp".'">Stats &amp; Charts</a>
                 </div>
                 <h3 class="header"></h3>
                     <div>
@@ -176,7 +175,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                            ';
                             foreach ($array_questions as $index => $squestion){
                                 $selected = "";
-                                if($index == $_SESSION[$_GET['pid'] . "_question"]){
+                                if($index == $_SESSION[$project_id . "_question"]){
                                     $selected = "selected";
                                 }
                                 $table .= '<option value="'.$index.'" '.$selected.'>'.$squestion.'</option>';
@@ -189,7 +188,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
                             foreach ($array_study as $index => $sstudy){
                                 $selected = "";
-                                if($index == $_SESSION[$_GET['pid'] . "_study"]){
+                                if($index == $_SESSION[$project_id . "_study"]){
                                     $selected = "selected";
                                 }
                                 $table .= '<option value="'.$index.'" '.$selected.'>'.$sstudy.'</option>';
