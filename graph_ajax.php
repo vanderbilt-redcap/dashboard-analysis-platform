@@ -37,7 +37,7 @@ if($studyOption != "nofilter"){
     $graph = GraphData::getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph);
 }
 $graph = GraphData::getTotalColGraph($question,$project_id,$question_1,$conditionDate,$topScoreMax,$graph);
-if($study == 61){
+if($study == "rpps_s_q61"){
     $graph = GraphData::getMultipleColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph);
 }
 $chartgraph = GraphData::graphArrays($graph,$study_options);

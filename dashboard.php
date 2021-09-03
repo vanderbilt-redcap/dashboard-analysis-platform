@@ -22,16 +22,21 @@ $array_questions = array(
 );
 
 $array_study = array(
-    60 => "Age",
-    61 => "Race",
-    62 => "Ethnicity",
-    59 => "Education level",
-    63 => "Sex",
-    65 => "Gender",
-    16 => "Study type",
-    15 => "Disease required",
-    66 => "Enrollment setting",
-    58 => "Demand of study"
+    "header0" => "About the participants:",
+    "rpps_s_q60" => "Age",
+    "rpps_s_q59" => "Education",
+    "rpps_s_q62" => "Ethnicity",
+    "rpps_s_q65" => "Gender",
+    "rpps_s_q61" => "Race",
+    "rpps_s_q63" => "Sex",
+    "header1" => "About the research study:",
+    "rpps_s_q58" => "Demands of study",
+    "rpps_s_q15" => "Disease/disorder to enroll",
+    "details_of_study" => "Informed Consent setting",
+    "rpps_s_q16" => "Study Type",
+    "header2" => "About the survey fielding:",
+    "Sampling" => "Sampling approach",
+    "timing_of_rpps_administration" => "Timing of RPPS administration",
 );
 
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
@@ -121,10 +126,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $row_questions = ProjectData::getRowQuestions();
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-    $study_options = $module->getChoiceLabels("rpps_s_q" . $study, $project_id);
+    $study_options = $module->getChoiceLabels($study, $project_id);
     $graph = array();
 
-    if($study == 62){
+    if($study == "rpps_s_q62"){
         array_push($study_options,"Yes - Spanish/Hispanic/Latino");
     }
     if($_SESSION[$project_id . "_startDate"] != ""){
@@ -183,19 +188,25 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
                        $table .= ' </select>
                         <select class="form-control" id="study">
-                            <option value="">Study type</option>
                             <option value="nofilter" selected>No filter</option>';
 
                             foreach ($array_study as $index => $sstudy){
-                                $selected = "";
-                                if($index == $_SESSION[$project_id . "_study"]){
-                                    $selected = "selected";
+                                if(strpos($index, 'header') !== false){
+                                    $number_header = explode('header', strtolower($index));
+                                    if($number_header == "0"){
+                                        $table .= '</optgroup><optgroup label="'.$sstudy.'">';
+                                    }else{
+                                        $table .= '<optgroup label="'.$sstudy.'">';
+                                    }
+                                }else {
+                                    $selected = "";
+                                    if ($index == $_SESSION[$project_id . "_study"]) {
+                                        $selected = "selected";
+                                    }
+                                    $table .= '<option value="' . $index . '" ' . $selected . '>' . $sstudy . '</option>';
                                 }
-                                $table .= '<option value="'.$index.'" '.$selected.'>'.$sstudy.'</option>';
                             }
-                            $table .='
-                            <option value="">RPPS administration timing</option>
-                            <option value="">RPPS sampling approach</option>
+                            $table .='</optgroup>
                         </select>
                         <input type="daterange" class="form-control" id="daterange" name="daterange" value="'.$daterange.'">
                         <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php")).');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
@@ -207,7 +218,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     <th class="question"><span style="position: relative; top:23px"><strong>'.$score_title.$top_box_popover_info.'</strong></span></th>'.
                     '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
     if($study != "nofilter") {
-        if ($study == 62) {
+        if ($study == "rpps_s_q62") {
             foreach ($study_options as $indexstudy => $col_title) {
                 $class = "";
                 $attibute = "";
@@ -224,7 +235,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         }
         $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO ' . strtoupper($array_study[$study]) . ' REPORTED</span></div></th>';
 
-        if ($study == 61) {
+        if ($study == "rpps_s_q61") {
             $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
         }
     }
@@ -234,7 +245,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $table .= '<td class="question"></td>';
     $table .= '<td></td>';
     foreach ($study_options as $indexstudy => $col_title) {
-        if($study == 62) {
+        if($study == "rpps_s_q62") {
             $table .="<style>.dal_task>div>span {
                         display: block;
                         margin-left: 38px;
@@ -269,7 +280,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $max = 0;
         #COLOR
         $extras = 2;
-        if($study == 61) {
+        if($study == "rpps_s_q61") {
             $extras = 3;
         }
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
@@ -313,7 +324,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $array_colors = $totalCol[1];
 
             #MULTIPLE
-            if($study == 61) {
+            if($study == "rpps_s_q61") {
                 $graph[$question_1]["multiple"] = array();
                 $graph[$question_1]["multiple"]['graph_top_score_year'] = array();
                 $graph[$question_1]["multiple"]['graph_top_score_month'] = array();
@@ -338,7 +349,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 $class = "";
                 $attibute = "";
-                if($study == 62 && $i > 1 && $i < 6){
+                if($study == "rpps_s_q62" && $i > 1 && $i < 6){
                     $class = "hide";
                     $attibute = "etnicity = '1'";
                 }
@@ -353,7 +364,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph);
-        if($study == 61) {
+        if($study == "rpps_s_q61") {
             #MULTIPLE
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
         }
@@ -372,7 +383,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 #MISSING
                 $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["missing"], $graph["total_records"]["missing"]);
-                if($study == 61) {
+                if($study == "rpps_s_q61") {
                     #MULTIPLE
                     $table .= \Vanderbilt\DashboardAnalysisPlatformExternalModule\printResponseRate($graph[$question_2]["multiple"], $graph["total_records"]["multiple"]);
                 }
@@ -402,7 +413,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $table .= $table_b;
 
             #MULTIPLE
-            if($study == 61) {
+            if($study == "rpps_s_q61") {
                 $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
 
@@ -513,7 +524,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     });
                 }
                 dash_chart_big.update();
-
                 $.ajax({
                     url: graph_url,
                     data: "&studyOption="+studyOption+"&question="+question+"&question_1="+question_1+"&study="+studyOption+"&study_options="+JSON.stringify(study_options)+"&conditionDate="+conditionDate,
@@ -615,7 +625,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 ?>
                                 <div><input type="checkbox" value="no" class="category" text="NO <?=strtoupper($array_study[$study])?> REPORTED" color="<?=$array_colors_graphs[$i]?>"> NO <?=strtoupper($array_study[$study])?> REPORTED</div>
                                <?php
-                                if($study == 61){
+                                if($study == "rpps_s_q61"){
                                     $i++;
                                     echo "<div><input type='checkbox' value='multiple' class='category' text='MULTIPLE' color='".$array_colors_graphs[$i]."'> MULTIPLE</div>";
                                 }

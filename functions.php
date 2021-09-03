@@ -62,7 +62,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         "score5" => 0,
     );
     foreach ($study_options as $index => $col_title) {
-        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
+        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index);
 
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
         $records = ProjectData::getProjectInfoArray($RecordSet);
@@ -101,7 +101,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         $responses = count($records) - $missing_InfoLabel;
 
         #Etnicity Case
-        if($study == 62) {
+        if($study == "rpps_s_q62") {
             if ($index > 1 && $index < 6) {
                 $study_62_array['topscore'] += $topScoreFound;
                 $study_62_array['totalcount'] += count($records);
@@ -131,7 +131,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }else{
             $attibute = "";
             $class = "";
-            if($study == 62 && $index> 1 && $index < 6){
+            if($study == "rpps_s_q62" && $index> 1 && $index < 6){
                 $class = "hide";
                 $attibute = "etnicity = '1'";
             }
@@ -150,7 +150,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
 }
 
 function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max){
-    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [rpps_s_q" . $study."] = ''".$conditionDate);
+    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [" . $study."] = ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
     $score_is_5O_overall = 0;
     foreach($missingRecords as $misRecord){
@@ -166,7 +166,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     $missingTop = 0;
     $missingTopAll = 0;
     foreach ($missingRecords as $mrecord){
-        if (($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)) {
+        if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && array_count_values($mrecord[$study])[1] == 0)) {
             $missing += 1;
             if($question == 1){
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
@@ -183,9 +183,9 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }
 
     $missing_col = 0;
-    $type = \REDCap::getFieldType("rpps_s_q" . $study);
+    $type = \REDCap::getFieldType($study);
     foreach ($multipleRecords as $mmrecord){
-        if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord["rpps_s_q" . $study] == '' || !array_key_exists("rpps_s_q" . $study,$mmrecord) || (array_count_values($mmrecord["rpps_s_q" . $study])[1] == 0 && $type == "checkbox"))){
+        if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (array_count_values($mmrecord[$study])[1] == 0 && $type == "checkbox"))){
             $missing_col += 1;
         }
     }
@@ -268,7 +268,7 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     $multiple_not_applicable = 0;
     $multiple_missing = 0;
     foreach ($multipleRecords as $multirecord){
-        if(array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2){
+        if(array_count_values($multirecord[$study])[1] >= 2){
             $multiple += 1;
             if($question == 1){
                 if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
@@ -333,7 +333,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     $graph["partial"] = array();
     $graph["breakoffs"] = array();
     foreach ($study_options as $index => $col_title) {
-        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study, $index);
+        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index);
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
         $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
@@ -354,7 +354,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
 
 function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study){
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\ addZeros($graph, "missing");
-    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[rpps_s_q" . $study."] = ''".$conditionDate);
+    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $study."] = ''".$conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
     $total_questions = count($row_questions_1);
@@ -398,7 +398,7 @@ function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, 
     $total_questions = count($row_questions_1);
     $graph["total_records"]["multiple"] = $total_records;
     foreach ($allRecords as $record) {
-        if (array_count_values($record["rpps_s_q" . $study])[1] >= 2) {
+        if (array_count_values($record[ $study])[1] >= 2) {
             $num_questions_answered = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 if ($record[$question_1] != "") {

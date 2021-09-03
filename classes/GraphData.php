@@ -8,7 +8,7 @@ class GraphData
      * Function that returns the graph array from a specific question
      */
     public static function getNormalStudyColGraph($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph){
-        if ($study == 62) {
+        if ($study == "rpps_s_q62") {
             $graph[$question_1][6] = array();
             $graph[$question_1][6]['graph_top_score_year'] = array();
             $graph[$question_1][6]['graph_top_score_month'] = array();
@@ -22,14 +22,14 @@ class GraphData
             $graph[$question_1][6]['graph_top_score_quarter']["is5"] = 0;
         }
         foreach ($study_options as $index => $col_title) {
-            if($study == 62 && $index != 6 || $study != 62){
+            if(($study == "rpps_s_q62" && $index != 6) || $study != "rpps_s_q62"){
                 $graph[$question_1][$index] = array();
                 $graph[$question_1][$index]['graph_top_score_year'] = array();
                 $graph[$question_1][$index]['graph_top_score_month'] = array();
                 $graph[$question_1][$index]['graph_top_score_quarter'] = array();
                 $graph[$question_1][$index]['years']= array();
             }
-            $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType("rpps_s_q" . $study,$index);
+            $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index);
             if($question == 2){
                 $graph = self::generateResponseRateGraph($project_id, "", $index, $condition.$conditionDate, $graph);
             }else{
@@ -50,7 +50,7 @@ class GraphData
                 $graph = self::calculatePercentageGraph($project_id,$graph,$question_1,$study,$index,$topScoreMax,$condition);
             }
         }
-        if ($study == 62) {
+        if ($study == "rpps_s_q62") {
             unset($graph[$question_1][6]["graph_top_score_year"]["totalrecords"]);
             unset($graph[$question_1][6]["graph_top_score_year"]["is5"]);
             unset($graph[$question_1][6]["graph_top_score_month"]["totalrecords"]);
@@ -63,12 +63,12 @@ class GraphData
 
     public static function getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph){
         if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, "", "no", "[rpps_s_q" . $study."] = ''".$conditionDate, $graph);
+            $graph = self::generateResponseRateGraph($project_id, "", "no", "[" . $study."] = ''".$conditionDate, $graph);
         }else if($question == 1) {
             $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $question_1 . "] != ''" . $conditionDate);
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             foreach ($missingRecords as $mrecord) {
-                if (($mrecord["rpps_s_q" . $study] == '') || (is_array($mrecord["rpps_s_q" . $study]) && array_count_values($mrecord["rpps_s_q" . $study])[1] == 0)) {
+                if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && array_count_values($mrecord[$study])[1] == 0)) {
                     if ($question == 1) {
                         if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
                             $graph = self::addGraph($graph, $question_1, $study, "no", $mrecord['survey_datetime']);
@@ -80,7 +80,7 @@ class GraphData
                     }
                 }
             }
-            $graph = self::calculatePercentageGraph($project_id, $graph, $question_1, $study, "no", $topScoreMax, "[rpps_s_q" . $study . "] = ''");
+            $graph = self::calculatePercentageGraph($project_id, $graph, $question_1, $study, "no", $topScoreMax, "[" . $study . "] = ''");
         }
         return $graph;
     }
@@ -116,7 +116,7 @@ class GraphData
             $RecordSetMultiple = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
             $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
             foreach ($multipleRecords as $multirecord) {
-                if (array_count_values($multirecord["rpps_s_q" . $study])[1] >= 2) {
+                if (array_count_values($multirecord[$study])[1] >= 2) {
                     if ($question == 1) {
                         if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
                             $graph = self::addGraph($graph, $question_1, $study, "multiple", $multirecord['survey_datetime']);
@@ -165,7 +165,7 @@ class GraphData
         $graph[$question_1][$studyCol]['graph_top_score_quarter'] = self::createQuartersForYear($graph,$question_1,$studyCol, $survey_datetime);
         $graph[$question_1][$studyCol]['graph_top_score_quarter'] = self::setQuarter($graph,$question_1,$studyCol, $survey_datetime);
         $graph[$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
-        if($study == 62 && $studyCol > 1 && $studyCol < 6) {
+        if($study == "rpps_s_q62" && $studyCol > 1 && $studyCol < 6) {
             $graph[$question_1][6]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
             $graph[$question_1][6]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
             $graph[$question_1][6]['graph_top_score_quarter'] = self::createQuartersForYear($graph,$question_1,$study, $survey_datetime);
@@ -237,7 +237,7 @@ class GraphData
                             $RecordSetMissingGraph = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] != ''" .$conditionDate);
                             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissingGraph);
                             foreach ($missingRecords as $mrecord) {
-                                if (($mrecord["rpps_s_q".$study] == '') || (is_array($mrecord["rpps_s_q".$study]) && array_count_values($mrecord["rpps_s_q".$study])[1] == 0)) {
+                                if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && array_count_values($mrecord[$study])[1] == 0)) {
                                     $TotalRecordsGraph += 1;
                                 }
                             }
@@ -254,7 +254,7 @@ class GraphData
                             }
                         }
                     }
-                    if($study == 62){
+                    if($study == "rpps_s_q62"){
                         if($colType >1 && $colType < 6) {
                             $TotalRecordsGraph_62 += $TotalRecordsGraph;
                             $graph[$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
@@ -263,7 +263,7 @@ class GraphData
                     }
 
                     $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
-                    if($study == 62 && $colType == 6) {
+                    if($study == "rpps_s_q62" && $colType == 6) {
                         $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($graph[$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
                     }
                     $graph[$question_1][$colType][$type][$date] = $percent;
@@ -293,7 +293,7 @@ class GraphData
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
         $graph["total_records"][$type] = count(ProjectData::getProjectInfoArray($RecordSet));
         foreach ($allRecords as $record) {
-            if ($type != "multiple" || ($type == "multiple" && array_count_values($record["rpps_s_q" . $study])[1] >= 2)) {
+            if ($type != "multiple" || ($type == "multiple" && array_count_values($record[$study])[1] >= 2)) {
                 $num_questions_answered = 0;
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
                     if ($record[$question_1] != "") {
