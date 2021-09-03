@@ -29,7 +29,21 @@
   "description": "A dashboard to visualize participant perception scores from the Research Participant Perception Survey (RPPS). This module works with any of the RPPS instruments in the REDCap Instrument Library.",
 
   "project-settings": [
-
+    {
+      "key": "custom",
+      "name": "Custom Site Filters",
+      "required": true,
+      "type": "sub_settings",
+      "repeatable": true,
+      "sub_settings": [
+        {
+          "key": "custom-filter",
+          "name": "Select the field to add as a new filter",
+          "required": true,
+          "type": "field-list"
+        }
+      ]
+    }
   ],
   "compatibility": {
     "php-version-min": "5.5.0",

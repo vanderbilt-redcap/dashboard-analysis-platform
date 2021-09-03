@@ -35,10 +35,11 @@ $array_study = array(
     "details_of_study" => "Informed Consent setting",
     "rpps_s_q16" => "Study Type",
     "header2" => "About the survey fielding:",
-    "Sampling" => "Sampling approach",
+    "sampling" => "Sampling approach",
     "timing_of_rpps_administration" => "Timing of RPPS administration",
 );
 
+$custom_filters = $module->getProjectSetting('custom-filter');
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
 ?>
 <script>
@@ -200,14 +201,27 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                     }
                                 }else {
                                     $selected = "";
-                                    if ($index == $_SESSION[$project_id . "_study"]) {
+                                    if ($index === $_SESSION[$project_id . "_study"]) {
                                         $selected = "selected";
                                     }
                                     $table .= '<option value="' . $index . '" ' . $selected . '>' . $sstudy . '</option>';
                                 }
                             }
-                            $table .='</optgroup>
-                        </select>
+                            $table .='</optgroup>';
+                            if(isset($custom_filters)){
+                                $table .= '<optgroup label="Custom site filters:">';
+                            }
+                            $customf_counter = 1;
+                            foreach ($custom_filters as $index => $sstudy){
+                                $selected = "";
+                                if ($index === $_SESSION[$project_id . "_study"]) {
+                                    $selected = "selected";
+                                }
+                                $table .= '<option value="' . $sstudy . '" ' . $selected . '>Custom site value '.$customf_counter.'</option>';
+                                $customf_counter++;
+                            }
+                            $table .='</optgroup>';
+                        $table .='</select>
                         <input type="daterange" class="form-control" id="daterange" name="daterange" value="'.$daterange.'">
                         <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php")).');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
                     </div>
