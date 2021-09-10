@@ -370,7 +370,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $class = "hide";
                     $attibute = "etnicity = '1'";
                 }
-                if($study != "nofilter" || ($study == "nofilter" && $i == 0)) {
+                if($study != "nofilter" || ($study == "nofilter" && $i == "0")) {
                     $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attibute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray[$indexQuestion][$i] . '">' . $array_colors[$indexQuestion][$i] . '</div></td>';
                 }
             }
