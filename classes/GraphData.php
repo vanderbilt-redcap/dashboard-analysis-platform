@@ -261,10 +261,12 @@ class GraphData
                             $graph[$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
                         }
                     }
-
                     $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
                     if($study == "rpps_s_q62" && $colType == 6) {
                         $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($graph[$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
+                    }
+                    if($percent == "nan"){
+                        $percent = 0;
                     }
                     $graph[$question_1][$colType][$type][$date] = $percent;
                 }
@@ -345,6 +347,7 @@ class GraphData
                 ksort($graph[$question][$index]['years']);
                 $graph_top_score_quarter_values[$question][$index] = array();
                 $labels_quarter[$question][$index] = array();
+                $position = 0;
                 foreach ($graph[$question][$index]['years'] as $year => $value){
                     array_push($labels_quarter[$question][$index], "Q1 ".$year);
                     array_push($labels_quarter[$question][$index], "Q2 ".$year);
@@ -360,16 +363,8 @@ class GraphData
                         $quarter = explode(" ",$date)[0];
                         $year_quarter = explode(" ",$date)[1];
                         if($year == $year_quarter){
-                            if($quarter == "Q1"){
-                                $position = 0;
-                            }else if($quarter == "Q2"){
-                                $position = 1;
-                            }else if($quarter == "Q3"){
-                                $position = 2;
-                            }else if($quarter == "Q4"){
-                                $position = 3;
-                            }
                             $graph_top_score_quarter_values[$question][$index][$position] = $value;
+                            $position++;
                         }
                     }
                 }
