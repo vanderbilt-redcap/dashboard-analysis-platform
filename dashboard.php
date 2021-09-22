@@ -473,6 +473,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 stepSize: 10,
                                 beginAtZero:true,
                                 max: 100
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Top Box Score'
                             }
                         }]
                     }
@@ -619,7 +623,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 </div>
                 <div class="modal-body">
                     <canvas id="modal-big-graph-body" class="infoChartBig pull-left"></canvas>
-                    <table class='pull-righ table table-bordered' id='options'>
+                    <table class='pull-right table table-bordered' id='options'>
                         <tr>
                             <td class='selected' id='month'>Month</td>
                         </tr>
@@ -631,7 +635,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         </tr>
                     </table>
                         <?php if(!empty($study_options) && $study != "nofilter"){ ?>
-                            <div class='pull-righ table table-bordered'>
+                            <div class='pull-right table table-bordered'>
                                 <div><input type="checkbox" value="total" class="category" text="Total" color="<?=$array_colors_graphs[0]?>" checked> Total</div>
                                 <?php
                                 $i = 1;
