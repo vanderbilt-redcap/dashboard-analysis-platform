@@ -140,8 +140,8 @@ class ProjectData
     public static function getRowQuestionsParticipantPerception()
     {
         $row_questions_1 = array(0 => "rpps_s_q1", 1 => "rpps_s_q17", 2 => "rpps_s_q18", 3 => "rpps_s_q19", 4 => "rpps_s_q20", 5 => "rpps_s_q21",
-            6 => "rpps_up_q66", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_up_q65",
-            12 => "rpps_up_q67", 13 => "rpps_s_q57");
+            6 => "rpps_s_q68", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_s_q69",
+            12 => "rpps_s_q67", 13 => "rpps_s_q57");
         return $row_questions_1;
     }
 
