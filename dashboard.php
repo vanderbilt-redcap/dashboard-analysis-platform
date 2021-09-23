@@ -623,19 +623,20 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 </div>
                 <div class="modal-body">
                     <canvas id="modal-big-graph-body" class="infoChartBig pull-left"></canvas>
-                    <table class='pull-right table table-bordered' id='options'>
-                        <tr>
-                            <td class='selected' id='month'>Month</td>
-                        </tr>
-                        <tr>
-                            <td id='quarter'>Quarter</td>
-                        </tr>
-                        <tr>
-                            <td id='year'>Year</td>
-                        </tr>
-                    </table>
+                    <div style="padding-left: 20px;float: left;width: 180px;">
+                        <table class='table table-bordered' id='options' style="width: 100%;">
+                            <tr>
+                                <td class='selected' id='month'>Month</td>
+                            </tr>
+                            <tr>
+                                <td id='quarter'>Quarter</td>
+                            </tr>
+                            <tr>
+                                <td id='year'>Year</td>
+                            </tr>
+                        </table>
                         <?php if(!empty($study_options) && $study != "nofilter"){ ?>
-                            <div class='pull-right table table-bordered'>
+                            <div class='table table-bordered'>
                                 <div><input type="checkbox" value="total" class="category" text="Total" color="<?=$array_colors_graphs[0]?>" checked> Total</div>
                                 <?php
                                 $i = 1;
@@ -653,6 +654,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 ?>
                             </div>
                         <?php } ?>
+                    </div>
                 </div>
                 <div class="modal-footer" style="padding-top: 30px">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
