@@ -15,7 +15,7 @@ if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_sta
 
 $array_questions = array(
         1 => "Participant perception",
-        2 => "Response/Completion Rates",
+//        2 => "Response/Completion Rates",
         3 => "Reasons for joining a study",
         4 => "Reasons for leaving a study",
         5 => "Reasons for staying in a study"
@@ -412,25 +412,26 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         for($i=$option[0];$i<$option[1];$i++) {
             $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q".$i).'</td>';
             $missingOverall = 0;
+            if($study != "nofilter") {
+                #NORMAL STUDY
+                $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","");
+                $table_b = $normalStudyCol[0];
+                $index = $normalStudyCol[1];
+                $missingOverall = $normalStudyCol[2];
 
-            #NORMAL STUDY
-            $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question,$project_id, $study_options,$study,"rpps_s_q".$i,$conditionDate,"","","","","");
-            $table_b = $normalStudyCol[0];
-            $index = $normalStudyCol[1];
-            $missingOverall = $normalStudyCol[2];
+                #MISSING
+                $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", "", "", "", $index, "");
+                $missing_col = $missingCol[2];
+                $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $missingCol[1] . '">' . $missingCol[0] . '</div></td>';
+            }
 
-            #MISSING
-            $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,"rpps_s_q".$i, "","","", "",$index,"");
-            $missing_col = $missingCol[2];
-            $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$missingCol[1].'">'.$missingCol[0].'</div></td>';
-
-            #OVERAL MISSING
+            #OVERALL MISSING
             $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","");
             $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$totalCol[1].'">'.$totalCol[0].'</div></td>';
             $table .= $table_b;
 
             #MULTIPLE
-            if($study == "rpps_s_q61") {
+            if($study == "rpps_s_q61" && $study != "nofilter") {
                 $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
 
