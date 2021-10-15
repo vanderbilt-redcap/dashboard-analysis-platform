@@ -15,7 +15,7 @@ if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_sta
 
 $array_questions = array(
         1 => "Participant perception",
-//        2 => "Response/Completion Rates",
+        2 => "Response/Completion Rates",
         3 => "Reasons for joining a study",
         4 => "Reasons for leaving a study",
         5 => "Reasons for staying in a study"
