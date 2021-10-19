@@ -36,7 +36,7 @@ $array_study = array(
     "rpps_s_q16" => "Study Type",
     "header2" => "About the survey fielding:",
     "sampling" => "Sampling approach",
-    "timing_of_rpps_administration" => "Timing of RPPS administration",
+    "timing_of_rpps_administration" => "Timing of RPPS administration"
 );
 
 $custom_filters = $module->getProjectSetting('custom-filter');
@@ -130,6 +130,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $study_options = $module->getChoiceLabels($study, $project_id);
     $graph = array();
 
+    if($question == 2){
+        $array_study = array(
+            "age" => "Age",
+            "ethnicity" => "Ethnicity",
+            "gender_identity" => "Gender Identity",
+            "race" => "Race",
+            "sex" => "Sex"
+        );
+    }
+
     if($study == "rpps_s_q62"){
         array_push($study_options,"Yes - Spanish/Hispanic/Latino");
     }
@@ -168,17 +178,17 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $top_box_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
     }
 
-    $table = '<div class="optionSelect" id="loadTable">
-               <div style="/* padding-bottom: 10px; */width: 621px;" class="forme">
-                <img src="'.$module->getUrl('epv-2colorhorizontal1300__1_.jpg').'" width="300px" style="/* padding-top: 20px */">
-                <div style="float: right;padding-top: 23px;">
-                    <a class="btn btn-default" target="_blank" href="'.APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$project_id."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp".'">Stats &amp; Charts</a>
+    $table = "<div class='optionSelect' id='loadTable'>
+               <div style='width: 621px;' class='forme'>
+                <img src='".$module->getUrl('epv-2colorhorizontal1300__1_.jpg')."' width='300px'>
+                <div style='float: right;padding-top: 23px;'>
+                    <a class='btn btn-default' target='_blank' href='".APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid='.$project_id.'&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp'.''>Stats &amp; Charts</a>
                 </div>
-                <h3 class="header"></h3>
+                <h3 class='header'></h3>
                     <div>
-                        <select class="form-control" id="question">
-                            <option value="">Question type</option>
-                           ';
+                        <select class='form-control' id='question' onchange='isItResponseRates(this.value,".json_encode($module->getUrl("response_rates_selector_ajax.php")).")'>
+                            <option value=''>Question type</option>
+                           ";
                             foreach ($array_questions as $index => $squestion){
                                 $selected = "";
                                 if($index == $_SESSION[$project_id . "_question"]){
@@ -208,17 +218,19 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 }
                             }
                             $table .='</optgroup>';
-                            if(isset($custom_filters)){
-                                $table .= '<optgroup label="Custom site filters:">';
-                            }
-                            $customf_counter = 1;
-                            foreach ($custom_filters as $index => $sstudy){
-                                $selected = "";
-                                if ($index === $_SESSION[$project_id . "_study"]) {
-                                    $selected = "selected";
+                            if($question != 2) {
+                                if (isset($custom_filters)) {
+                                    $table .= '<optgroup label="Custom site filters:">';
                                 }
-                                $table .= '<option value="' . $sstudy . '" ' . $selected . '>Custom site value '.$customf_counter.'</option>';
-                                $customf_counter++;
+                                $customf_counter = 1;
+                                foreach ($custom_filters as $index => $sstudy) {
+                                    $selected = "";
+                                    if ($index === $_SESSION[$project_id . "_study"]) {
+                                        $selected = "selected";
+                                    }
+                                    $table .= '<option value="' . $sstudy . '" ' . $selected . '>Custom site value ' . $customf_counter . '</option>';
+                                    $customf_counter++;
+                                }
                             }
                             $table .='</optgroup>';
                         $table .='</select>

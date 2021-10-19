@@ -85,3 +85,19 @@ function etnicity_change_icon(id){
         $("[etnicity=1]").addClass('hide');
     }
 }
+
+function isItResponseRates(selector,url){
+    $.ajax({
+        type: "POST",
+        url: url,
+        data:"&selector="+selector,
+        error: function (xhr, status, error) {
+            alert(xhr.responseText);
+        },
+        success: function (result) {
+            paramValue = jQuery.parseJSON(result)
+            console.log(paramValue)
+            $('#study').html(paramValue);
+        }
+    });
+}
