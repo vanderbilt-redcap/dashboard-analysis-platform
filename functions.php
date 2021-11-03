@@ -187,7 +187,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     $Proj = new \Project($project_id);
     $event_id = $Proj->firstEventId;
     foreach ($multipleRecords as $mmrecord){
-        if(\Records::formHasData($mmrecord['record_id'],'research_participant_perception_survey_epv_version', $event_id)){
+        if($mmrecord['survey_datetime'] != ""){
             if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (array_count_values($mmrecord[$study])[1] == 0 && $type == "checkbox"))){
                 $missing_col += 1;
             }
