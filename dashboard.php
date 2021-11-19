@@ -182,7 +182,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                <div style='width: 621px;' class='forme'>
                 <img src='".$module->getUrl('epv-2colorhorizontal1300__1_.jpg')."' width='300px'>
                 <div style='float: right;padding-top: 23px;'>
-                    <a class='btn btn-default' target='_blank' href='".APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid='.$project_id.'&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp'.''>Stats &amp; Charts</a>
+                    <a class='btn btn-default' target='_blank' href='".APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$project_id."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp"."'>Stats &amp; Charts</a>
                 </div>
                 <h3 class='header'></h3>
                     <div>
