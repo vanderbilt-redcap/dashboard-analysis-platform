@@ -150,15 +150,28 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
 }
 
 function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max){
-    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5' AND [" . $study."] = ''".$conditionDate);
+    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
     $score_is_5O_overall = 0;
     foreach($missingRecords as $misRecord){
-        if ($topScoreMax == 5) {
-            $score_is_5O_overall += 1;
+        if(is_array($misRecord[$question_1])){
+            $value_found = false;
+            foreach ($misRecord[$question_1] as $array_checkbox_val){
+                if($array_checkbox_val != "0"){
+                    $value_found = true;
+                }
+            }
+            if($value_found){
+                if ($topScoreMax == 5) {
+                    $score_is_5O_overall += 1;
+                }
+            }
+        }else{
+            if ($topScoreMax == 5) {
+                $score_is_5O_overall += 1;
+            }
         }
     }
-
     $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
 
