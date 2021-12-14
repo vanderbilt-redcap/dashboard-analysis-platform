@@ -115,7 +115,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
                 $score_is_5 = $study_62_array['score5'];
             }
         }
-        if($responses == 0){
+        if($responses == 0 || $responses == $score_is_5){
             $percent = "-";
         }else{
             $percent = $topScore;
@@ -216,7 +216,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
         $max = $missingPercent;
     }
 
-    if($missing == 0){
+    if($missing == 0 || $missing == $score_is_5O_overall){
         $percent = "-";
     }else{
         $percent = $missingPercent;
@@ -263,7 +263,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         $overall = number_format(($topScoreFoundO/(count($recordsoverall)-$score_is_5O_overall_missing)*100),0);
     }
 
-    if(count($recordsoverall) == 0){
+    if(count($recordsoverall) == 0 || count($recordsoverall) == $score_is_5O_overall_missing){
         $percent = "-";
     }else{
         $percent = $overall;
