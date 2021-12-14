@@ -167,7 +167,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
                 }
             }
         }else{
-            if ($topScoreMax == 5) {
+            if ($misRecord[$study] == "") {
                 $score_is_5O_overall += 1;
             }
         }
