@@ -61,6 +61,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         "missing" => 0,
         "score5" => 0,
     );
+    $showLegend = false;
     foreach ($study_options as $index => $col_title) {
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index);
 
@@ -117,11 +118,13 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         }
         if($responses == 0 || $responses == $score_is_5){
             $percent = "-";
+            $showLegend = true;
         }else{
             $percent = $topScore;
         }
         if(($responses + $missing_InfoLabel + $score_is_5) < 5){
             $percent = "x";
+            $showLegend = true;
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
@@ -140,9 +143,9 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
     }
 
     if($question == 1) {
-        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index);
+        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index,5=>$showLegend);
     }else{
-        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall);
+        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,5=>$showLegend);
     }
 
     return $aux;
@@ -153,6 +156,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     $RecordSetOverall5 = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
     $score_is_5O_overall = 0;
+    $showLegendexMissing = false;
     foreach($missingRecords as $misRecord){
         if(is_array($misRecord[$question_1])){
             $value_found = false;
@@ -218,6 +222,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
 
     if($missing == 0 || $missing == $score_is_5O_overall){
         $percent = "-";
+        $showLegendexMissing = true;
     }else{
         $percent = $missingPercent;
     }
@@ -226,9 +231,9 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
         $array_colors[$indexQuestion][$index+1] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max);
+        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max,5=>$showLegendexMissing);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$missing_col);
+        return array(0=>$percent,1=>$tooltip,2=>$missing_col,3=>$showLegendexMissing);
     }
 }
 
@@ -236,6 +241,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
     $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
     $topScoreFoundO = 0;
+    $showLegendexTotal = false;
     foreach ($recordsoverall as $recordo){
         if($question == 1){
             if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
@@ -265,6 +271,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
 
     if(count($recordsoverall) == 0 || count($recordsoverall) == $score_is_5O_overall_missing){
         $percent = "-";
+        $showLegendexTotal = true;
     }else{
         $percent = $overall;
     }
@@ -273,9 +280,9 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
         $array_colors[$indexQuestion][0] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors);
+        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$showLegendexTotal);
     }else{
-        return array(0=>$percent,1=>$tooltip);
+        return array(0=>$percent,1=>$tooltip,2=>$showLegendexTotal);
     }
 }
 
@@ -284,6 +291,7 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     $multipleTop = 0;
     $multiple_not_applicable = 0;
     $multiple_missing = 0;
+    $showLegendexMultiple = false;
     foreach ($multipleRecords as $multirecord){
         if(array_count_values($multirecord[$study])[1] >= 2){
             $multiple += 1;
@@ -315,6 +323,7 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     $responses = $multiple - $multiple_missing;
     if($responses == 0){
         $percent = "-";
+        $showLegendexMultiple = true;
     }else{
         $percent = $multiplePercent;
     }
@@ -323,9 +332,9 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][$index+2] = $tooltip.", ".$multiple_not_applicable . " not applicable";
         $array_colors[$indexQuestion][$index+2] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors);
+        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$showLegendexMultiple);
     }else{
-        return array(0=>$percent,1=>$tooltip);
+        return array(0=>$percent,1=>$tooltip,2=>$showLegendexMultiple);
     }
 }
 

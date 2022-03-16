@@ -300,7 +300,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $RecordSetMultiple = \REDCap::getData($project_id, 'array');
     $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-
     if ($question == 1) {
         $array_colors = array();
         $max = 0;
@@ -309,6 +308,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         if($study == "rpps_s_q61") {
             $extras = 3;
         }
+        $showLegend = false;
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             $array_colors[$indexQuestion] = array();
             $tooltipTextArray[$indexQuestion] = array();
@@ -335,6 +335,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $missingOverall = $normalStudyCol[2];
             $max = $normalStudyCol[3];
             $index = $normalStudyCol[4];
+            $showLegendNormal = $normalStudyCol[5];
 
             #MISSING
             $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors,$index,$max);
@@ -343,11 +344,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $missing_col = $missingCol[2];
             $max = $missingCol[3];
             $graph = $missingCol[4];
+            $showLegendMissing = $missingCol[5];
 
             #OVERALL COL MISSING
             $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors);
             $tooltipTextArray = $totalCol[0];
             $array_colors = $totalCol[1];
+            $showLegendTotal = $totalCol[5];
 
             #MULTIPLE
             if($study == "rpps_s_q61") {
@@ -360,6 +363,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray, $array_colors);
                 $tooltipTextArray = $multipleCol[0];
                 $array_colors = $multipleCol[1];
+                $showLegendMultiple = $multipleCol[2];
+            }
+
+            if($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal){
+                $showLegend = true;
             }
 
             #PRINT RESULTS
@@ -430,29 +438,40 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $table_b = $normalStudyCol[0];
                 $index = $normalStudyCol[1];
                 $missingOverall = $normalStudyCol[2];
+                $showLegendNormal = $normalStudyCol[5];
 
                 #MISSING
                 $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", "", "", "", $index, "");
                 $missing_col = $missingCol[2];
+                $showLegendMissing = $missingCol[3];
                 $table_b .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $missingCol[1] . '">' . $missingCol[0] . '</div></td>';
             }
 
             #OVERALL MISSING
             $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id,"rpps_s_q".$i,$conditionDate,"","",$missing_col,$missingOverall,"","");
+            $showLegendTotal = $totalCol[5];
             $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$totalCol[1].'">'.$totalCol[0].'</div></td>';
             $table .= $table_b;
 
             #MULTIPLE
             if($study == "rpps_s_q61" && $study != "nofilter") {
                 $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question,$project_id,$multipleRecords,$study,"rpps_s_q".$i,"","",$index,"", "");
+                $showLegendMultiple = $multiple[2];
                 $table .= '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$multiple[1].'">'.$multiple[0].'</div></td>';
 
             }
             $table .= '</tr>';
         }
         $table .= '</tr>';
+        if($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal){
+            $showLegend = true;
+        }
     }
-    $table .= '</table></div>';
+    $table .= '</table>';
+    if($showLegend){
+        $table .= "<i style='padding-bottom: 20px'>X = fewer than 5 responses <span style='padding-left: 10px'>- = no responses</span></i>";
+    }
+    $table .= '</div>';
     echo $table;
     ?>
     <script>
