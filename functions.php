@@ -205,7 +205,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     $event_id = $Proj->firstEventId;
     foreach ($multipleRecords as $mmrecord){
         if($mmrecord['survey_datetime'] != ""){
-            if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (array_count_values($mmrecord[$study])[1] == 0 && $type == "checkbox"))){
+            if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (is_array($mmrecord[$study]) && array_count_values($mmrecord[$study])[1] == 0 && $type == "checkbox"))){
                 $missing_col += 1;
             }
         }
@@ -233,8 +233,8 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     $tooltip = $missing." responses, ".$missing_col." missing";
 
     if($question == 1) {
-        $tooltipTextArray[$indexQuestion][$index+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
-        $array_colors[$indexQuestion][$index+1] = $percent;
+        $tooltipTextArray[$indexQuestion][intval($index)+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
+        $array_colors[$indexQuestion][intval($index)+1] = $percent;
         return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max,5=>$showLegendexMissing);
     }else{
         return array(0=>$percent,1=>$tooltip,2=>$missing_col,3=>$showLegendexMissing);
@@ -243,11 +243,13 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
 
 function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors){
     $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
-    $recordsoverall = count(ProjectData::getProjectInfoArray($RecordSetOverall));
+    $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
+    $recordsoverallTotal = count($recordsoverall);
     $topScoreFoundO = 0;
     $showLegendexTotal = false;
+    error_log("question: ".$question);
     foreach ($recordsoverall as $recordo){
-        if($question == 1){
+        if($question == "1"){
             if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
                 $topScoreFoundO += 1;
             }
@@ -270,20 +272,20 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     $missingOverall += $missing_col;
     $overall = 0;
     if($topScoreFoundO > 0){
-        $overall = number_format(($topScoreFoundO/($recordsoverall-$score_is_5O_overall_missing)*100),0);
+        $overall = number_format(($topScoreFoundO/($recordsoverallTotal-$score_is_5O_overall_missing)*100),0);
     }
 
-    if($recordsoverall == 0 || $recordsoverall == $score_is_5O_overall_missing){
+    if($recordsoverallTotal == 0 || $recordsoverallTotal == $score_is_5O_overall_missing){
         $percent = "-";
         $showLegendexTotal = true;
     }else{
         $percent = $overall;
     }
-    if(($recordsoverall + $missingOverall + $score_is_5O_overall_missing) < 5){
+    if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 5){
         $percent = "x";
         $showLegendexTotal = true;
     }
-    $tooltip = $recordsoverall . " responses, " . $missingOverall . " missing";
+    $tooltip = $recordsoverallTotal . " responses, " . $missingOverall . " missing";
 
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
