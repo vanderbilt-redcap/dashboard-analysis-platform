@@ -302,7 +302,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
     if ($question == 1) {
         $array_colors = array();
-        $max = 0;
+        $max = 100;
         #COLOR
         $extras = 2;
         if($study == "rpps_s_q61") {
@@ -333,7 +333,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $tooltipTextArray = $normalStudyCol[0];
             $array_colors = $normalStudyCol[1];
             $missingOverall = $normalStudyCol[2];
-            $max = $normalStudyCol[3];
             $index = $normalStudyCol[4];
             $showLegendNormal = $normalStudyCol[5];
 
@@ -342,7 +341,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $tooltipTextArray = $missingCol[0];
             $array_colors = $missingCol[1];
             $missing_col = $missingCol[2];
-            $max = $missingCol[3];
             $graph = $missingCol[4];
             $showLegendMissing = $missingCol[5];
 
