@@ -125,6 +125,9 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         if(($responses + $missing_InfoLabel + $score_is_5) < 5){
             $percent = "x";
             $showLegend = true;
+        }else if(($responses + $missing_InfoLabel + $score_is_5) < 20){
+            $percent = "*";
+            $showLegend = true;
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
@@ -226,8 +229,11 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }else{
         $percent = $missingPercent;
     }
-    if(($missing + $missing_col + $score_is_5O_overall) < 5){
+    if(($missing + $missing_col + $score_is_5O_overall) < 5) {
         $percent = "x";
+        $showLegendexMissing = true;
+    }else if(($missing + $missing_col + $score_is_5O_overall) < 20){
+        $percent = "*";
         $showLegendexMissing = true;
     }
     $tooltip = $missing." responses, ".$missing_col." missing";
@@ -284,6 +290,9 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 5){
         $percent = "x";
         $showLegendexTotal = true;
+    }else if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 20){
+        $percent = "*";
+        $showLegendexTotal = true;
     }
     $tooltip = $recordsoverallTotal . " responses, " . $missingOverall . " missing";
 
@@ -339,7 +348,10 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     }
     if(($responses + $multiple_missing + $multiple_not_applicable) < 5){
         $percent = "x";
-        $showLegendexTotal = true;
+        $showLegendexMultiple = true;
+    }else if(($responses + $multiple_missing + $multiple_not_applicable) < 20){
+        $percent = "*";
+        $showLegendexMultiple = true;
     }
     $tooltip = $responses . " responses, " . $multiple_missing . " missing";
 
