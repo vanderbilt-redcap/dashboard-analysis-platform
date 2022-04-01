@@ -378,7 +378,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 ksort($array_colors[$indexQuestion]);
             }
             foreach ($array_colors[$indexQuestion] as $i => $value){
-                if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x") && $array_colors[$indexQuestion][$i] != "0"){
+                if(($array_colors[$indexQuestion][$i] == "-" || $array_colors[$indexQuestion][$i] == "x" || $array_colors[$indexQuestion][$i] == "*") && $array_colors[$indexQuestion][$i] != "0"){
                     $color = "#c4c4c4";
                 }else{
                     $percent = ($array_colors[$indexQuestion][$i]/($max))*100;
