@@ -139,10 +139,10 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         if($responses == 0 || $responses == $score_is_5){
             $percent = "-";
             $showLegend = true;
-        }else if(($responses + $missing_InfoLabel + $score_is_5) < 5){
+        }else if($responses - $score_is_5 < 5){
             $percent = "x";
             $showLegend = true;
-        }else if(($responses + $missing_InfoLabel + $score_is_5) < 20){
+        }else if($responses - $score_is_5 < 20){
             $percent = $topScore . " *";
             $showLegend = true;
         }else{
@@ -249,10 +249,10 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     if($missing == 0 || $missing == $score_is_5O_overall){
         $percent = "-";
         $showLegendexMissing = true;
-    }else if(($missing + $missing_col + $score_is_5O_overall) < 5) {
+    }else if(($missing - $score_is_5O_overall) < 5) {
         $percent = "x";
         $showLegendexMissing = true;
-    }else if(($missing + $missing_col + $score_is_5O_overall) < 20){
+    }else if(($missing - $score_is_5O_overall) < 20){
         $percent = $missingPercent." *";
         $showLegendexMissing = true;
     }else{
@@ -309,10 +309,10 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     if($recordsoverallTotal == 0 || $recordsoverallTotal == $score_is_5O_overall_missing){
         $percent = "-";
         $showLegendexTotal = true;
-    }else if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 5){
+    }else if(($recordsoverallTotal - $score_is_5O_overall_missing) < 5){
         $percent = "x";
         $showLegendexTotal = true;
-    }else if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 20){
+    }else if(($recordsoverallTotal - $score_is_5O_overall_missing) < 20){
         $percent = $overall." *";
         $showLegendexTotal = true;
     }else{
@@ -371,10 +371,10 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     if($responses == 0){
         $percent = "-";
         $showLegendexMultiple = true;
-    }else if(($responses + $multiple_missing + $multiple_not_applicable) < 5){
+    }else if(($responses - $multiple_not_applicable) < 5){
         $percent = "x";
         $showLegendexMultiple = true;
-    }else if(($responses + $multiple_missing + $multiple_not_applicable) < 20){
+    }else if(($responses - $multiple_not_applicable) < 20){
         $percent = $multiplePercent." *";
         $showLegendexMultiple = true;
     }else{
