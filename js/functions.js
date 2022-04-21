@@ -96,8 +96,24 @@ function isItResponseRates(selector,url){
         },
         success: function (result) {
             paramValue = jQuery.parseJSON(result)
-            console.log(paramValue)
             $('#study').html(paramValue);
+        }
+    });
+}
+
+function loadCache(pid,url){
+    $('#spinner').show();
+    $('.messageCache').hide();
+    $.ajax({
+        type: "POST",
+        url: url,
+        data:"&pid="+pid,
+        error: function (xhr, status, error) {
+            alert(xhr.responseText);
+        },
+        success: function (result) {
+            $('#spinner').hide();
+            location.reload();
         }
     });
 }

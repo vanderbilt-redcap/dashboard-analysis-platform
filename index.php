@@ -77,7 +77,7 @@ use ExternalModules\ExternalModules;
 </head>
 <body>
 <div class="container">
-    <?php include_once ('dashboard.php');?>
+    <?php include_once ('dashboard_cache.php');?>
 </div>
 </body>
 </html>

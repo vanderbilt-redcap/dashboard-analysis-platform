@@ -29,7 +29,7 @@ class GraphData
                 $graph[$question_1][$index]['graph_top_score_quarter'] = array();
                 $graph[$question_1][$index]['years']= array();
             }
-            $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index);
+            $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index,$project_id);
             if($question == 2){
                 $graph = self::generateResponseRateGraph($project_id, "", $index, $condition.$conditionDate, $graph);
             }else{
@@ -133,7 +133,7 @@ class GraphData
         return $graph;
     }
 
-    function createQuartersForYear($graph, $question_1, $study, $date){
+    public static function createQuartersForYear($graph, $question_1, $study, $date){
         $year = date("Y",strtotime($date));
         for($i=1; $i<5 ; $i++){
             if(!array_key_exists("Q".$i." ".$year,$graph[$question_1][$study]['graph_top_score_quarter'])){
@@ -143,7 +143,7 @@ class GraphData
         return $graph[$question_1][$study]['graph_top_score_quarter'];
     }
 
-    function setQuarter($graph, $question_1, $study, $date){
+    public static function setQuarter($graph, $question_1, $study, $date){
         $month = date("m",strtotime($date));
         $year = date("Y",strtotime($date));
 
@@ -175,7 +175,7 @@ class GraphData
         return $graph;
     }
 
-    function addGraphResponseRate($num_questions_answered, $total_questions, $index, $graph, $study, $survey_datetime){
+    public static function addGraphResponseRate($num_questions_answered, $total_questions, $index, $graph, $study, $survey_datetime){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
         if ($percent >= 0.8) {
             $graph = self::addGraph($graph,"complete",$study,$index,$survey_datetime);
@@ -223,7 +223,7 @@ class GraphData
                     $score_is_5O_overall_missing = 0;
 
 
-                    if($colType == "multiple"){
+                    if($colType == "multiple" && $RecordSetGraph != null){
                         foreach (ProjectData::getProjectInfoArray($RecordSetGraph) as $totalR) {
                             if(array_count_values($totalR["rpps_s_q61"])[1] >= 2){
                                 $TotalRecordsGraph += 1;
@@ -261,7 +261,11 @@ class GraphData
                             $graph[$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
                         }
                     }
-                    $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
+                    if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
+                        $percent = 0;
+                    }else {
+                        $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
+                    }
                     if($study == "rpps_s_q62" && $colType == 6) {
                         $percent = number_format(($graph[$question_1][$colType][$type][$date] / ($graph[$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
                     }
@@ -310,61 +314,65 @@ class GraphData
     }
 
     public static function graphArrays($graph,$study_options){
-        $study_options_total = get_object_vars($study_options);
+        if($study_options != null) {
+            $study_options_total = get_object_vars($study_options);
+            $study_options_total["no"] = "no";
+            $study_options_total["multiple"] = "multiple";
+        }
         $study_options_total["total"] = "total";
-        $study_options_total["no"] = "no";
-        $study_options_total["multiple"] = "multiple";
         foreach ($graph as $question=>$single_graph){
             foreach ($study_options_total as $index => $col_title) {
-                #YEAR
-                ksort($graph[$question][$index]['graph_top_score_year']);
-                $graph_top_score_year_values[$question][$index] = array();
-                $labels_year[$question][$index] = array_keys($graph[$question][$index]['graph_top_score_year']);
-                $graph_top_score_year_values[$question][$index] = array_values($graph[$question][$index]['graph_top_score_year']);
+                if($graph[$question][$index] != null) {
+                    #YEAR
+                    ksort($graph[$question][$index]['graph_top_score_year']);
+                    $graph_top_score_year_values[$question][$index] = array();
+                    $labels_year[$question][$index] = array_keys($graph[$question][$index]['graph_top_score_year']);
+                    $graph_top_score_year_values[$question][$index] = array_values($graph[$question][$index]['graph_top_score_year']);
 
-                #MONTH
-                ksort($graph[$question][$index]['graph_top_score_month']);
-                $labels_month[$question][$index] = array();
-                $graph_top_score_month_values[$question][$index] = array();
-                foreach ($labels_year[$question][$index] as $year) {
-                    for ($month = 1; $month < 13; $month++) {
-                        $found = false;
-                        foreach ($graph[$question][$index]['graph_top_score_month'] as $date => $value) {
-                            if($year."-".sprintf('%02d', $month) == date("Y-m", $date)) {
-                                $found = true;
-                                array_push($labels_month[$question][$index], date("Y-m", $date));
-                                array_push($graph_top_score_month_values[$question][$index], $value);
+                    #MONTH
+                    ksort($graph[$question][$index]['graph_top_score_month']);
+                    $labels_month[$question][$index] = array();
+                    $graph_top_score_month_values[$question][$index] = array();
+                    foreach ($labels_year[$question][$index] as $year) {
+                        for ($month = 1; $month < 13; $month++) {
+                            $found = false;
+                            foreach ($graph[$question][$index]['graph_top_score_month'] as $date => $value) {
+                                if ($year . "-" . sprintf('%02d', $month) == date("Y-m", $date)) {
+                                    $found = true;
+                                    array_push($labels_month[$question][$index], date("Y-m", $date));
+                                    array_push($graph_top_score_month_values[$question][$index], $value);
+                                }
+                            }
+                            if (!$found) {
+                                array_push($labels_month[$question][$index], $year . "-" . sprintf('%02d', $month));
+                                array_push($graph_top_score_month_values[$question][$index], null);
                             }
                         }
-                        if(!$found) {
-                            array_push($labels_month[$question][$index], $year . "-" . sprintf('%02d', $month));
-                            array_push($graph_top_score_month_values[$question][$index], null);
-                        }
                     }
-                }
 
-                #QUARTER
-                ksort($graph[$question][$index]['years']);
-                $graph_top_score_quarter_values[$question][$index] = array();
-                $labels_quarter[$question][$index] = array();
-                $position = 0;
-                foreach ($graph[$question][$index]['years'] as $year => $value){
-                    array_push($labels_quarter[$question][$index], "Q1 ".$year);
-                    array_push($labels_quarter[$question][$index], "Q2 ".$year);
-                    array_push($labels_quarter[$question][$index], "Q3 ".$year);
-                    array_push($labels_quarter[$question][$index], "Q4 ".$year);
+                    #QUARTER
+                    ksort($graph[$question][$index]['years']);
+                    $graph_top_score_quarter_values[$question][$index] = array();
+                    $labels_quarter[$question][$index] = array();
+                    $position = 0;
+                    foreach ($graph[$question][$index]['years'] as $year => $value) {
+                        array_push($labels_quarter[$question][$index], "Q1 " . $year);
+                        array_push($labels_quarter[$question][$index], "Q2 " . $year);
+                        array_push($labels_quarter[$question][$index], "Q3 " . $year);
+                        array_push($labels_quarter[$question][$index], "Q4 " . $year);
 
-                    array_push($graph_top_score_quarter_values[$question][$index], 0);
-                    array_push($graph_top_score_quarter_values[$question][$index], 0);
-                    array_push($graph_top_score_quarter_values[$question][$index], 0);
-                    array_push($graph_top_score_quarter_values[$question][$index], 0);
+                        array_push($graph_top_score_quarter_values[$question][$index], 0);
+                        array_push($graph_top_score_quarter_values[$question][$index], 0);
+                        array_push($graph_top_score_quarter_values[$question][$index], 0);
+                        array_push($graph_top_score_quarter_values[$question][$index], 0);
 
-                    foreach ($graph[$question][$index]['graph_top_score_quarter'] as $date => $value) {
-                        $quarter = explode(" ",$date)[0];
-                        $year_quarter = explode(" ",$date)[1];
-                        if($year == $year_quarter){
-                            $graph_top_score_quarter_values[$question][$index][$position] = $value;
-                            $position++;
+                        foreach ($graph[$question][$index]['graph_top_score_quarter'] as $date => $value) {
+                            $quarter = explode(" ", $date)[0];
+                            $year_quarter = explode(" ", $date)[1];
+                            if ($year == $year_quarter) {
+                                $graph_top_score_quarter_values[$question][$index][$position] = $value;
+                                $position++;
+                            }
                         }
                     }
                 }

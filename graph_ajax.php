@@ -31,10 +31,11 @@ $graph[$question_1]["no"]['graph_top_score_month'] = array();
 $graph[$question_1]["no"]['graph_top_score_quarter'] = array();
 $graph[$question_1]["no"]['years']= array();
 
-
 if($studyOption != "nofilter"){
     $graph = GraphData::getNormalStudyColGraph($question,$project_id,$study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph);
     $graph = GraphData::getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph);
+}else{
+    $study_options = null;
 }
 $graph = GraphData::getTotalColGraph($question,$project_id,$question_1,$conditionDate,$topScoreMax,$graph);
 if($study == "rpps_s_q61"){

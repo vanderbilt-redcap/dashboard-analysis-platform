@@ -30,6 +30,11 @@
 
   "project-settings": [
     {
+      "key": "warning",
+      "name": "<div class='alert alert-info' style='border-color:#bce8f1 !important'><strong>NOTE</strong>: Specify up to 10 custom filters</a>",
+      "type": "descriptive"
+    },
+    {
       "key": "custom",
       "name": "Custom Site Filters",
       "required": true,
@@ -38,13 +43,24 @@
       "sub_settings": [
         {
           "key": "custom-filter",
-          "name": "Select the field to add as a new filter",
+          "name": "Select the field to add as a new filter.",
           "required": true,
           "type": "field-list"
         }
       ]
     }
   ],
+
+  "crons": [
+    {
+      "cron_name": "dashboard_cache_file",
+      "cron_description": "Cron that runs once a day to save all dashboard data",
+      "method": "dashboard_cache_file",
+      "cron_hour": "23",
+      "cron_minute": "59"
+    }
+  ],
+
   "compatibility": {
     "php-version-min": "5.5.0",
     "php-version-max": "",

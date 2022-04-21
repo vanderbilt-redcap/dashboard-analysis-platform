@@ -34,12 +34,29 @@ function isTopScoreVeryOrSomewhatImportant($value){
     return false;
 }
 
-function getParamOnType($field_name,$index){
-    $type = \REDCap::getFieldType($field_name);
+function getParamOnType($field_name,$index,$project_id){
+    $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($field_name,$project_id);
     if($type == "checkbox"){
         return "[".$field_name."(".$index.")] = '1'";
     }
     return "[".$field_name."] = '".$index."'";
+}
+
+function getFieldType($field_name,$project_id)
+{
+    $Proj = new \Project($project_id);
+    // If field is invalid, return false
+    if (!isset($Proj->metadata[$field_name])) return false;
+    // Array to translate back-end field type to front-end (some are different, e.g. "textarea"=>"notes")
+    $fieldTypeTranslator = array('textarea'=>'notes', 'select'=>'dropdown');
+    // Get field type
+    $fieldType = $Proj->metadata[$field_name]['element_type'];
+    // Translate field type, if needed
+    if (isset($fieldTypeTranslator[$fieldType])) {
+        $fieldType = $fieldTypeTranslator[$fieldType];
+    }
+    // Return field type
+    return $fieldType;
 }
 
 function GetColorFromRedYellowGreenGradient($percentage)
@@ -63,7 +80,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
     );
     $showLegend = false;
     foreach ($study_options as $index => $col_title) {
-        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index);
+        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index,$project_id);
 
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
         $records = ProjectData::getProjectInfoArray($RecordSet);
@@ -111,7 +128,10 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
                 $study_62_array['score5'] += $score_is_5;
             } else if ($index == 6) {
                 $responses = $study_62_array['responses'];
-                $topScore = number_format(($study_62_array['topscore'] / ($study_62_array['responses'] - $study_62_array['score5']) * 100), 0);
+                $topScore = 0;
+                if(($study_62_array['responses'] - $study_62_array['score5']) != 0) {
+                    $topScore = number_format(($study_62_array['topscore'] / ($study_62_array['responses'] - $study_62_array['score5']) * 100), 0);
+                }
                 $missing_InfoLabel = $study_62_array['missing'];
                 $score_is_5 = $study_62_array['score5'];
             }
@@ -119,15 +139,14 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         if($responses == 0 || $responses == $score_is_5){
             $percent = "-";
             $showLegend = true;
-        }else{
-            $percent = $topScore;
-        }
-        if(($responses + $missing_InfoLabel + $score_is_5) < 5){
+        }else if(($responses + $missing_InfoLabel + $score_is_5) < 5){
             $percent = "x";
             $showLegend = true;
         }else if(($responses + $missing_InfoLabel + $score_is_5) < 20){
-            $percent = "*";
+            $percent = $topScore . " *";
             $showLegend = true;
+        }else{
+            $percent = $topScore;
         }
         $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
@@ -135,6 +154,10 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
             $array_colors[$indexQuestion][$index] = $percent;
         }else{
+            if($indexQuestion != ""){
+                $array_colors[$indexQuestion][$index] = $percent;
+                $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
+            }
             $attibute = "";
             $class = "";
             if($study == "rpps_s_q62" && $index> 1 && $index < 6){
@@ -148,7 +171,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
     if($question == 1) {
         $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index,5=>$showLegend);
     }else{
-        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,5=>$showLegend);
+        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,5=>$showLegend,6=>$array_colors,7=>$tooltipTextArray);
     }
 
     return $aux;
@@ -203,7 +226,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }
 
     $missing_col = 0;
-    $type = \REDCap::getFieldType($study);
+    $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($study,$project_id);
     $Proj = new \Project($project_id);
     $event_id = $Proj->firstEventId;
     foreach ($multipleRecords as $mmrecord){
@@ -226,15 +249,14 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     if($missing == 0 || $missing == $score_is_5O_overall){
         $percent = "-";
         $showLegendexMissing = true;
-    }else{
-        $percent = $missingPercent;
-    }
-    if(($missing + $missing_col + $score_is_5O_overall) < 5) {
+    }else if(($missing + $missing_col + $score_is_5O_overall) < 5) {
         $percent = "x";
         $showLegendexMissing = true;
     }else if(($missing + $missing_col + $score_is_5O_overall) < 20){
-        $percent = "*";
+        $percent = $missingPercent." *";
         $showLegendexMissing = true;
+    }else{
+        $percent = $missingPercent;
     }
     $tooltip = $missing." responses, ".$missing_col." missing";
 
@@ -243,7 +265,11 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
         $array_colors[$indexQuestion][intval($index)+1] = $percent;
         return array(0=>$tooltipTextArray,1=>$array_colors,2=>$missing_col,3=>$max,5=>$showLegendexMissing);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$missing_col,3=>$showLegendexMissing);
+        if($indexQuestion != "") {
+            $tooltipTextArray[$indexQuestion][intval($index) + 1] = $tooltip . ", " . $score_is_5O_overall . " not applicable";
+            $array_colors[$indexQuestion][intval($index) + 1] = $percent;
+        }
+        return array(0=>$percent,1=>$tooltip,2=>$missing_col,3=>$showLegendexMissing,4=>$array_colors,5=>$tooltipTextArray);
     }
 }
 
@@ -253,7 +279,6 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     $recordsoverallTotal = count($recordsoverall);
     $topScoreFoundO = 0;
     $showLegendexTotal = false;
-    error_log("question: ".$question);
     foreach ($recordsoverall as $recordo){
         if($question == "1"){
             if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
@@ -284,15 +309,14 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     if($recordsoverallTotal == 0 || $recordsoverallTotal == $score_is_5O_overall_missing){
         $percent = "-";
         $showLegendexTotal = true;
-    }else{
-        $percent = $overall;
-    }
-    if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 5){
+    }else if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 5){
         $percent = "x";
         $showLegendexTotal = true;
     }else if(($recordsoverallTotal + $missingOverall + $score_is_5O_overall_missing) < 20){
-        $percent = "*";
+        $percent = $overall." *";
         $showLegendexTotal = true;
+    }else{
+        $percent = $overall;
     }
     $tooltip = $recordsoverallTotal . " responses, " . $missingOverall . " missing";
 
@@ -301,7 +325,11 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         $array_colors[$indexQuestion][0] = $percent;
         return array(0=>$tooltipTextArray,1=>$array_colors,2=>$showLegendexTotal);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$showLegendexTotal);
+        if($indexQuestion != ""){
+            $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
+            $array_colors[$indexQuestion][0] = $percent;
+        }
+        return array(0=>$percent,1=>$tooltip,2=>$showLegendexTotal,3=>$array_colors,4=>$tooltipTextArray);
     }
 }
 
@@ -343,15 +371,14 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     if($responses == 0){
         $percent = "-";
         $showLegendexMultiple = true;
-    }else{
-        $percent = $multiplePercent;
-    }
-    if(($responses + $multiple_missing + $multiple_not_applicable) < 5){
+    }else if(($responses + $multiple_missing + $multiple_not_applicable) < 5){
         $percent = "x";
         $showLegendexMultiple = true;
     }else if(($responses + $multiple_missing + $multiple_not_applicable) < 20){
-        $percent = "*";
+        $percent = $multiplePercent." *";
         $showLegendexMultiple = true;
+    }else{
+        $percent = $multiplePercent;
     }
     $tooltip = $responses . " responses, " . $multiple_missing . " missing";
 
@@ -360,7 +387,11 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
         $array_colors[$indexQuestion][$index+2] = $percent;
         return array(0=>$tooltipTextArray,1=>$array_colors,2=>$showLegendexMultiple);
     }else{
-        return array(0=>$percent,1=>$tooltip,2=>$showLegendexMultiple);
+        if($indexQuestion != ""){
+            $tooltipTextArray[$indexQuestion][$index+2] = $tooltip.", ".$multiple_not_applicable . " not applicable";
+            $array_colors[$indexQuestion][$index+2] = $percent;
+        }
+        return array(0=>$percent,1=>$tooltip,2=>$showLegendexMultiple,3=>$array_colors,4=>$tooltipTextArray);
     }
 }
 
@@ -385,7 +416,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     $graph["partial"] = array();
     $graph["breakoffs"] = array();
     foreach ($study_options as $index => $col_title) {
-        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index);
+        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index,$project_id);
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
         $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
@@ -484,5 +515,71 @@ function printResponseRate($questions, $total_records){
     $tooltipTextArray = $questions . " out of " . $total_records . " records";
     $table_row = '<td><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltipTextArray . '">' . $percent . '</td>';
     return $table_row;
+}
+
+function getResponseRate($questions, $total_records){
+    if ($questions == "") {
+        $questions = 0;
+    }
+    if($total_records != 0){
+        $percent = number_format((float)($questions / $total_records), 2, '.', '') * 100;
+    }else{
+        $percent = 0;
+    }
+    $tooltipTextArray = $questions . " out of " . $total_records . " records";
+     return array(0=>$percent,1=>$tooltipTextArray);
+}
+
+function getRandomIdentifier($length = 6) {
+    $output = "";
+    $startNum = pow(32,5) + 1;
+    $endNum = pow(32,6);
+    while($length > 0) {
+
+        # Generate a number between 32^5 and 32^6, then convert to a 6 digit string
+        $randNum = mt_rand($startNum,$endNum);
+        $randAlphaNum = \Vanderbilt\DashboardAnalysisPlatformExternalModule\numberToBase($randNum,32);
+
+        if($length >= 6) {
+            $output .= $randAlphaNum;
+        }
+        else {
+            $output .= substr($randAlphaNum,0,$length);
+        }
+        $length -= 6;
+    }
+
+    return $output;
+}
+
+function numberToBase($number, $base) {
+    $newString = "";
+    while($number > 0) {
+        $lastDigit = $number % $base;
+        $newString = \Vanderbilt\DashboardAnalysisPlatformExternalModule\convertDigit($lastDigit, $base).$newString;
+        $number -= $lastDigit;
+        $number /= $base;
+    }
+
+    return $newString;
+}
+
+function convertDigit($number, $base) {
+    if($base > 192) {
+        chr($number);
+    }
+    else if($base == 32) {
+        $stringArray = "ABCDEFGHJLKMNPQRSTUVWXYZ23456789";
+
+        return substr($stringArray,$number,1);
+    }
+    else {
+        if($number < 192) {
+            return chr($number + 32);
+        }
+        else {
+            return "";
+        }
+    }
 }
 ?>
