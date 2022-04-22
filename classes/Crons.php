@@ -2,7 +2,7 @@
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/ProjectData.php");
 require_once (dirname(__FILE__)."/GraphData.php");
-include_once("functions.php");
+include_once(__DIR__ . "/../functions.php");
 
 
 class Crons

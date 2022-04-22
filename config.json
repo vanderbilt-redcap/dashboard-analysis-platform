@@ -56,8 +56,8 @@
       "cron_name": "dashboard_cache_file",
       "cron_description": "Cron that runs once a day to save all dashboard data",
       "method": "dashboard_cache_file",
-      "cron_hour": "23",
-      "cron_minute": "59"
+      "cron_frequency": "1",
+      "cron_max_run_time": "1"
     }
   ],
 
