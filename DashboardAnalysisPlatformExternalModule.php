@@ -9,9 +9,9 @@ use ExternalModules\ExternalModules;
 class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
 {
     function dashboard_cache_file($cronAttributes){
-       error_log("dashboardCacheFile");
         foreach ($this->getProjectsWithModuleEnabled() as $project_id){
             try {
+                error_log("dashboardCacheFile PID".$project_id);
                 #CRONS
                 include("callCron.php");
 

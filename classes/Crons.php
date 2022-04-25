@@ -17,6 +17,8 @@ class Crons
         $allData_array = array();
         $allDataTooltip_array = array();
         $allLabel_array = array();
+        $conditionDate = "";
+        $max = 100;
 
         $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
 

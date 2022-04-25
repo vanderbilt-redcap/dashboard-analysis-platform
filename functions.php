@@ -34,12 +34,18 @@ function isTopScoreVeryOrSomewhatImportant($value){
     return false;
 }
 
-function getParamOnType($field_name,$index,$project_id){
-    $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($field_name,$project_id);
-    if($type == "checkbox"){
-        return "[".$field_name."(".$index.")] = '1'";
+function getParamOnType($field_name,$index,$project_id)
+{
+    error_log("getNormalStudyCol IN study: ".$field_name.", index: ".$index.", PID: ".$project_id);
+    if ($field_name == '') {
+        return null;
+    }else{
+        $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($field_name, $project_id);
+        if ($type == "checkbox") {
+            return "[" . $field_name . "(" . $index . ")] = '1'";
+        }
+        return "[" . $field_name . "] = '" . $index . "'";
     }
-    return "[".$field_name."] = '".$index."'";
 }
 
 function getFieldType($field_name,$project_id)
@@ -80,8 +86,9 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
     );
     $showLegend = false;
     foreach ($study_options as $index => $col_title) {
+        error_log("getNormalStudyCol BEFORE study: ".$study.", index: ".$index.", PID: ".$project_id);
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index,$project_id);
-
+        error_log("getNormalStudyCol AFTER study: ".$study.", index: ".$index.", PID: ".$project_id);
         $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
         $records = ProjectData::getProjectInfoArray($RecordSet);
 
