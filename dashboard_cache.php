@@ -336,10 +336,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     ksort($dash_array['tooltip'][$question][$study][$question_1][$indexQuestion]);
 
                     if($study == "nofilter"){
-                        if (($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "x" || $$dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "*") && $$dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] != "0") {
+                        if (($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "x" ) && $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] != "0") {
                             $color = "#c4c4c4";
                             $showLegendNoFilter = true;
                         } else {
+                            if(str_contains($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0], '*')){
+                                $showLegendNoFilter = true;
+                            }
                             $percent = ($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] / ($max)) * 100;
                             $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
                         }
@@ -351,7 +354,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $table .= '</tr>';
                     }else{
                         foreach ($dash_array['data'][$question][$study][$question_1][$indexQuestion] as $i => $value){
-                           if(($value == "-" || $value == "x" || $value == "*") && $value != "0"){
+                           if(($value == "-" || $value == "x") && $value != "0"){
                                 $color = "#c4c4c4";
                             }else{
                                 $percent = ($value/($max))*100;
@@ -399,7 +402,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $table .= '<tr><td class="question">'.ucfirst($question_2)." response ".$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_2.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 
                 if($study == "nofilter"){
-                    $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_2][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_2][0] . '</div></td>';
+                    if($dash_array['data'][$question]['nofilter'][$question_2][0] == "100 *"){
+                        $extraSpace100 = " extraSpace100";
+                    }
+                    if(str_contains($dash_array['data'][$question]['nofilter'][$question_2][0], '*')){
+                        $showLegendNoFilter = true;
+                    }
+                    $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_2][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_2][0] . '</div></td>';
                     $table .= '</tr>';
                 }else{
                     ksort($dash_array['data'][$question][$study][$question_2]);
@@ -433,6 +442,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $extraSpace100 = "";
                         if($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] == "100 *"){
                             $extraSpace100 = " extraSpace100";
+                        }
+                        if(str_contains($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0], '*')){
+                            $showLegendNoFilter = true;
                         }
                         $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
                         $table .= '</tr>';
