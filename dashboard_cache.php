@@ -318,6 +318,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             }
         }
     }
+    $showLegendNoFilter = false;
     if($dash_array != "" && is_array($dash_array)){
         $max = 100;
         if ($question == 1) {
@@ -337,11 +338,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     if($study == "nofilter"){
                         if (($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "x" || $$dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "*") && $$dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] != "0") {
                             $color = "#c4c4c4";
+                            $showLegendNoFilter = true;
                         } else {
                             $percent = ($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] / ($max)) * 100;
                             $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
                         }
-                        $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_1][$indexQuestion][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] . '</div></td>';
+                        $extraSpace100 = '';
+                        if($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "100 *"){
+                            $extraSpace100 = " extraSpace100";
+                        }
+                        $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_1][$indexQuestion][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] . '</div></td>';
                         $table .= '</tr>';
                     }else{
                         foreach ($dash_array['data'][$question][$study][$question_1][$indexQuestion] as $i => $value){
@@ -357,8 +363,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 $class = "hide";
                                 $attribute = "etnicity = '1'";
                             }
+                            $extraSpace100 = '';
+                            if($value == "100 *"){
+                                $extraSpace100 = " extraSpace100";
+                            }
                             if($study != "nofilter" || ($study == "nofilter" && $i == "0")) {
-                                $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_1][$indexQuestion][$i] . '">' . $value . '</div></td>';
+                                $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_1][$indexQuestion][$i] . '">' . $value . '</div></td>';
                             }
                         }
                        $table .= '</tr>';
@@ -396,13 +406,17 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     ksort($dash_array['tooltip'][$question][$study][$question_2]);
                     $last_index = array_key_last($dash_array['data'][$question][$study][$question_2]);
                     foreach ($dash_array['data'][$question][$study][$question_2] as $i => $value){
+                        $extraSpace100 = "";
+                        if($value == "100 *"){
+                            $extraSpace100 = " extraSpace100";
+                        }
                         if($last_index == $i) {
                             if($study == "rpps_s_q61") {
                                 #MULTIPLE
-                                $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
+                                $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
                             }
                         }else{
-                            $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
+                            $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
                         }
 
                     }
@@ -416,7 +430,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 for ($i = $option[0]; $i < $option[1]; $i++) {
                     $table .= '<tr><td class="question">' . $module->getFieldLabel("rpps_s_q" . $i) . '</td>';
                     if ($study == "nofilter") {
-                        $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
+                        $extraSpace100 = "";
+                        if($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] == "100 *"){
+                            $extraSpace100 = " extraSpace100";
+                        }
+                        $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
                         $table .= '</tr>';
                     } else {
                         foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i] as $singleDataIndex => $singleData) {
@@ -429,7 +447,14 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                     $class = "hide";
                                     $attribute = "etnicity = '1'";
                                 }
-                                $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study]["rpps_s_q" . $i][$singleDataIndex][$arrayIndex] . '">' . $value . '</div></td>';
+                                if($value == '-' || $value == "*" || $value == 'x'){
+                                    $showLegendNoFilter = true;
+                                }
+                                $extraSpace100 = "";
+                                if($value == " *"){
+                                    $extraSpace100 = " extraSpace100";
+                                }
+                                $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study]["rpps_s_q" . $i][$singleDataIndex][$arrayIndex] . '">' . $value . '</div></td>';
                             }
                         }
                     }
@@ -468,8 +493,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
 
     $table .= '</table>';
-    if($dash_array['legend'][$question][$study]){
-        $table .= "<i style='padding-bottom: 20px'>X = fewer than 5 responses <span style='padding-left: 10px'>- = no responses</span></i>";
+    if($dash_array['legend'][$question][$study] || $showLegendNoFilter){
+        $table .= "<i style='padding-bottom: 20px'>X = fewer than 5 responses <span style='padding-left: 10px'>- = no responses</span><span style='padding-left: 10px'>* = fewer than 20 responses</span></i>";
     }
     $table .= '</div>';
     echo $table;
