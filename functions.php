@@ -36,16 +36,11 @@ function isTopScoreVeryOrSomewhatImportant($value){
 
 function getParamOnType($field_name,$index,$project_id)
 {
-    error_log("getNormalStudyCol IN study: ".$field_name.", index: ".$index.", PID: ".$project_id);
-    if ($field_name == '') {
-        return null;
-    }else{
-        $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($field_name, $project_id);
-        if ($type == "checkbox") {
-            return "[" . $field_name . "(" . $index . ")] = '1'";
-        }
-        return "[" . $field_name . "] = '" . $index . "'";
+    $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($field_name, $project_id);
+    if ($type == "checkbox") {
+        return "[" . $field_name . "(" . $index . ")] = '1'";
     }
+    return "[" . $field_name . "] = '" . $index . "'";
 }
 
 function getFieldType($field_name,$project_id)
@@ -86,92 +81,93 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
     );
     $showLegend = false;
     foreach ($study_options as $index => $col_title) {
-        error_log("getNormalStudyCol BEFORE study: ".$study.", index: ".$index.", PID: ".$project_id);
-        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study,$index,$project_id);
-        error_log("getNormalStudyCol AFTER study: ".$study.", index: ".$index.", PID: ".$project_id);
-        $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition.$conditionDate);
-        $records = ProjectData::getProjectInfoArray($RecordSet);
+        if($study != "" && $index != "") {
+            $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index, $project_id);
 
-        $RecordSetMissing= \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition." AND [".$question_1."] = ''".$conditionDate);
-        $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
+            $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition . $conditionDate);
+            $records = ProjectData::getProjectInfoArray($RecordSet);
 
-        $topScoreFound = 0;
-        $score_is_5 = 0;
-        foreach ($records as $record){
-            if($question == 1) {
-                if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
-                    $topScoreFound += 1;
-                }
-                if ($record[$question_1] == 5 && $topScoreMax == 5) {
-                    $score_is_5 += 1;
-                }
-            }else{
-                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
-                    $topScoreFound += 1;
+            $RecordSetMissing = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
+            $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
+
+            $topScoreFound = 0;
+            $score_is_5 = 0;
+            foreach ($records as $record) {
+                if ($question == 1) {
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
+                        $topScoreFound += 1;
+                    }
+                    if ($record[$question_1] == 5 && $topScoreMax == 5) {
+                        $score_is_5 += 1;
+                    }
+                } else {
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1, $record))) {
+                        $topScoreFound += 1;
+                    }
                 }
             }
-        }
 
-        if($topScoreFound > 0){
-            $topScore = number_format(($topScoreFound/(count($records)-$score_is_5-$missing_InfoLabel)*100),0);
-        }else{
-            $topScore = 0;
-        }
-
-        if($topScore > $max){
-            $max = $topScore;
-        }
-
-        $missingOverall += $missing_InfoLabel;
-        $responses = count($records) - $missing_InfoLabel;
-
-        #Etnicity Case
-        if($study == "rpps_s_q62") {
-            if ($index > 1 && $index < 6) {
-                $study_62_array['topscore'] += $topScoreFound;
-                $study_62_array['totalcount'] += count($records);
-                $study_62_array['responses'] += $responses;
-                $study_62_array['missing'] += $missing_InfoLabel;
-                $study_62_array['score5'] += $score_is_5;
-            } else if ($index == 6) {
-                $responses = $study_62_array['responses'];
+            if ($topScoreFound > 0) {
+                $topScore = number_format(($topScoreFound / (count($records) - $score_is_5 - $missing_InfoLabel) * 100), 0);
+            } else {
                 $topScore = 0;
-                if(($study_62_array['responses'] - $study_62_array['score5']) != 0) {
-                    $topScore = number_format(($study_62_array['topscore'] / ($study_62_array['responses'] - $study_62_array['score5']) * 100), 0);
-                }
-                $missing_InfoLabel = $study_62_array['missing'];
-                $score_is_5 = $study_62_array['score5'];
             }
-        }
-        if($responses == 0 || $responses == $score_is_5){
-            $percent = "-";
-            $showLegend = true;
-        }else if($responses - $score_is_5 < 5){
-            $percent = "x";
-            $showLegend = true;
-        }else if($responses - $score_is_5 < 20){
-            $percent = $topScore . " *";
-            $showLegend = true;
-        }else{
-            $percent = $topScore;
-        }
-        $tooltip = $responses." responses, ".$missing_InfoLabel." missing";
 
-        if($question == 1) {
-            $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
-            $array_colors[$indexQuestion][$index] = $percent;
-        }else{
-            if($indexQuestion != ""){
+            if ($topScore > $max) {
+                $max = $topScore;
+            }
+
+            $missingOverall += $missing_InfoLabel;
+            $responses = count($records) - $missing_InfoLabel;
+
+            #Etnicity Case
+            if ($study == "rpps_s_q62") {
+                if ($index > 1 && $index < 6) {
+                    $study_62_array['topscore'] += $topScoreFound;
+                    $study_62_array['totalcount'] += count($records);
+                    $study_62_array['responses'] += $responses;
+                    $study_62_array['missing'] += $missing_InfoLabel;
+                    $study_62_array['score5'] += $score_is_5;
+                } else if ($index == 6) {
+                    $responses = $study_62_array['responses'];
+                    $topScore = 0;
+                    if (($study_62_array['responses'] - $study_62_array['score5']) != 0) {
+                        $topScore = number_format(($study_62_array['topscore'] / ($study_62_array['responses'] - $study_62_array['score5']) * 100), 0);
+                    }
+                    $missing_InfoLabel = $study_62_array['missing'];
+                    $score_is_5 = $study_62_array['score5'];
+                }
+            }
+            if ($responses == 0 || $responses == $score_is_5) {
+                $percent = "-";
+                $showLegend = true;
+            } else if ($responses - $score_is_5 < 5) {
+                $percent = "x";
+                $showLegend = true;
+            } else if ($responses - $score_is_5 < 20) {
+                $percent = $topScore . " *";
+                $showLegend = true;
+            } else {
+                $percent = $topScore;
+            }
+            $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
+
+            if ($question == 1) {
+                $tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
                 $array_colors[$indexQuestion][$index] = $percent;
-                $tooltipTextArray[$indexQuestion][$index] = $tooltip.", ".$score_is_5 . " not applicable";
+            } else {
+                if ($indexQuestion != "") {
+                    $array_colors[$indexQuestion][$index] = $percent;
+                    $tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
+                }
+                $attibute = "";
+                $class = "";
+                if ($study == "rpps_s_q62" && $index > 1 && $index < 6) {
+                    $class = "hide";
+                    $attibute = "etnicity = '1'";
+                }
+                $table_b .= '<td class="' . $class . '" ' . $attibute . '><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="' . $tooltip . '">' . $percent . '</div></td>';
             }
-            $attibute = "";
-            $class = "";
-            if($study == "rpps_s_q62" && $index> 1 && $index < 6){
-                $class = "hide";
-                $attibute = "etnicity = '1'";
-            }
-            $table_b .= '<td class="'.$class.'" '.$attibute.'><div class="red-tooltip extraInfoLabel" data-toggle="tooltip" data-html="true" title="'.$tooltip.'">'.$percent.'</div></td>';
         }
     }
 

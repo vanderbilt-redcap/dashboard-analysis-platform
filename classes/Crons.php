@@ -27,7 +27,7 @@ class Crons
 
         #QUESTION = 1
         $question = 1;
-        $array_study = array(
+        $array_study_1 = array(
             "rpps_s_q60" => "Age",
             "rpps_s_q59" => "Education",
             "rpps_s_q62" => "Ethnicity",
@@ -44,13 +44,13 @@ class Crons
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
             if ($count < 11) {
-                $array_study[$sstudy] = "Custom site value " . $count;
+                $array_study_1[$sstudy] = "Custom site value " . $count;
             } else {
                 break;
             }
             $count++;
         }
-        foreach ($array_study as $study => $label) {
+        foreach ($array_study_1 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, "Yes - Spanish/Hispanic/Latino");
@@ -107,14 +107,14 @@ class Crons
 
         #QUESTION = 2
         $question = 2;
-        $array_study = array(
+        $array_study_2 = array(
             "age" => "Age",
             "ethnicity" => "Ethnicity",
             "gender_identity" => "Gender Identity",
             "race" => "Race",
             "sex" => "Sex"
         );
-        foreach ($array_study as $study => $label) {
+        foreach ($array_study_2 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
@@ -151,7 +151,7 @@ class Crons
 
 
         #QUESTION = 3,4,5
-        $array_study = array(
+        $array_study_3 = array(
             "rpps_s_q60" => "Age",
             "rpps_s_q59" => "Education",
             "rpps_s_q62" => "Ethnicity",
@@ -168,13 +168,13 @@ class Crons
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
             if ($count < 11) {
-                $array_study[$sstudy] = "Custom site value " . $count;
+                $array_study_3[$sstudy] = "Custom site value " . $count;
             } else {
                 break;
             }
             $count++;
         }
-        foreach ($array_study as $study => $label) {
+        foreach ($array_study_3 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, "Yes - Spanish/Hispanic/Latino");
