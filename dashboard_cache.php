@@ -340,7 +340,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             $color = "#c4c4c4";
                             $showLegendNoFilter = true;
                         } else {
-                            if(str_contains($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0], '*')){
+                            if(strpos($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0], '*')){
                                 $showLegendNoFilter = true;
                             }
                             $percent = ($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] / ($max)) * 100;
@@ -405,7 +405,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     if($dash_array['data'][$question]['nofilter'][$question_2][0] == "100 *"){
                         $extraSpace100 = " extraSpace100";
                     }
-                    if(str_contains($dash_array['data'][$question]['nofilter'][$question_2][0], '*')){
+                    if(strpos($dash_array['data'][$question]['nofilter'][$question_2][0], '*')){
                         $showLegendNoFilter = true;
                     }
                     $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_2][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_2][0] . '</div></td>';
@@ -443,7 +443,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         if($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] == "100 *"){
                             $extraSpace100 = " extraSpace100";
                         }
-                        if(str_contains($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0], '*')){
+                        if(strpos($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0], '*')){
                             $showLegendNoFilter = true;
                         }
                         $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
