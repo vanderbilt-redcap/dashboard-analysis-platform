@@ -234,7 +234,7 @@ class Crons
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
 
-        if ($table_data != "") {
+        if ($table_data != "" && $allData_array != "" && $allDataTooltip_array != "") {
             #SAVE DATA IN FILE
             #create and save file with json
             $filename = "dashboard_cache_file_" . $project_id . ".txt";

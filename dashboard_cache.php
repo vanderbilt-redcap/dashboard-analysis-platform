@@ -413,7 +413,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }else{
                     ksort($dash_array['data'][$question][$study][$question_2]);
                     ksort($dash_array['tooltip'][$question][$study][$question_2]);
-                    $last_index = array_key_last($dash_array['data'][$question][$study][$question_2]);
+                    $array = $dash_array['data'][$question][$study][$question_2];
+                    end($array);         // move the internal pointer to the end of the array
+                    $last_index = key($array);
                     foreach ($dash_array['data'][$question][$study][$question_2] as $i => $value){
                         $extraSpace100 = "";
                         if($value == "100 *"){
