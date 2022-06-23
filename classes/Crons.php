@@ -119,6 +119,9 @@ class Crons
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study);
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph);
+            if($study == "race"){
+                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords);
+            }
             foreach ($row_questions_2 as $indexQuestion => $question_2) {
                 $array_colors = array();
                 $tooltipTextArray = array();
@@ -139,10 +142,12 @@ class Crons
                 $array_colors[count($study_options) + 1] = $missing[0];
                 $tooltipTextArray[count($study_options) + 1] = $missing[1];
 
-                #MULTIPLE
-                $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph[$question_2]["multiple"], $graph["total_records"]["multiple"]);
-                $array_colors[count($study_options) + 2] = $multiple[0];
-                $tooltipTextArray[count($study_options) + 2] = $multiple[1];
+                if($study == "race") {
+                    #MULTIPLE
+                    $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph[$question_2]["multiple"], $graph["total_records"]["multiple"]);
+                    $array_colors[count($study_options) + 2] = $multiple[0];
+                    $tooltipTextArray[count($study_options) + 2] = $multiple[1];
+                }
 
                 $allData_array[$question][$study][$question_2] = $array_colors;
                 $allDataTooltip_array[$question][$study][$question_2] = $tooltipTextArray;

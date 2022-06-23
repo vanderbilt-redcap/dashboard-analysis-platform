@@ -476,18 +476,21 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
     return $graph;
 }
 
-function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study){
+function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords){
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "multiple");
-    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
-    $allRecords = ProjectData::getProjectInfoArray($RecordSet);
-    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $graph["total_records"]["multiple"] = 0;
     $total_questions = count($row_questions_1);
-    $graph["total_records"]["multiple"] = $total_records;
-    foreach ($allRecords as $record) {
-        if (array_count_values($record[ $study])[1] >= 2) {
+    foreach ($multipleRecords as $multirecord){
+        if(array_count_values($multirecord[$study])[1] >= 2) {
+            $graph["total_records"]["multiple"] += 1;
+        }
+    }
+
+    foreach ($multipleRecords as $multirecord){
+        if(array_count_values($multirecord[$study])[1] >= 2) {
             $num_questions_answered = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
-                if ($record[$question_1] != "") {
+                if ($multirecord[$question_1] != "") {
                     $num_questions_answered++;
                 }
             }
