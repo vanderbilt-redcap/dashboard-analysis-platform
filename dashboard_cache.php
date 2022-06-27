@@ -263,7 +263,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         }
         $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO ' . strtoupper($array_study[$study]) . ' REPORTED</span></div></th>';
 
-        if ($study == "rpps_s_q61") {
+        if ($study == "rpps_s_q61" || $study == "race") {
             $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
         }
     }
@@ -422,7 +422,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             $extraSpace100 = " extraSpace100";
                         }
                         if($last_index == $i) {
-                            if($study == "rpps_s_q61") {
+                            if($study == "race") {
                                 #MULTIPLE
                                 $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
                             }

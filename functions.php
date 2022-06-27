@@ -487,8 +487,8 @@ function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, 
     }
 
     foreach ($multipleRecords as $multirecord){
+        $num_questions_answered = 0;
         if(array_count_values($multirecord[$study])[1] >= 2) {
-            $num_questions_answered = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 if ($multirecord[$question_1] != "") {
                     $num_questions_answered++;
