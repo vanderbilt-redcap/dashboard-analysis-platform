@@ -438,22 +438,26 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     return $graph;
 }
 
-function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study){
+function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords){
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "missing");
-    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[" . $study."] = ''".$conditionDate);
-    $allRecords = ProjectData::getProjectInfoArray($RecordSet);
-    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($study, $project_id);
+
+    $total_records = 0;
     $total_questions = count($row_questions_1);
-    $graph["total_records"]["missing"] = $total_records;
-    foreach ($allRecords as $record) {
-        $num_questions_answered = 0;
-        foreach ($row_questions_1 as $indexQuestion => $question_1) {
-            if ($record[$question_1] != "") {
-                $num_questions_answered++;
+
+    foreach ($multipleRecords as $record) {
+        if($type == "checkbox" && !in_array('1', $record[$study], '1') || $type != "checkbox" && $record[$study] == '') {
+            $total_records += 1;
+            $num_questions_answered = 0;
+            foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                if ($record[$question_1] != "") {
+                    $num_questions_answered++;
+                }
             }
+            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "missing", $graph);
         }
-        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "missing", $graph);
     }
+    $graph["total_records"]["missing"] = $total_records;
     return $graph;
 }
 

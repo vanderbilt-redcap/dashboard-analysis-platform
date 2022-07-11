@@ -39,7 +39,6 @@ $array_study = array(
     "sampling" => "Sampling approach",
     "timing_of_rpps_administration" => "Timing of RPPS administration"
 );
-
 $custom_filters = $module->getProjectSetting('custom-filter');
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
 ?>
@@ -421,11 +420,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         if($value == "100 *"){
                             $extraSpace100 = " extraSpace100";
                         }
-                        if($last_index == $i) {
-                            if($study == "race") {
-                                #MULTIPLE
-                                $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
-                            }
+                        if($last_index == $i && $study == "race") {
+                            #MULTIPLE
+                            $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
+
                         }else{
                             $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][$study][$question_2][$i] . '">' . $value . '</div></td>';
                         }
