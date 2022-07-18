@@ -311,7 +311,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             $docId = $row2['doc_id'];
             $q3 = $module->query("SELECT doc_name,stored_name,doc_size,file_extension,mime_type FROM redcap_edocs_metadata WHERE doc_id=?",[$docId]);
             while ($row3 = $q3->fetch_assoc()) {
-                $path = EDOC_PATH . $row3['stored_name'];
+                $path = $module->getSafePath($row3['stored_name'], EDOC_PATH) ;
                 $strJsonFileContents = file_get_contents($path);
                 $dash_array = json_decode($strJsonFileContents, true);
             }
