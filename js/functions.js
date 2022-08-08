@@ -117,3 +117,36 @@ function loadCache(pid,url){
         }
     });
 }
+
+
+/**
+ * Function that validates if an email is in the correct format
+ * @param email
+ * @returns {boolean}
+ */
+function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+}
+
+function loadAjax(data, url, loadAJAX){
+    if(data != '') {
+        $.ajax({
+            type: "POST",
+            url: url,
+            data:data
+            ,
+            error: function (xhr, status, error) {
+                alert(xhr.responseText);
+            },
+            success: function (result) {
+                jsonAjax = jQuery.parseJSON(result);
+
+                if(jsonAjax.html != '' && jsonAjax.html != undefined) {
+                    $("#" + loadAJAX).html(jsonAjax.html);
+                }
+                $('.divModalLoading').hide();
+            }
+        });
+    }
+}

@@ -30,6 +30,18 @@
 
   "project-settings": [
     {
+      "key": "registration",
+      "name": "Specify the Project ID from the Project Registration.",
+      "required": true,
+      "type": "text"
+    },
+    {
+      "key": "registration_from",
+      "name": "Specify the FROM email address for the access link emails.",
+      "required": true,
+      "type": "text"
+    },
+    {
       "key": "warning",
       "name": "<div class='alert alert-info' style='border-color:#bce8f1 !important'><strong>NOTE</strong>: Specify up to 10 custom filters</a>",
       "type": "descriptive"

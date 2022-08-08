@@ -243,7 +243,7 @@ class Crons
             #SAVE DATA IN FILE
             #create and save file with json
             $filename = "dashboard_cache_file_" . $project_id . ".txt";
-            $storedName = date("YmdHis") . "_pid" . $project_id . "_" . \Vanderbilt\DashboardAnalysisPlatformExternalModule\getRandomIdentifier(6) . ".txt";
+            $storedName = date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt";
 
             $file = fopen(EDOC_PATH . $storedName, "wb");
             fwrite($file, json_encode($table_data, JSON_FORCE_OBJECT));
