@@ -33,7 +33,7 @@ if(!empty($_REQUEST['email'])) {
             \Records::addRecordToRecordListCache($project_id_registration, $people['record_id'],1);
             error_log(json_encode($arrayLogin,JSON_PRETTY_PRINT));
         }else if($people == "" || strtolower($people['email_2']) != strtolower($_POST['email'])){
-            $message = print_r($people,true)."<br>active: ".$people['active_user']."<br>email: ".$people['email_2']."<html>This email address does not exist in the Hub.<br><br>".
+            $message = "<pre>".print_r($people,true)."</pre><pre>".print_r($records,true)."</pre><br>active: ".$people['active_user']."<br>email: ".$people['email_2']."<html>This email address does not exist in the Hub.<br><br>".
                 "Your email address may not be registered in the system or you may be registered under a different email.</html>";
 
             \REDCap::email(strtolower($_REQUEST['email']),$from,"Access Denied for EPV At-A-Glance Dashboard",$message);
