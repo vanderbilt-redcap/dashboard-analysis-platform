@@ -1,3 +1,10 @@
+/**
+ * On logout we destroy the session
+ * @param goToUrl
+ */
+function destroy_session(goToUrl) {
+    location.href = goToUrl;
+}
 function allfieldsSelecter(){
     var errMsg = [];
     $('#errMsgContainerModal').empty();

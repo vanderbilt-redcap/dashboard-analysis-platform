@@ -78,6 +78,16 @@ use ExternalModules\ExternalModules;
 <body>
 <div class="container">
     <?php
+
+    #TOKEN
+    session_write_close();
+    session_module_name("EPV_user");
+    session_name("EPV");
+    // server should keep session data for AT LEAST 2 days
+    ini_set('session.cookie_lifetime', 172800);
+    session_set_cookie_params(172800);
+    session_start();
+
     $token = "";
     $project_id = (int)$_GET['pid'];
     $project_id_registration = $module->getProjectSetting('registration');

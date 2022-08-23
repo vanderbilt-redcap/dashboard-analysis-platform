@@ -177,10 +177,14 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $top_box_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="right" data-content="'.$top_box_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
     }
 
+    $logout = $module->getUrl('index.php?pid='.$project_id.'&sout');
     $table = "<div class='optionSelect' id='loadTable'>
                <div style='width: 621px;' class='forme'>
                 <img src='".$module->getUrl('epv-2colorhorizontal1300__1_.jpg')."' width='300px'>
                 <div style='float: right;padding-top: 23px;'>
+                    <div style='width: 100%'>
+                    <a href='#' style='float: right' onclick='destroy_session(\"".$logout."\")'> Logout</a>
+                    </div>
                     <a class='btn btn-default' target='_blank' href='".APP_PATH_WEBROOT_FULL.APP_PATH_WEBROOT."DataExport/index.php?pid=".$project_id."&report_id=ALL&stats_charts=1&page=research_participant_perception_survey_sp"."'>Stats &amp; Charts</a>
                 </div>
                 <h3 class='header'></h3>
