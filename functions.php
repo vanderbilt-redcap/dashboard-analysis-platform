@@ -140,18 +140,10 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
                     $score_is_5 = $study_62_array['score5'];
                 }
             }
-            if ($responses == 0 || $responses == $score_is_5) {
-                $percent = "-";
-                $showLegend = true;
-            } else if ($responses - $score_is_5 < 5) {
-                $percent = "x";
-                $showLegend = true;
-            } else if ($responses - $score_is_5 < 20) {
-                $percent = $topScore . " *";
-                $showLegend = true;
-            } else {
-                $percent = $topScore;
-            }
+
+            $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($responses, $score_is_5, $topScore, $showLegend, "");
+            $percent = $percent_array[0];
+            $showLegend = $percent_array[1];
             $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
 
             if ($question == 1) {
@@ -251,18 +243,9 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
         $max = $missingPercent;
     }
 
-    if($missing == 0 || $missing == $score_is_5O_overall){
-        $percent = "-";
-        $showLegendexMissing = true;
-    }else if(($missing - $score_is_5O_overall) < 5) {
-        $percent = "x";
-        $showLegendexMissing = true;
-    }else if(($missing - $score_is_5O_overall) < 20){
-        $percent = $missingPercent." *";
-        $showLegendexMissing = true;
-    }else{
-        $percent = $missingPercent;
-    }
+    $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($missing, $score_is_5O_overall, $missingPercent, $showLegendexMissing, "missing");
+    $percent = $percent_array[0];
+    $showLegendexMissing = $percent_array[1];
     $tooltip = $missing." responses, ".$missing_col." missing";
 
     if($question == 1) {
@@ -278,20 +261,35 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     }
 }
 
-function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors){
+function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$institutions){
     $RecordSetOverall = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
     $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
     $recordsoverallTotal = count($recordsoverall);
     $topScoreFoundO = 0;
     $showLegendexTotal = false;
+
+    #INSTITUTIONS
+    $array_institutions = array();
+    $array_institutions_percent = array();
+    foreach ($institutions as $institution){
+        $array_institutions[$institution]['topScore'] = 0;
+        $array_institutions[$institution]['missing'] = 0;
+        $array_institutions[$institution]['recordsTotal'] = 0;
+        $array_institutions_percent[$institution] = 0;
+    }
+
     foreach ($recordsoverall as $recordo){
+        $institution = trim(explode("-",$recordo['record_id'])[0]);
+        $array_institutions[$institution]['recordsTotal'] += 1;
         if($question == "1"){
             if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
                 $topScoreFoundO += 1;
+                $array_institutions[$institution]['topScore'] += 1;
             }
         }else{
             if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
                 $topScoreFoundO += 1;
+                $array_institutions[$institution]['topScore'] += 1;
             }
         }
     }
@@ -301,7 +299,9 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     $score_is_5O_overall_missing = 0;
     foreach($missingRecords as $misRecord){
         if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
+            $institution = trim(explode("-",$misRecord['record_id'])[0]);
             $score_is_5O_overall_missing += 1;
+            $array_institutions[$institution]['missing'] += 1;
         }
     }
 
@@ -310,31 +310,35 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     if($topScoreFoundO > 0){
         $overall = number_format(($topScoreFoundO/($recordsoverallTotal-$score_is_5O_overall_missing)*100),0);
     }
+    #Institutions Data
+    foreach ($array_institutions as $institution=>$data) {
+        $overall_institution = 0;
+        if($array_institutions[$institution]['topScore']  > 0) {
+            $overall_institution = number_format(($array_institutions[$institution]['topScore'] / ($array_institutions[$institution]['recordsTotal'] - $array_institutions[$institution]['missing']) * 100), 0);
+        }
 
-    if($recordsoverallTotal == 0 || $recordsoverallTotal == $score_is_5O_overall_missing){
-        $percent = "-";
-        $showLegendexTotal = true;
-    }else if(($recordsoverallTotal - $score_is_5O_overall_missing) < 5){
-        $percent = "x";
-        $showLegendexTotal = true;
-    }else if(($recordsoverallTotal - $score_is_5O_overall_missing) < 20){
-        $percent = $overall." *";
-        $showLegendexTotal = true;
-    }else{
-        $percent = $overall;
+        $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($array_institutions[$institution]['recordsTotal'], $array_institutions[$institution]['missing'], $overall_institution, $showLegendexTotal, "total");
+        $array_institutions_percent[$institution] = $percent_array[0];
+        $showLegendexTotal = $percent_array[1];
     }
+
+    $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($recordsoverallTotal, $score_is_5O_overall_missing, $overall, $showLegendexTotal, "total");
+    $percent = $percent_array[0];
+    $showLegendexTotal = $percent_array[1];
     $tooltip = $recordsoverallTotal . " responses, " . $missingOverall . " missing";
 
     if($question == 1) {
         $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
         $array_colors[$indexQuestion][0] = $percent;
-        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$showLegendexTotal);
+        $array_colors_intitutions[$indexQuestion][0] = $array_institutions_percent;
+        return array(0=>$tooltipTextArray,1=>$array_colors,2=>$showLegendexTotal,3=>$array_colors_intitutions);
     }else{
         if($indexQuestion != ""){
             $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
             $array_colors[$indexQuestion][0] = $percent;
+            $array_colors_intitutions[$indexQuestion][0] = $array_institutions_percent;
         }
-        return array(0=>$percent,1=>$tooltip,2=>$showLegendexTotal,3=>$array_colors,4=>$tooltipTextArray);
+        return array(0=>$percent,1=>$tooltip,2=>$showLegendexTotal,3=>$array_colors,4=>$tooltipTextArray,5=>$array_colors_intitutions);
     }
 }
 
@@ -373,18 +377,9 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     }
 
     $responses = $multiple - $multiple_missing;
-    if($responses == 0){
-        $percent = "-";
-        $showLegendexMultiple = true;
-    }else if(($responses - $multiple_not_applicable) < 5){
-        $percent = "x";
-        $showLegendexMultiple = true;
-    }else if(($responses - $multiple_not_applicable) < 20){
-        $percent = $multiplePercent." *";
-        $showLegendexMultiple = true;
-    }else{
-        $percent = $multiplePercent;
-    }
+    $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($responses, $multiple_not_applicable, $multiplePercent, $showLegendexMultiple, "multiple");
+    $percent = $percent_array[0];
+    $showLegendexMultiple = $percent_array[1];
     $tooltip = $responses . " responses, " . $multiple_missing . " missing";
 
     if($question == 1) {
@@ -398,6 +393,22 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
         }
         return array(0=>$percent,1=>$tooltip,2=>$showLegendexMultiple,3=>$array_colors,4=>$tooltipTextArray);
     }
+}
+
+function getPercent($recordsTotal, $missing, $overall, $showLegend, $option){
+    if($recordsTotal == 0 || ($recordsTotal == $missing && $option != "multiple")){
+        $percent = "-";
+        $showLegend = true;
+    }else if(($recordsTotal - $missing) < 5){
+        $percent = "x";
+        $showLegend = true;
+    }else if(($recordsTotal - $missing) < 20){
+        $percent = $overall." *";
+        $showLegend = true;
+    }else{
+        $percent = $overall;
+    }
+    return array(0=>$percent,1=>$showLegend);
 }
 
 function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
@@ -470,7 +481,17 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
     $total_questions = count($row_questions_1);
     $graph["total_records"]["total"] = $total_records;
+    $array_institutions = array();
     foreach ($allRecords as $record) {
+        $institution = trim(explode("-",$record['record_id'])[0]);
+        if(!array_key_exists($institution,$array_institutions)){
+            $array_institutions[$institution]['any'] = 0;
+            $array_institutions[$institution]['complete'] = 0;
+            $array_institutions[$institution]['partial'] = 0;
+            $array_institutions[$institution]['breakoffs'] = 0;
+            $array_institutions[$institution]['total_records'] = 0;
+        }
+        $array_institutions[$institution]['total_records'] += 1;
         $num_questions_answered = 0;
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             if ($record[$question_1] != "") {
@@ -478,6 +499,11 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
             }
         }
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "total", $graph);
+        $array_institutions[$institution]["any"] = $graph["any"]["total"];
+        $array_institutions[$institution]["complete"] = $graph["complete"]["total"];
+        $array_institutions[$institution]["partial"] = $graph["partial"]["total"];
+        $array_institutions[$institution]["breakoffs"] = $graph["breakoffs"]["total"];
+        $graph["institutions"] = $array_institutions;
     }
     return $graph;
 }

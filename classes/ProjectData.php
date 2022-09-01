@@ -212,5 +212,16 @@ class ProjectData
         );
         return $row_questions_2;
     }
+
+    public static function getAllInstitutions($multipleRecords){
+        $array_institutions = array();
+        foreach ($multipleRecords as $record){
+            $institution = trim(explode("-",$record['record_id'])[0]);
+            if(!in_array($institution,$array_institutions)){
+                array_push($array_institutions,$institution);
+            }
+        }
+        return $array_institutions;
+    }
 }
 ?>

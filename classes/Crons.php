@@ -24,6 +24,7 @@ class Crons
 
         $RecordSetMultiple = \REDCap::getData($project_id, 'array');
         $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+        $institutions = ProjectData::getAllInstitutions($multipleRecords);
 
         #QUESTION = 1
         $question = 1;
@@ -80,12 +81,15 @@ class Crons
                 $showLegendMissing = $missingCol[5];
 
                 #OVERALL COL MISSING
-                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors);
+                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions);
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
-                $showLegendTotal = $totalCol[5];
+                $showLegendTotal = $totalCol[2];
                 $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
                 $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
+
+                #INSTITUTIONS
+                $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
 
                 #MULTIPLE
                 if ($study == "rpps_s_q61") {
@@ -130,6 +134,12 @@ class Crons
                 $allDataTooltip_array[$question]["nofilter"][$question_2][0] = $total[1];
                 array_push($array_colors, $total[0]);
                 array_push($tooltipTextArray, $total[1]);
+
+                #INSTITUTIONS
+                foreach($institutions as $institution){
+                    $totalInstitution = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
+                    $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
+                }
 
                 #NORMAL
                 foreach ($study_options as $index => $col_title) {
@@ -208,12 +218,13 @@ class Crons
                     $tooltipTextArray = $missingCol[5];
 
                     #OVERALL MISSING
-                    $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors);
+                    $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions);
                     $showLegendTotal = $totalCol[2];
                     $array_colors = $totalCol[3];
                     $tooltipTextArray = $totalCol[4];
                     $allData_array[$question]["nofilter"]["rpps_s_q" . $i] = $totalCol[3];
                     $allDataTooltip_array[$question]["nofilter"]["rpps_s_q" . $i] = $totalCol[4];
+                    $allData_array[$question]["institutions"]["rpps_s_q" . $i] = $totalCol[5];
 
                     #MULTIPLE
                     if ($study == "rpps_s_q61") {
@@ -238,6 +249,7 @@ class Crons
         $table_data['data'] = $allData_array;
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
+        $table_data['institutions'] = $institutions;
 
         if ($table_data != "" && $allData_array != "" && $allDataTooltip_array != "") {
             #SAVE DATA IN FILE

@@ -128,6 +128,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
     $study_options = $module->getChoiceLabels($study, $project_id);
+
+    $RecordSetMultiple = \REDCap::getData($project_id, 'array');
+    $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+    $institutions = ProjectData::getAllInstitutions($multipleRecords);
+
     $graph = array();
     if($question == 2){
         $array_study = array(
@@ -269,6 +274,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         if ($study == "rpps_s_q61" || $study == "race") {
             $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
         }
+    }else{
+        foreach ($institutions as $institution){
+            $table .=  '<th class="dal_task"><div style="width: 197.719px;"><span>'.$institution.'</span></div></th>';
+        }
     }
     $table .= '</tr>';
 
@@ -303,8 +312,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $table .= '</thead>';
 
-    $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-    $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+
     #LOAD THE FILE
     $filename = "dashboard_cache_file_".$project_id.".txt";
     $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?",[$project_id,$filename]);
@@ -339,21 +347,40 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     ksort($dash_array['tooltip'][$question][$study][$question_1][$indexQuestion]);
 
                     if($study == "nofilter"){
-                        if (($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "x" ) && $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] != "0") {
+                        if (($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] == "x") && $dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] != "0") {
                             $color = "#c4c4c4";
                             $showLegendNoFilter = true;
                         } else {
-                            if(strpos($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0], '*')){
+                            if (strpos($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0], '*')) {
                                 $showLegendNoFilter = true;
                             }
-                            $percent = ($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] / ($max)) * 100;
+                            $percent = ($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] / ($max)) * 100;
                             $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
                         }
                         $extraSpace100 = '';
-                        if($dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] == "100 *"){
+                        if ($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] == "100 *") {
                             $extraSpace100 = " extraSpace100";
                         }
-                        $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_1][$indexQuestion][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_1][$indexQuestion][0] . '</div></td>';
+                        $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel' . $extraSpace100 . '" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]["nofilter"][$question_1][$indexQuestion][0] . '">' . $dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] . '</div></td>';
+
+                        #INSTITUTIONS
+                        foreach ($institutions as $institution) {
+                            if (($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] != "0") {
+                                $color = "#c4c4c4";
+                                $showLegendNoFilter = true;
+                            } else {
+                                if (strpos($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution], '*')) {
+                                    $showLegendNoFilter = true;
+                                }
+                                $percent = ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] / ($max)) * 100;
+                                $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                            }
+                            $extraSpace100 = '';
+                            if ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "100 *") {
+                                $extraSpace100 = " extraSpace100";
+                            }
+                            $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel' . $extraSpace100 . '" style="cursor:default !important">' . $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] . '</div></td>';
+                        }
                         $table .= '</tr>';
                     }else{
                         foreach ($dash_array['data'][$question][$study][$question_1][$indexQuestion] as $i => $value){
@@ -412,6 +439,17 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $showLegendNoFilter = true;
                     }
                     $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_2][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_2][0] . '</div></td>';
+
+                    #INSTITUTIONS
+                    foreach ($institutions as $institution) {
+                        if($dash_array['data'][$question]['institutions'][$question_2][$institution][0] == "100 *"){
+                            $extraSpace100 = " extraSpace100";
+                        }
+                        if(strpos($dash_array['data'][$question]['institutions'][$question_2][$institution][0], '*')){
+                            $showLegendNoFilter = true;
+                        }
+                        $table .= '<td class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel'.$extraSpace100.'" style="cursor:default !important">' . $dash_array['data'][$question]['institutions'][$question_2][$institution][0] . '</div></td>';
+                    }
                     $table .= '</tr>';
                 }else{
                     ksort($dash_array['data'][$question][$study][$question_2]);
@@ -450,7 +488,20 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         if(strpos($dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0], '*')){
                             $showLegendNoFilter = true;
                         }
-                        $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
+                        $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['institutions']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
+
+                        #INSTITUTIONS
+                        foreach ($institutions as $institution) {
+                            if($dash_array['data'][$question]['institutions']["rpps_s_q" . $i][$index][0][0][$institution] == "100 *"){
+                                $extraSpace100 = " extraSpace100";
+                            }
+                            if(strpos($dash_array['data'][$question]['institutions']["rpps_s_q" . $i][$index][0][0][$institution], '*')){
+                                $showLegendNoFilter = true;
+                            }
+                            $table .= '<td class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel'.$extraSpace100.'" style="cursor:default !important">' . $dash_array['data'][$question]['institutions']["rpps_s_q" . $i][$index][0][0][$institution] . '</div></td>';
+
+                        }
+
                         $table .= '</tr>';
                     } else {
                         foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i] as $singleDataIndex => $singleData) {
