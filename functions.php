@@ -574,10 +574,10 @@ function getResponseRate($questions, $total_records){
  * @return bool
  */
 function isTokenCorrect($token,$pidPeople){
-    $projectPeople = \REDCap::getData($pidPeople, 'array', null,null,null,null,false,false,false,"[token] = '".$token."'");
+    $projectPeople = \REDCap::getData($pidPeople, 'array', null,null,null,null,false,false,false,"[token_2] = '".$token."' or [token_3] = '".$token."'");
     $people = ProjectData::getProjectInfoArray($projectPeople)[0];
     if(!empty($people)){
-        if(strtotime($people['token_expiration_date']) > strtotime(date('Y-m-d'))){
+        if((strtotime($people['token_expiration_date_2']) > strtotime(date('Y-m-d')) && $people['token_2'] == $token) || (strtotime($people['token_expiration_date_3']) > strtotime(date('Y-m-d')) && $people['token_3'] == $token)){
             return true;
         }
     }
