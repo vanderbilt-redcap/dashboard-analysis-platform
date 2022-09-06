@@ -18,7 +18,7 @@
       {
         "name": "Dashboard Analysis Platform",
         "icon": "fas fa-chart-area",
-        "url": "index.php",
+        "url": "index.php?NOAUTH",
         "target": "_blank"
       }
     ]
