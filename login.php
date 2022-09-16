@@ -8,7 +8,7 @@ $record = htmlentities($_GET['record'],ENT_QUOTES);
 <script>
     $(document).ready(function() {
         $('#form_login').submit(function () {
-            var url_getLink = <?=json_encode($module->getUrl('login_link.php'))?>;
+            var url_getLink = <?=json_encode($module->getUrl('login_link.php?NOAUTH'))?>;
             var errMsg = [];
             $('#hub_error_message').hide();
             if(!validateEmail($('#hub_email').val())){
