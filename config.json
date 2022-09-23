@@ -24,7 +24,7 @@
     ]
   },
 
-  "no-auth-pages":["index","login","login_link"],
+  "no-auth-pages":["index","login","login_link","loadTable"],
 
   "description": "A dashboard to visualize participant perception scores from the Research Participant Perception Survey (RPPS). This module works with any of the RPPS instruments in the REDCap Instrument Library.",
 

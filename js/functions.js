@@ -5,7 +5,7 @@
 function destroy_session(goToUrl) {
     location.href = goToUrl;
 }
-function allfieldsSelecter(){
+function allfieldsSelected(){
     var errMsg = [];
     $('#errMsgContainerModal').empty();
     if($('#question').val() == "" || $('#question').val() == undefined){
@@ -25,7 +25,7 @@ function allfieldsSelecter(){
     return true;
 }
 function loadTable(url){
-    if(allfieldsSelecter()) {
+    if(allfieldsSelected()) {
         var question = "&question=" + $('#question option:selected').val();
         var study = "&study=" + $('#study option:selected').val();
 
@@ -35,7 +35,7 @@ function loadTable(url){
             var daterange = "&daterange=" + $('#daterange').val();
         }
         var data = question + study + daterange;
-
+        console.log(url)
         $('#loadTablebtn').prop('disabled', true);
         $.ajax({
             type: "POST",
