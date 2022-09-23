@@ -35,7 +35,6 @@ function loadTable(url){
             var daterange = "&daterange=" + $('#daterange').val();
         }
         var data = question + study + daterange;
-        console.log(url)
         $('#loadTablebtn').prop('disabled', true);
         $.ajax({
             type: "POST",
