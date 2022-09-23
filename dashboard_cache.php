@@ -245,7 +245,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $table .='</optgroup>';
     $table .='</select>
                         <input type="daterange" class="form-control" id="daterange" name="daterange" value="'.$daterange.'">
-                        <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php?NOAUTH")).');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
+                        <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php")).');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
                     </div>
                 </div>
                 <table class="table dal table-bordered pull-left" id="table_archive">
