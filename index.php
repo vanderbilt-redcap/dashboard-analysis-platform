@@ -84,6 +84,9 @@ use ExternalModules\ExternalModules;
     ini_set('session.cookie_lifetime', 172800);
     session_set_cookie_params(172800);
     session_start();
+    $cookie_name = "EPV";
+    $cookie_value = "EPV";
+    setcookie($cookie_name, $cookie_value, time() + 3600, "/"); //1 hour
 
     $token = "";
     $project_id = (int)$_GET['pid'];
@@ -97,6 +100,9 @@ use ExternalModules\ExternalModules;
     //Session OUT
     if(array_key_exists('sout', $_REQUEST)){
         unset($_SESSION['token']["EPV".$project_id]);
+        if(isset($_COOKIE["EPV"])):
+            setcookie("EPV", '', time()-7000000, '/');
+        endif;
     }
 
     if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)) {

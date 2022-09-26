@@ -46,7 +46,7 @@ function loadTable(url){
             success: function (result) {
                 paramValue = jQuery.parseJSON(result);
                 var Newulr = getParamUrl(window.location.href, paramValue);
-                window.location.href = Newulr+"&NOAUTH";
+                window.location.href = Newulr;
             }
         });
     }

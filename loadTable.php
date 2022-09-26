@@ -2,7 +2,7 @@
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/classes/ProjectData.php");
 
-
+session_start();
 $timestamp = strtotime(date("Y-m-d H:i:s"));
 $_SESSION[$_GET['pid']."_dash_timestamp"] = $timestamp;
 $_SESSION[$_GET['pid']."_question"] = $_POST['question'];
