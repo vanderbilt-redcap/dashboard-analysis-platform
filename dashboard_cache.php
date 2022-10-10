@@ -206,9 +206,14 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
 
     $table .= ' </select>
-                        <select class="form-control" id="study">
-                            <option value="nofilter" selected>No filter</option>
-                            <option value="bysite" selected>By site</option>';
+                        <select class="form-control" id="study">';
+        if($study == "nofilter") {
+            $table .= '<option value="nofilter" selected>No filter</option>
+                       <option value="bysite">By site</option>';
+        }else if($study == "bysite") {
+            $table .= '<option value="nofilter">No filter</option>
+                       <option value="bysite" selected>By site</option>';
+        }
 
     foreach ($array_study as $index => $sstudy){
         if(strpos($index, 'header') !== false){
