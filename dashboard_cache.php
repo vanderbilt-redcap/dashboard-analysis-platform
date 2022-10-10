@@ -213,6 +213,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         }else if($study == "bysite") {
             $table .= '<option value="nofilter">No filter</option>
                        <option value="bysite" selected>By site</option>';
+        }else{
+            $table .= '<option value="nofilter">No filter</option>
+                       <option value="bysite">By site</option>';
         }
 
     foreach ($array_study as $index => $sstudy){
@@ -661,7 +664,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $('#modal-big-graph-title').text(question_text);
                 $('#modal-spinner').modal('show');
 
-                if(studyOption == "nofilter" && datagraph != "" && datagraph != undefined){
+                if((studyOption == "nofilter" || studyOption == "bysite") && datagraph != "" && datagraph != undefined){
                     dash_chart_big.data.datasets.find((dataset, index) => {
                         if (dataset.id === "total") {
                             dash_chart_big.data.datasets.splice(index, 1);
@@ -728,7 +731,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $('#month').removeClass('selected');
                 }
 
-                if(studyOption == "nofilter"){
+                if(studyOption == "nofilter" || studyOption == "bysite"){
                     study = "total";
                     dash_chart_big.data.labels = datagraph["labels"][timeline][question_1][study];
                     dash_chart_big.data.datasets[0].data = datagraph["results"][timeline][question_1][study];
