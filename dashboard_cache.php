@@ -207,7 +207,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $table .= ' </select>
                         <select class="form-control" id="study">
-                            <option value="nofilter" selected>No filter</option>';
+                            <option value="nofilter" selected>No filter</option>
+                            <option value="bysite" selected>By site</option>';
 
     foreach ($array_study as $index => $sstudy){
         if(strpos($index, 'header') !== false){
@@ -264,19 +265,20 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 $table .= '<th class="dal_task ' . $class . '" ' . $attribute . '><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
             }
+        }else if ($study == "bysite") {
+            foreach ($institutions as $institution){
+                $table .=  '<th class="dal_task"><div style="width: 197.719px;"><span>'.$institution.'</span></div></th>';
+            }
         } else {
             foreach ($study_options as $indexstudy => $col_title) {
                 $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
             }
         }
-        $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO ' . strtoupper($array_study[$study]) . ' REPORTED</span></div></th>';
-
+        if($study != "bysite") {
+            $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO ' . strtoupper($array_study[$study]) . ' REPORTED</span></div></th>';
+        }
         if ($study == "rpps_s_q61" || $study == "race") {
             $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>MULTIPLE</span></div></th>';
-        }
-    }else{
-        foreach ($institutions as $institution){
-            $table .=  '<th class="dal_task"><div style="width: 197.719px;"><span>'.$institution.'</span></div></th>';
         }
     }
     $table .= '</tr>';
@@ -329,11 +331,12 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             }
         }
     }
+
     $showLegendNoFilter = false;
     if($dash_array != "" && is_array($dash_array)){
         $max = 100;
         if ($question == 1) {
-            if($dash_array['data'][$question][$study] != ""){
+            if($dash_array['data'][$question][$study] != "" || $study == "bysite"){
                 if($study == "rpps_s_q61") {
                     $extras = 3;
                 }
@@ -343,10 +346,15 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
                     $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 
-                    ksort($dash_array['data'][$question][$study][$question_1][$indexQuestion]);
-                    ksort($dash_array['tooltip'][$question][$study][$question_1][$indexQuestion]);
+                    $study_aux = $study;
+                    if($study == "bysite") {
+                        $study_aux = "nofilter";
+                    }
 
-                    if($study == "nofilter"){
+                    ksort($dash_array['data'][$question][$study_aux][$question_1][$indexQuestion]);
+                    ksort($dash_array['tooltip'][$question][$study_aux][$question_1][$indexQuestion]);
+
+                    if($study == "nofilter" || $study == "bysite"){
                         if (($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] == "x") && $dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] != "0") {
                             $color = "#c4c4c4";
                             $showLegendNoFilter = true;
@@ -363,23 +371,25 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         }
                         $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel' . $extraSpace100 . '" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]["nofilter"][$question_1][$indexQuestion][0] . '">' . $dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] . '</div></td>';
 
-                        #INSTITUTIONS
-                        foreach ($institutions as $institution) {
-                            if (($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] != "0") {
-                                $color = "#c4c4c4";
-                                $showLegendNoFilter = true;
-                            } else {
-                                if (strpos($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution], '*')) {
+                        if($study == "bysite") {
+                            #INSTITUTIONS
+                            foreach ($institutions as $institution) {
+                                if (($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] != "0") {
+                                    $color = "#c4c4c4";
                                     $showLegendNoFilter = true;
+                                } else {
+                                    if (strpos($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution], '*')) {
+                                        $showLegendNoFilter = true;
+                                    }
+                                    $percent = ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] / ($max)) * 100;
+                                    $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
                                 }
-                                $percent = ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] / ($max)) * 100;
-                                $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                                $extraSpace100 = '';
+                                if ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "100 *") {
+                                    $extraSpace100 = " extraSpace100";
+                                }
+                                $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel' . $extraSpace100 . '" style="cursor:default !important">' . $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] . '</div></td>';
                             }
-                            $extraSpace100 = '';
-                            if ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "100 *") {
-                                $extraSpace100 = " extraSpace100";
-                            }
-                            $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel' . $extraSpace100 . '" style="cursor:default !important">' . $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] . '</div></td>';
                         }
                         $table .= '</tr>';
                     }else{
@@ -758,7 +768,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 <td id='year'>Year</td>
                             </tr>
                         </table>
-                        <?php if(!empty($study_options) && $study != "nofilter"){ ?>
+                        <?php if(!empty($study_options) && $study != "nofilter" && $study != "bysite"){ ?>
                             <div class='table table-bordered'>
                                 <div><input type="checkbox" value="total" class="category" text="Total" color="<?=$array_colors_graphs[0]?>" checked> Total</div>
                                 <?php
