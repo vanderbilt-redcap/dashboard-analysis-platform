@@ -6,32 +6,8 @@ use ExternalModules\ExternalModules;
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script type="text/javascript" src="<?=$module->getUrl('js/jquery-3.3.1.min.js')?>"></script>
-<script type="text/javascript" src="<?=$module->getUrl('js/jquery-ui.min.js')?>"></script>
-<script type="text/javascript" src="<?=$module->getUrl('bootstrap-3.3.7/js/bootstrap.min.js')?>"></script>
-<script type="text/javascript" src="<?=$module->getUrl('js/fontawesome-free-5.15.2-web/js/all.js')?>"></script>
 
-<script type="text/javascript" src="<?=$module->getUrl('js/jquery.tablesorter.min.js')?>"></script>
-<script type="text/javascript" src="<?=$module->getUrl('js/sortable.min.js')?>"></script>
-<script type="text/javascript" src="<?=$module->getUrl('js/Chart.min.js')?>"></script>
-
-<script type="text/javascript" src="<?=$module->getUrl('js/jquery.dataTables.min.js')?>"></script>
-<script type="text/javascript" src="<?=$module->getUrl('js/dataTables.buttons.min.js')?>"></script>
-
-<script type="text/javascript" src="<?=$module->getUrl('js/functions.js')?>"></script>
-
-<link type='text/css' href='<?=$module->getUrl('bootstrap-3.3.7/css/bootstrap.min.css')?>' rel='stylesheet' media='screen' />
-<link type='text/css' href='<?=$module->getUrl('css/sortable-theme-bootstrap.css')?>' rel='stylesheet' media='screen' />
-<link type='text/css' href='<?=$module->getUrl('css/style.css')?>' rel='stylesheet' media='screen' />
-<link type='text/css' href='<?=$module->getUrl('css/jquery-ui.min.css')?>' rel='stylesheet' media='screen' />
-<link type='text/css' href='<?=$module->getUrl('css/jquery.dataTables.min.css')?>' rel='stylesheet' media='screen' />
-<link type='text/css' href='<?=$module->getUrl('js/fontawesome-free-5.15.2-web/css/fontawesome.css')?>' rel='stylesheet' media='screen' />
-
-<link rel='stylesheet' href='https://use.typekit.net/nxh7lyk.css'>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
+<?php include_once("head_scripts.php");?>
 <?php include_once ("functions.php");?>
 
 <script type='text/javascript'>
@@ -80,13 +56,9 @@ use ExternalModules\ExternalModules;
     <?php
     #TOKEN
     session_write_close();
-    // server should keep session data for AT LEAST 2 days
-    ini_set('session.cookie_lifetime', 172800);
-    session_set_cookie_params(172800);
+    session_name("EPV");
+    session_id($_COOKIE["EPV"]);
     session_start();
-    $cookie_name = "EPV";
-    $cookie_value = "EPV";
-    setcookie($cookie_name, $cookie_value, time() + 3600, "/"); //1 hour
 
     $token = "";
     $project_id = (int)$_GET['pid'];
