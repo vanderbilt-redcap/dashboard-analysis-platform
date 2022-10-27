@@ -69,12 +69,7 @@ class StatsCharts{
         $charts_html = ob_get_clean();
         // Build dynamic filter options (if any)
         $dynamic_filters = \DataExport::displayReportDynamicFilterOptions($report_id);
-        // Check report edit permission
-        $report_edit_access = SUPER_USER;
-        if (!SUPER_USER && is_numeric($report_id)) {
-            $reports_edit_access = \DataExport::getReportsEditAccess(USERID, $user_rights['role_id'], $user_rights['group_id'], $report_id);
-            $report_edit_access = in_array($report_id, $reports_edit_access);
-        }
+
         // Set html to return
         $html = "";
         // Action buttons
