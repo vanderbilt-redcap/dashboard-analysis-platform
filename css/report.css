@@ -1,5 +1,8 @@
-#sub-nav{
+#sub-nav,.plot-download-div,#showPlotsStatsOptions,#lf1{
     display:none !important;
+}
+#this_report_title{
+    padding-top:60px !important;
 }
 .dc_img_spinner {
     display: none;

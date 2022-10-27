@@ -36,3 +36,10 @@ $html .= \RCView::div(array('class'=>'spacer mt-5'),' ') .
 print '<div id="center" class="col" style="padding-bottom: 60px;padding-left: 30px">'.$html.'</div>';
 
 ?>
+<script>
+    $( document ).ready(function() {
+        $('#lf1').prev().css('display','none');
+        $( 'button:contains(\' View Report\')' ).hide();
+        $( 'button:contains(\' Export Data\')' ).hide();
+    });
+</script>
