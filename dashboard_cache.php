@@ -190,7 +190,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     <div style='width: 100%'>
                     <a href='#' style='float: right' onclick='destroy_session(\"".$logout."\")'> Logout</a>
                     </div>
-                    <a class='btn btn-default' target='_blank' href='".$module->getUrl('stats_and_charts.php?NOAUTH')."'>Stats &amp; Charts</a>
+                    <a class='btn btn-default' target='_blank' href='".$module->getUrl('index.php?NOAUTH&option=sac')."'>Stats &amp; Charts</a>
                 </div>
                 <h3 class='header'></h3>
                     <div>
