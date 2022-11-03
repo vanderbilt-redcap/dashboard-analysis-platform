@@ -449,7 +449,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="right" title="'.ucfirst($question_2).' Response" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
                 $table .= '<tr><td class="question">'.ucfirst($question_2)." response ".$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_2.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 
-                if($study == "nofilter"){
+                if($study == "nofilter" || $study == "bysite"){
                     if($dash_array['data'][$question]['nofilter'][$question_2][0] == "100 *"){
                         $extraSpace100 = " extraSpace100";
                     }
@@ -458,15 +458,17 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     }
                     $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['nofilter'][$question_2][0] . '">' . $dash_array['data'][$question]['nofilter'][$question_2][0] . '</div></td>';
 
-                    #INSTITUTIONS
-                    foreach ($institutions as $institution) {
-                        if($dash_array['data'][$question]['institutions'][$question_2][$institution][0] == "100 *"){
-                            $extraSpace100 = " extraSpace100";
+                    if($study == "bysite") {
+                        #INSTITUTIONS
+                        foreach ($institutions as $institution) {
+                            if ($dash_array['data'][$question]['institutions'][$question_2][$institution][0] == "100 *") {
+                                $extraSpace100 = " extraSpace100";
+                            }
+                            if (strpos($dash_array['data'][$question]['institutions'][$question_2][$institution][0], '*')) {
+                                $showLegendNoFilter = true;
+                            }
+                            $table .= '<td class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel' . $extraSpace100 . '" style="cursor:default !important">' . $dash_array['data'][$question]['institutions'][$question_2][$institution][0] . '</div></td>';
                         }
-                        if(strpos($dash_array['data'][$question]['institutions'][$question_2][$institution][0], '*')){
-                            $showLegendNoFilter = true;
-                        }
-                        $table .= '<td class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel'.$extraSpace100.'" style="cursor:default !important">' . $dash_array['data'][$question]['institutions'][$question_2][$institution][0] . '</div></td>';
                     }
                     $table .= '</tr>';
                 }else{
