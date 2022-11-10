@@ -36,7 +36,7 @@ if($selector == 2){
 }
 
 $selector = '<option value="nofilter" selected>No filter</option>';
-$selector = '<option value="bysite" selected>By site</option>';
+$selector .= '<option value="bysite">By site</option>';
 foreach ($array_study as $index => $sstudy){
     if(strpos($index, 'header') !== false){
         $number_header = explode('header', strtolower($index));

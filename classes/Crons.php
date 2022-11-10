@@ -26,6 +26,7 @@ class Crons
         $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
 
+
         #QUESTION = 1
         $question = 1;
         $array_study_1 = array(
@@ -118,6 +119,18 @@ class Crons
             "race" => "Race",
             "sex" => "Sex"
         );
+
+        #INSTITUTIONS
+        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph);
+        foreach ($row_questions_2 as $indexQuestion => $question_2) {
+            foreach ($institutions as $institution) {
+                $totalInstitution = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
+                $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
+//                print_array("Institution: " . $institution . " - " . $question_2 . " - questions: " . $graph["institutions"][$institution][$question_2] . ", total records: " . $graph["institutions"][$institution]["total_records"]);
+//                print_array("Percent: " . $totalInstitution[0]);
+            }
+        }
+
         foreach ($array_study_2 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
@@ -134,12 +147,6 @@ class Crons
                 $allDataTooltip_array[$question]["nofilter"][$question_2][0] = $total[1];
                 array_push($array_colors, $total[0]);
                 array_push($tooltipTextArray, $total[1]);
-
-                #INSTITUTIONS
-                foreach($institutions as $institution){
-                    $totalInstitution = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
-                    $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
-                }
 
                 #NORMAL
                 foreach ($study_options as $index => $col_title) {
@@ -163,7 +170,6 @@ class Crons
                 $allDataTooltip_array[$question][$study][$question_2] = $tooltipTextArray;
             }
         }
-
 
         #QUESTION = 3,4,5
         $array_study_3 = array(

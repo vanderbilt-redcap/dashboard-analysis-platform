@@ -481,17 +481,7 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
     $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
     $total_questions = count($row_questions_1);
     $graph["total_records"]["total"] = $total_records;
-    $array_institutions = array();
     foreach ($allRecords as $record) {
-        $institution = trim(explode("-",$record['record_id'])[0]);
-        if(!array_key_exists($institution,$array_institutions)){
-            $array_institutions[$institution]['any'] = 0;
-            $array_institutions[$institution]['complete'] = 0;
-            $array_institutions[$institution]['partial'] = 0;
-            $array_institutions[$institution]['breakoffs'] = 0;
-            $array_institutions[$institution]['total_records'] = 0;
-        }
-        $array_institutions[$institution]['total_records'] += 1;
         $num_questions_answered = 0;
         foreach ($row_questions_1 as $indexQuestion => $question_1) {
             if ($record[$question_1] != "") {
@@ -499,11 +489,56 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
             }
         }
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "total", $graph);
-        $array_institutions[$institution]["any"] = $graph["any"]["total"];
-        $array_institutions[$institution]["complete"] = $graph["complete"]["total"];
-        $array_institutions[$institution]["partial"] = $graph["partial"]["total"];
-        $array_institutions[$institution]["breakoffs"] = $graph["breakoffs"]["total"];
-        $graph["institutions"] = $array_institutions;
+    }
+    return $graph;
+}
+
+function getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph){
+    $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
+    $RecordSet = \REDCap::getData($project_id, 'array', null, null, null, null, false, false, false, $conditionDate);
+    $allRecords = ProjectData::getProjectInfoArray($RecordSet);
+    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $total_questions = count($row_questions_1);
+    $graph["total_records"]["total"] = $total_records;
+    $array_institutions = array();
+    $graph["institutions"] = array();
+
+    foreach($institutions as $institution) {
+        $array_institutions[$institution]['any'] = 0;
+        $array_institutions[$institution]['complete'] = 0;
+        $array_institutions[$institution]['partial'] = 0;
+        $array_institutions[$institution]['breakoffs'] = 0;
+        $array_institutions[$institution]['total_records'] = 0;
+        $graph["institutions"][$institution] = array();
+        $graph["institutions"][$institution]['any'] = 0;
+        $graph["institutions"][$institution]['complete'] = 0;
+        $graph["institutions"][$institution]['partial'] = 0;
+        $graph["institutions"][$institution]['breakoffs'] = 0;
+        $graph["institutions"][$institution]['total_records'] = 0;
+        foreach ($allRecords as $record) {
+            $institution_record = trim(explode("-",$record['record_id'])[0]);
+            if($institution_record == $institution){
+                $array_institutions[$institution]['total_records'] += 1;
+                $graph["institutions"][$institution]['total_records'] += 1;
+                $num_questions_answered = 0;
+                foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                    if ($record[$question_1] != "") {
+                        $num_questions_answered++;
+                    }
+                }
+            }
+            $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
+            if ($percent >= 0.8) {
+                $graph["institutions"][$institution]["complete"]++;
+            } else if ($percent < 0.8 && $percent >= 0.5) {
+                $graph["institutions"][$institution]["partial"]++;
+            } else if ($percent < 0.5 && $percent > 0) {
+                $graph["institutions"][$institution]["breakoffs"]++;
+            }
+            if($percent > 0){
+                $graph["institutions"][$institution]["any"]++;
+            }
+        }
     }
     return $graph;
 }
