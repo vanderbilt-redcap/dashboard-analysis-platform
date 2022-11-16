@@ -45,13 +45,14 @@ class Crons
         );
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
-            if ($count < 11) {
+            if ($count < 11 && $sstudy != "") {
                 $array_study_1[$sstudy] = "Custom site value " . $count;
             } else {
                 break;
             }
             $count++;
         }
+        $isnofiltercalculated = false;
         foreach ($array_study_1 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
@@ -86,8 +87,10 @@ class Crons
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
                 $showLegendTotal = $totalCol[2];
-                $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
-                $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
+                if(!$isnofiltercalculated) {
+                    $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
+                    $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
+                }
 
                 #INSTITUTIONS
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
@@ -106,9 +109,9 @@ class Crons
                     $showLegend = true;
                 }
             }
+            $isnofiltercalculated = true;
             $allLabel_array[$question][$study] = $showLegend;
         }
-
 
         #QUESTION = 2
         $question = 2;
@@ -126,8 +129,6 @@ class Crons
             foreach ($institutions as $institution) {
                 $totalInstitution = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
                 $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
-//                print_array("Institution: " . $institution . " - " . $question_2 . " - questions: " . $graph["institutions"][$institution][$question_2] . ", total records: " . $graph["institutions"][$institution]["total_records"]);
-//                print_array("Percent: " . $totalInstitution[0]);
             }
         }
 
