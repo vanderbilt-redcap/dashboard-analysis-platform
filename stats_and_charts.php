@@ -9,7 +9,7 @@ require_once (dirname(__FILE__)."/classes/StatsCharts.php");
     var app_path_webroot_full = '<?=APP_PATH_WEBROOT_FULL?>';
     var app_path_images = '<?=APP_PATH_IMAGES?>';
     var plotchart = '<?=$module->getUrl('plot_chart.php?NOAUTH')?>';
-    var pid = '<?=$_GET['pid']?>';
+    var pid = '<?=(int)$_GET['pid']?>';
     var table_pk_label  = '<?php echo js_escape($table_pk_label) ?>';
     var page = '<?=$module->getUrl('stats_and_charts.php')?>';
 </script>
