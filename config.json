@@ -24,14 +24,14 @@
     ]
   },
 
-  "no-auth-pages":["index","login","login_link","loadTable","stats_and_charts","plot_chart","dashboard_public"],
+  "no-auth-pages":["index","login","login_link","loadTable","stats_and_charts","plot_chart","dashboard_private"],
 
   "description": "A dashboard to visualize participant perception scores from the Research Participant Perception Survey (RPPS). This module works with any of the RPPS instruments in the REDCap Instrument Library.",
 
   "project-settings": [
     {
       "key": "privacy-description",
-      "name": "<div>Select a privacy type for the Dashboard:</div><br><div class='alert alert-info' style='border-color:#bce8f1 !important'><ul><li><strong>Public</strong> (no login required; anyone with the link can view/access the Dashboard page)</li><li><strong>Private</strong> (REDCap login required)</li></ul></div>",
+      "name": "<div>Select a privacy type for the Dashboard:</div><br><div class='alert alert-info' style='border-color:#bce8f1 !important'><ul><li><strong>Public</strong> (REDCap login required)</li><li><strong>Private</strong> (no login required; anyone with the link can view/access the Dashboard page)</li></ul></div>",
       "type": "descriptive"
     },
     {
