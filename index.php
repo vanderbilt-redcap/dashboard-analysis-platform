@@ -55,7 +55,6 @@ use ExternalModules\ExternalModules;
 <div class="container">
     <?php
     $privacy = $module->getProjectSetting('privacy');
-
     if($privacy == "private"){
         #TOKEN
         session_write_close();
@@ -79,6 +78,7 @@ use ExternalModules\ExternalModules;
             if(isset($_COOKIE["EPV"])):
                 setcookie("EPV", '', time()-7000000, '/');
             endif;
+            $_SESSION['token']["EPV".$project_id] = "";
         }
 
         if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)) {
