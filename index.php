@@ -95,7 +95,7 @@ use ExternalModules\ExternalModules;
             include('login.php');
         }
     }else{
-        include_once ('dashboard_public.php');
+        header('Location: '.$module->getUrl('dashboard_public.php'));
     }
     ?>
 </div>
