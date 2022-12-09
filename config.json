@@ -18,7 +18,7 @@
       {
         "name": "Dashboard Analysis Platform",
         "icon": "fas fa-chart-area",
-        "url": "index.php?NOAUTH",
+        "url": "index.php",
         "target": "_blank"
       }
     ]
@@ -31,7 +31,7 @@
   "project-settings": [
     {
       "key": "privacy-description",
-      "name": "<div>Select a privacy type for the Dashboard:</div><br><div class='alert alert-info' style='border-color:#bce8f1 !important'><ul><li><strong>Public</strong> (REDCap login required)</li><li><strong>Private</strong> (no login required; anyone with the link can view/access the Dashboard page)</li></ul></div>",
+      "name": "<div>Select a privacy type for the Dashboard:</div><br><div class='alert alert-info' style='border-color:#bce8f1 !important'><ul><li><strong>Local</strong> Only users logged into this REDCap instance and having project design rights on this project can access the dashboard.</li><li><strong>Consortium</strong> Allows for access to dashboard with tokens emailed to external users. Requires a project registration REDCap project.</li></ul></div>",
       "type": "descriptive"
     },
     {
@@ -40,11 +40,11 @@
       "required": true,
       "choices": [
         {
-          "name": "Public",
+          "name": "Local",
           "value": "public"
         },
         {
-          "name": "Private",
+          "name": "Consortium",
           "value": "private"
         }
       ],
