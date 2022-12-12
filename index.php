@@ -55,13 +55,15 @@ use ExternalModules\ExternalModules;
 <div class="container">
     <?php
     $privacy = $module->getProjectSetting('privacy');
+
+    #SESSION
+    session_write_close();
+    session_name("EPV");
+    session_id($_COOKIE["EPV"]);
+    session_start();
+
     if($privacy == "private"){
         #TOKEN
-        session_write_close();
-        session_name("EPV");
-        session_id($_COOKIE["EPV"]);
-        session_start();
-
         $token = "";
         $project_id = (int)$_GET['pid'];
         $project_id_registration = $module->getProjectSetting('registration');

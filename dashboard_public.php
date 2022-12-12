@@ -46,5 +46,11 @@
 </head>
 <body>
 <div class="container">
-
+    <?php
+    #SESSION
+    session_write_close();
+    session_name("EPV");
+    session_id($_COOKIE["EPV"]);
+    session_start();
+    ?>
 <?php include_once ('dashboard_cache.php'); ?>
