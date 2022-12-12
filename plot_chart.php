@@ -1,7 +1,6 @@
 <?php
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
-error_log("****PLOT CHART");
 // If we have a allowlist of records/events due to report filtering, unserialize it
 $includeRecordsEvents = (isset($_POST['includeRecordsEvents'])) ? unserialize(decrypt($_POST['includeRecordsEvents']), ['allowed_classes'=>false]) : array();
 // Set flag if there are no records returned for a filter (so we can disguish this from a full data set with no filters)
