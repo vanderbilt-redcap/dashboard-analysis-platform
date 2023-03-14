@@ -609,7 +609,7 @@ function getResponseRate($questions, $total_records){
  * @return bool
  */
 function isTokenCorrect($token,$pidPeople){
-    $projectPeople = \REDCap::getData($pidPeople, 'array', null,null,null,null,false,false,false,"[token_2] = '".$token."' or [token_3] = '".$token."'");
+    $projectPeople = \REDCap::getData($pidPeople, 'array', null,null,null,null,false,false,false,"[token_1] = '".$token."' or [token_2] = '".$token."' or [token_3] = '".$token."' or [token_4] = '".$token."'");
     $people = ProjectData::getProjectInfoArray($projectPeople)[0];
     $numberUsers = 4;
     if(!empty($people)){
