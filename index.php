@@ -90,7 +90,7 @@ use ExternalModules\ExternalModules;
         if( !array_key_exists('token', $_REQUEST) && !array_key_exists('request', $_REQUEST) && empty($_SESSION['token']["EPV".$project_id])){
             include('login.php');
         }else if(!array_key_exists('option', $_REQUEST) && !empty($_SESSION['token']["EPV".$project_id]) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)){
-            include_once ('dashboard_private.php?report='.$_GET['report']);
+            include_once ('dashboard_private.php');
         }else if(array_key_exists('option', $_REQUEST) && $option === 'sac' && !empty($_SESSION['token']["EPV".$project_id]) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
             include_once('stats_and_charts.php');
         }else{
@@ -98,7 +98,7 @@ use ExternalModules\ExternalModules;
             include('login.php');
         }
     }else{
-        header('Location: '.$module->getUrl('dashboard_public.php?report='.$_GET['report']));
+        header('Location: '.$module->getUrl('dashboard_public.php'));
     }
     ?>
 </div>
