@@ -4,6 +4,7 @@ require_once (dirname(__FILE__)."/classes/ProjectData.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
 require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
+include_once "reports.php";
 
 $daterange = $_SESSION[$project_id . "_startDate"]." - ".$_SESSION[$project_id . "_endDate"];
 if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
@@ -325,6 +326,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     #LOAD THE FILE
     $filename = "dashboard_cache_file_".$project_id.".txt";
+    if(!empty($_GET['report'])){
+        $filename = "dashboard_cache_file".$_GET['report']."_".$project_id.".txt";
+    }
     $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?",[$project_id,$filename]);
     while ($row = db_fetch_assoc($q)) {
         $docsId = $row['docs_id'];

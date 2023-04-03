@@ -87,8 +87,8 @@ use ExternalModules\ExternalModules;
         //Session OUT
         if(array_key_exists('sout', $_REQUEST)){
             unset($_SESSION['token']["EPV".$project_id]);
-            if(isset($_COOKIE["EPV"])):
-                setcookie("EPV", '', time()-7000000, '/');
+            if(isset($_COOKIE["EPV".$project_id])):
+                setcookie("EPV".$project_id, '', time()-7000000, '/');
             endif;
             $_SESSION['token']["EPV".$project_id] = "";
         }

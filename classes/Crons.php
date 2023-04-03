@@ -26,7 +26,6 @@ class Crons
         $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
 
-
         #QUESTION = 1
         $question = 1;
         $array_study_1 = array(
@@ -296,6 +295,32 @@ class Crons
 
             $q = $module->query("INSERT INTO redcap_docs_to_edocs (docs_id,doc_id) VALUES(?,?)", [$docsId, $docId]);
         }
+    }
+
+    public static function runCacheReportCron($module,$project_id)
+    {
+        $row_questions = ProjectData::getRowQuestions();
+        $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+        $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
+        $graph = array();
+
+        $allData_array = array();
+        $allDataTooltip_array = array();
+        $allLabel_array = array();
+        $conditionDate = "";
+        $max = 100;
+
+        $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
+
+        $RecordSetMultiple = \REDCap::getData($project_id, 'array');
+        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+        $institutions = ProjectData::getAllInstitutions($multipleRecords);
+        $custom_report_id = $module->getProjectSetting('custom-report-id');
+
+        foreach ($custom_report_id as $rid){
+            $reports = \REDCap::getReport($rid);
+        }
+
     }
 }
 ?>

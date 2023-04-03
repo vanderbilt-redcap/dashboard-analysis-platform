@@ -87,6 +87,24 @@
           "type": "field-list"
         }
       ]
+    },
+    {
+      "key": "report",
+      "name": "Custom Reports",
+      "type": "sub_settings",
+      "repeatable": true,
+      "sub_settings": [
+        {
+          "key": "custom-report-id",
+          "name": "Report ID",
+          "type": "text"
+        },
+        {
+          "key": "custom-report-label",
+          "name": "Report Label",
+          "type": "text"
+        }
+      ]
     }
   ],
 
