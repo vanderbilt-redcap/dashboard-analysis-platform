@@ -12,7 +12,7 @@ $(function(){
 });
 
 // Fetch report via ajax
-function fetchReportAjax(report_id,pagenum,append_url) {
+/*function fetchReportAjax(report_id,pagenum,append_url) {
 	// Initialize divs
 	$('#report_load_progress').show();
 	$('#report_load_progress2').hide();
@@ -85,7 +85,7 @@ function fetchReportAjax(report_id,pagenum,append_url) {
 		}
 	},500);
 }
-
+*/
 function loadReportNewPage(pagenum, preventLoadAll) {
 	if (typeof preventLoadAll == 'undefined') preventLoadAll = false;
 	// Get report_id
