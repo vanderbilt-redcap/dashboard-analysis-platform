@@ -57,15 +57,25 @@ use ExternalModules\ExternalModules;
     $privacy = $module->getProjectSetting('privacy');
 
     #SESSION
-    session_write_close();
-    session_name("EPV");
-    session_id($_COOKIE["EPV"]);
-    session_start();
+//    session_write_close();
+//    session_name("EPV");
+//    session_id($_COOKIE["EPV"]);
+//    session_start();
 
     if($privacy == "private"){
-        #TOKEN
-        $token = "";
         $project_id = (int)$_GET['pid'];
+
+        #TOKEN
+        if(!array_key_exists('token', $_REQUEST) && empty($_SESSION['token']["EPV".$project_id])){
+
+        }else if(empty($_SESSION['token']["EPV".$project_id])){
+            session_write_close();
+            session_name("EPV".$project_id);
+            session_id($_COOKIE["EPV".$project_id]);
+            session_start();
+        }
+
+        $token = "";
         $project_id_registration = $module->getProjectSetting('registration');
         $option = htmlentities($_REQUEST['option'],ENT_QUOTES);
         if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)){
@@ -89,7 +99,7 @@ use ExternalModules\ExternalModules;
         if( !array_key_exists('token', $_REQUEST) && !array_key_exists('request', $_REQUEST) && empty($_SESSION['token']["EPV".$project_id])){
             include('login.php');
         }else if(!array_key_exists('option', $_REQUEST) && !empty($_SESSION['token']["EPV".$project_id]) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)){
-            include_once ('dashboard_private.php');
+            include_once ('dashboard_private.php?report='.$_GET['report']);
         }else if(array_key_exists('option', $_REQUEST) && $option === 'sac' && !empty($_SESSION['token']["EPV".$project_id]) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
             include_once('stats_and_charts.php');
         }else{
@@ -97,7 +107,7 @@ use ExternalModules\ExternalModules;
             include('login.php');
         }
     }else{
-        header('Location: '.$module->getUrl('dashboard_public.php'));
+        header('Location: '.$module->getUrl('dashboard_public.php?report='.$_GET['report']));
     }
     ?>
 </div>
