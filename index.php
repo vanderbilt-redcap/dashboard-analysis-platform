@@ -57,24 +57,15 @@ use ExternalModules\ExternalModules;
     $privacy = $module->getProjectSetting('privacy');
 
     #SESSION
-//    session_write_close();
-//    session_name("EPV");
-//    session_id($_COOKIE["EPV"]);
-//    session_start();
+    session_write_close();
+    session_name("EPV");
+    session_id($_COOKIE["EPV"]);
+    session_start();
 
     if($privacy == "private"){
         $project_id = (int)$_GET['pid'];
 
         #TOKEN
-        if(!array_key_exists('token', $_REQUEST) && empty($_SESSION['token']["EPV".$project_id])){
-
-        }else if(empty($_SESSION['token']["EPV".$project_id])){
-            session_write_close();
-            session_name("EPV".$project_id);
-            session_id($_COOKIE["EPV".$project_id]);
-            session_start();
-        }
-
         $token = "";
         $project_id_registration = $module->getProjectSetting('registration');
         $option = htmlentities($_REQUEST['option'],ENT_QUOTES);
