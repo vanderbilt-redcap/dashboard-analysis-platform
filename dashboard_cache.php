@@ -4,7 +4,7 @@ require_once (dirname(__FILE__)."/classes/ProjectData.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
 require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
-include_once "reports.php";
+//include_once "reports.php";
 
 $daterange = $_SESSION[$project_id . "_startDate"]." - ".$_SESSION[$project_id . "_endDate"];
 if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
