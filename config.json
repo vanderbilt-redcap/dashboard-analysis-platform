@@ -24,14 +24,14 @@
     ]
   },
 
-  "no-auth-pages":["index","login","login_link","loadTable","stats_and_charts","plot_chart","dashboard_private"],
+  "no-auth-pages":["index","login","login_link","loadTable","stats_and_charts","plot_chart","dashboard_private","dashboard_public"],
 
   "description": "A dashboard to visualize participant perception scores from the Research Participant Perception Survey (RPPS). This module works with any of the RPPS instruments in the REDCap Instrument Library.",
 
   "project-settings": [
     {
       "key": "privacy-description",
-      "name": "<div>Select a privacy type for the Dashboard:</div><br><div class='alert alert-info' style='border-color:#bce8f1 !important'><ul><li><strong>Local</strong> Only users logged into this REDCap instance and having project design rights on this project can access the dashboard.</li><li><strong>Consortium</strong> Allows for access to dashboard with tokens emailed to external users. Requires a project registration REDCap project.</li></ul></div>",
+      "name": "<div>Select a privacy type for the Dashboard:</div><br><div class='alert alert-info' style='border-color:#bce8f1 !important'><ul><li><strong>Local</strong> Only users logged into this REDCap instance and having project design rights on this project can access the dashboard.</li><li><strong>Consortium</strong> Allows for access to dashboard with tokens emailed to external users. Requires a project registration REDCap project.</li><li><strong>Public</strong> No authentication. Allows access to dashboard for anyone with the link.</li></ul></div>",
       "type": "descriptive"
     },
     {
@@ -41,11 +41,15 @@
       "choices": [
         {
           "name": "Local",
-          "value": "public"
+          "value": "local"
         },
         {
           "name": "Consortium",
           "value": "private"
+        },
+        {
+          "name": "Public",
+          "value": "public"
         }
       ],
       "type":"radio"

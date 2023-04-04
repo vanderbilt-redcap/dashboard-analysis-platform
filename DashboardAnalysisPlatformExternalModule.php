@@ -22,6 +22,11 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
     }
 
     public function redcap_module_link_check_display($project_id, $link) {
+        $privacy = $this->getProjectSetting('privacy');
+        if($privacy == "public"){
+            $link['url'] = $this->getUrl("index.php?NOAUTH");
+//            return parent::redcap_module_link_check_display($project_id,$link);
+        }
         #Let users always see the link/page if they are added into the project
         return true;
     }

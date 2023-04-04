@@ -55,16 +55,15 @@ use ExternalModules\ExternalModules;
 <div class="container">
     <?php
     $privacy = $module->getProjectSetting('privacy');
+    $project_id = (int)$_GET['pid'];
 
     #SESSION
     session_write_close();
-    session_name("EPV");
-    session_id($_COOKIE["EPV"]);
+    session_name("EPV".$project_id);
+    session_id($_COOKIE["EPV".$project_id]);
     session_start();
 
     if($privacy == "private"){
-        $project_id = (int)$_GET['pid'];
-
         #TOKEN
         $token = "";
         $project_id_registration = $module->getProjectSetting('registration');
@@ -97,8 +96,10 @@ use ExternalModules\ExternalModules;
             echo "<script>$(document).ready(function() { $('#hub_error_message').show(); $('#hub_error_message').html('<strong>This Access Link has expired. </strong> <br />Please request a new Access Link below.');});</script>";
             include('login.php');
         }
+    }else if($privacy == "local"){
+        header('Location: '.$module->getUrl('dashboard_local.php'));
     }else{
-        header('Location: '.$module->getUrl('dashboard_public.php'));
+        header('Location: '.$module->getUrl('dashboard_public.php?NOAUTH'));
     }
     ?>
 </div>
