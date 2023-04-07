@@ -37,6 +37,8 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
         foreach ($this->getProjectsWithModuleEnabled() as $project_id){
             try {
                 error_log("dashboardCacheFile PID".$project_id);
+                error_log("dashboardCacheFile hourRange: ".date('G')." > ".$hourRange);
+                error_log("dashboardCacheFile lastRunSettingName: ".$lastRunSettingName);
                 #CRONS
                 include("callCron.php");
 
