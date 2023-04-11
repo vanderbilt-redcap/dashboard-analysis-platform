@@ -36,9 +36,6 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
         // Perform cron actions here
         foreach ($this->getProjectsWithModuleEnabled() as $project_id){
             try {
-                error_log("dashboardCacheFile PID".$project_id);
-                error_log("dashboardCacheFile hourRange: ".date('G')." > ".$hourRange);
-
                 #CRONS
                 $filename = "dashboard_cache_file_" . $project_id . ".txt";
                 $q = $this->query("SELECT em.stored_name FROM redcap_edocs_metadata em 
@@ -54,10 +51,12 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
                     #We make sure we only do this once a day
                     if ($today > $file_date) {
                         $found = true;
+                        error_log("dashboardCacheFile PID".$project_id);
                         include("callCron.php");
                     }
                 }
                 if(!$found){
+                        error_log("dashboardCacheFile PID".$project_id);
                         include("callCron.php");
                 }
 
