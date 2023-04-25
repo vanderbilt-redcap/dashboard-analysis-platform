@@ -223,5 +223,55 @@ class ProjectData
         }
         return $array_institutions;
     }
+
+    public static function getArrayStudyQuestion_1()
+    {
+        $array_study_1 = array(
+            "rpps_s_q60" => "Age",
+            "rpps_s_q59" => "Education",
+            "rpps_s_q62" => "Ethnicity",
+            "rpps_s_q65" => "Gender",
+            "rpps_s_q61" => "Race",
+            "rpps_s_q63" => "Sex",
+            "rpps_s_q58" => "Demands of study",
+            "rpps_s_q15" => "Disease/disorder to enroll",
+            "rpps_s_q66" => "Informed Consent setting",
+            "rpps_s_q16" => "Study Type",
+            "sampling" => "Sampling approach",
+            "timing_of_rpps_administration" => "Timing of RPPS administration"
+        );
+        return $array_study_1;
+    }
+
+    public static function getArrayStudyQuestion_2()
+    {
+        $array_study_2 = array(
+            "age" => "Age",
+            "ethnicity" => "Ethnicity",
+            "gender_identity" => "Gender Identity",
+            "race" => "Race",
+            "sex" => "Sex"
+        );
+        return $array_study_2;
+    }
+
+    public static function getArrayStudyQuestion_3()
+    {
+        $array_study_3 = array(
+            "rpps_s_q60" => "Age",
+            "rpps_s_q59" => "Education",
+            "rpps_s_q62" => "Ethnicity",
+            "rpps_s_q65" => "Gender",
+            "rpps_s_q61" => "Race",
+            "rpps_s_q63" => "Sex",
+            "rpps_s_q58" => "Demands of study",
+            "rpps_s_q15" => "Disease/disorder to enroll",
+            "rpps_s_q66" => "Informed Consent setting",
+            "rpps_s_q16" => "Study Type",
+            "sampling" => "Sampling approach",
+            "timing_of_rpps_administration" => "Timing of RPPS administration"
+        );
+        return $array_study_3;
+    }
 }
 ?>

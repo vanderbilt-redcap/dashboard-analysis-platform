@@ -4,7 +4,9 @@ require_once (dirname(__FILE__)."/classes/ProjectData.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
 require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
-//include_once "reports.php";
+$report = htmlentities($_GET['report'],ENT_QUOTES);
+include_once "reports.php";
+
 
 $daterange = $_SESSION[$project_id . "_startDate"]." - ".$_SESSION[$project_id . "_endDate"];
 if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
@@ -326,9 +328,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     #LOAD THE FILE
     $filename = "dashboard_cache_file_".$project_id.".txt";
-    if(!empty($_GET['report'])){
-        $filename = "dashboard_cache_file".$_GET['report']."_".$project_id.".txt";
+    if(!empty($report)){
+        $filename = "dashboard_cache_file_".$project_id."_report_".$report.".txt";
     }
+
     $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?",[$project_id,$filename]);
     while ($row = db_fetch_assoc($q)) {
         $docsId = $row['docs_id'];
@@ -569,6 +572,30 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 </div>";
                 }
             }
+        }
+    }else if(!empty($report)){
+        $q = $module->query("SELECT report_id FROM redcap_reports 
+                                    WHERE project_id = ? AND unique_report_name=?",
+            [$project_id,$report]);
+        $row = $q->fetch_assoc();
+        $report_records = \REDCap::getReport($row['report_id']);
+        if(empty($report_records)) {
+            echo "<div class='optionSelect messageCache' style='margin-top: 20px;'>
+                <div class='alert alert-danger fade in col-md-12' id='errMsgContainerModal'>
+                The Dashboard Cache file has not been generated.<br/>
+                No record IDs found in report.</div>
+                </div>";
+        }else{
+            $url = $module->getUrl("callCron.php");
+            echo "<div class='optionSelect messageCache' style='margin-top: 20px;'>
+                <div class='alert alert-warning fade in col-md-12' id='errMsgContainerModal'>
+                The Dashboard Cache file has not been generated. This file will be automatically generated every day at 23:50pm.<br/>
+                To create the file now <a href='javascript:loadCache(".json_encode($project_id).",".json_encode($url).");'>click here</a>. Have in mind that this will take several minutes.</div>
+                </div>";
+            echo '<div class="optionSelect" style="margin-top: 20px;display: none" id="spinner">
+                <div class="alert alert-success">
+                <em class="fa fa-spinner fa-spin"></em> Updating... Please wait until the process finishes.
+            </div></div>';
         }
     }else{
         $url = $module->getUrl("callCron.php");

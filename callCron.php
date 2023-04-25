@@ -9,3 +9,4 @@ if($module == ""){
     $module = $this;
 }
 Crons::runCacheCron($module, $project_id);
+Crons::runCacheReportCron($module, $project_id);

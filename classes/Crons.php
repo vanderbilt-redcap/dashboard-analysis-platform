@@ -9,39 +9,76 @@ class Crons
 {
     public static function runCacheCron($module,$project_id)
     {
-        $row_questions = ProjectData::getRowQuestions();
+        $RecordSetMultiple = \REDCap::getData($project_id, 'array');
+        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+        $institutions = ProjectData::getAllInstitutions($multipleRecords);
+        $table_data = array();
+
+        #QUESTION = 1
+        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions,$table_data);
+        #QUESTION = 2
+        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions,$table_data);
+        #QUESTION = 3,4,5
+        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions,$table_data);
+        #CREATE & SAVE FILE
+        $filename = "dashboard_cache_file_" . $project_id .".txt";
+        $filereponame = "Dashboard Cache File";
+        self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
+    }
+
+    public static function runCacheReportCron($module,$project_id)
+    {
+        $custom_report_id = $module->getProjectSetting('custom-report-id');
+        $recordIds = array();
+        if(!empty($custom_report_id)) {
+            foreach ($custom_report_id as $rid) {
+                $q = $module->query("SELECT report_id FROM redcap_reports 
+                                    WHERE project_id = ? AND unique_report_name=?",
+                                    [$project_id,$rid]);
+                $row = $q->fetch_assoc();
+                $reports = \REDCap::getReport($row['report_id']);
+                if(!empty($reports)) {
+                    foreach ($reports as $record => $data) {
+                        array_push($recordIds, $record);
+                    }
+
+                    //We create the data & file
+                    $RecordSetMultiple = \REDCap::getData($project_id, 'array',$recordIds);
+                    $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+                    $institutions = ProjectData::getAllInstitutions($multipleRecords);
+                    $table_data = array();
+
+                    #QUESTION = 1
+                    $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions,$table_data);
+                    #QUESTION = 2
+                    $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions,$table_data);
+                    #QUESTION = 3,4,5
+                    $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions,$table_data);
+                    #CREATE & SAVE FILE
+                    $filename = "dashboard_cache_file_" . $project_id . "_report_".$rid.".txt";
+                    $filereponame = "Dashboard Cache File - Report: ".$rid;
+                    self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
+                }
+            }
+        }
+
+    }
+
+    public static function createQuestion_1($module, $project_id, $multipleRecords, $institutions,$table_data)
+    {
+        $question = 1;
+        $array_study_1 = ProjectData::getArrayStudyQuestion_1();
         $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
-        $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-        $graph = array();
 
         $allData_array = array();
         $allDataTooltip_array = array();
         $allLabel_array = array();
+        $graph = array();
         $conditionDate = "";
         $max = 100;
 
         $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
 
-        $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-        $institutions = ProjectData::getAllInstitutions($multipleRecords);
-
-        #QUESTION = 1
-        $question = 1;
-        $array_study_1 = array(
-            "rpps_s_q60" => "Age",
-            "rpps_s_q59" => "Education",
-            "rpps_s_q62" => "Ethnicity",
-            "rpps_s_q65" => "Gender",
-            "rpps_s_q61" => "Race",
-            "rpps_s_q63" => "Sex",
-            "rpps_s_q58" => "Demands of study",
-            "rpps_s_q15" => "Disease/disorder to enroll",
-            "rpps_s_q66" => "Informed Consent setting",
-            "rpps_s_q16" => "Study Type",
-            "sampling" => "Sampling approach",
-            "timing_of_rpps_administration" => "Timing of RPPS administration"
-        );
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
             if ($count < 11 && $sstudy != "") {
@@ -111,16 +148,24 @@ class Crons
             $isnofiltercalculated = true;
             $allLabel_array[$question][$study] = $showLegend;
         }
+        $table_data['data'] = $allData_array;
+        $table_data['tooltip'] = $allDataTooltip_array;
+        $table_data['legend'] = $allLabel_array;
+        return $table_data;
+    }
 
-        #QUESTION = 2
+    public static function createQuestion_2($module, $project_id, $multipleRecords, $institutions,$table_data)
+    {
         $question = 2;
-        $array_study_2 = array(
-            "age" => "Age",
-            "ethnicity" => "Ethnicity",
-            "gender_identity" => "Gender Identity",
-            "race" => "Race",
-            "sex" => "Sex"
-        );
+        $array_study_2 = ProjectData::getArrayStudyQuestion_2();
+        $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
+        $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+
+        $allData_array = $table_data['data'];
+        $allDataTooltip_array = $table_data['tooltip'];
+        $allLabel_array = $table_data['legend'];
+        $conditionDate = "";
+        $max = 100;
 
         #INSTITUTIONS
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph);
@@ -170,22 +215,23 @@ class Crons
                 $allDataTooltip_array[$question][$study][$question_2] = $tooltipTextArray;
             }
         }
+        $table_data['data'] = $allData_array;
+        $table_data['tooltip'] = $allDataTooltip_array;
+        $table_data['legend'] = $allLabel_array;
+        return $table_data;
+    }
 
-        #QUESTION = 3,4,5
-        $array_study_3 = array(
-            "rpps_s_q60" => "Age",
-            "rpps_s_q59" => "Education",
-            "rpps_s_q62" => "Ethnicity",
-            "rpps_s_q65" => "Gender",
-            "rpps_s_q61" => "Race",
-            "rpps_s_q63" => "Sex",
-            "rpps_s_q58" => "Demands of study",
-            "rpps_s_q15" => "Disease/disorder to enroll",
-            "rpps_s_q66" => "Informed Consent setting",
-            "rpps_s_q16" => "Study Type",
-            "sampling" => "Sampling approach",
-            "timing_of_rpps_administration" => "Timing of RPPS administration"
-        );
+    public static function createQuestion_3($module, $project_id, $multipleRecords, $institutions,$table_data){
+        $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
+        $row_questions = ProjectData::getRowQuestions();
+        $array_study_3 = ProjectData::getArrayStudyQuestion_3();
+
+        $allData_array = $table_data['data'];
+        $allDataTooltip_array = $table_data['tooltip'];
+        $allLabel_array = $table_data['legend'];
+        $conditionDate = "";
+        $max = 100;
+
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
             if ($count < 11) {
@@ -250,17 +296,16 @@ class Crons
                 $allLabel_array[$question][$study] = $showLegend;
             }
         }
-
-        $table_data = array();
         $table_data['data'] = $allData_array;
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
-        $table_data['institutions'] = $institutions;
+        return $table_data;
+    }
 
-        if ($table_data != "" && $allData_array != "" && $allDataTooltip_array != "") {
+    public static function saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame){
+        if ($table_data != "" && $table_data['data'] != "" && $table_data['tooltip'] != "") {
             #SAVE DATA IN FILE
             #create and save file with json
-            $filename = "dashboard_cache_file_" . $project_id . ".txt";
             $storedName = date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt";
 
             $file = fopen(EDOC_PATH . $storedName, "wb");
@@ -290,37 +335,11 @@ class Crons
 
             //Save document in File Repository
             $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",
-                [$project_id, date('Y-m-d'), $filename, $filesize, 'application/octet-stream', 'Dashboard Cache File']);
+                [$project_id, date('Y-m-d'), $filename, $filesize, 'application/octet-stream', $filereponame ]);
             $docsId = db_insert_id();
 
             $q = $module->query("INSERT INTO redcap_docs_to_edocs (docs_id,doc_id) VALUES(?,?)", [$docsId, $docId]);
         }
-    }
-
-    public static function runCacheReportCron($module,$project_id)
-    {
-        $row_questions = ProjectData::getRowQuestions();
-        $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
-        $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-        $graph = array();
-
-        $allData_array = array();
-        $allDataTooltip_array = array();
-        $allLabel_array = array();
-        $conditionDate = "";
-        $max = 100;
-
-        $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
-
-        $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-        $institutions = ProjectData::getAllInstitutions($multipleRecords);
-        $custom_report_id = $module->getProjectSetting('custom-report-id');
-
-        foreach ($custom_report_id as $rid){
-            $reports = \REDCap::getReport($rid);
-        }
-
     }
 }
 ?>
