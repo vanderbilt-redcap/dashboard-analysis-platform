@@ -586,7 +586,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 No record IDs found in report.</div>
                 </div>";
         }else{
-            $url = $module->getUrl("callCron.php");
+            $url = $module->getUrl("callCron.php?report=".$report);
             echo "<div class='optionSelect messageCache' style='margin-top: 20px;'>
                 <div class='alert alert-warning fade in col-md-12' id='errMsgContainerModal'>
                 The Dashboard Cache file has not been generated. This file will be automatically generated every day at 23:50pm.<br/>

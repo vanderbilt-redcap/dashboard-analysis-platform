@@ -15,22 +15,25 @@ class Crons
         $table_data = array();
 
         #QUESTION = 1
-        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions,$table_data);
+        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
         #QUESTION = 2
-        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions,$table_data);
+        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, null);
         #QUESTION = 3,4,5
-        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions,$table_data);
+        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, null);
         #CREATE & SAVE FILE
         $filename = "dashboard_cache_file_" . $project_id .".txt";
         $filereponame = "Dashboard Cache File";
         self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
     }
 
-    public static function runCacheReportCron($module,$project_id)
+    public static function runCacheReportCron($module, $project_id, $report)
     {
         $custom_report_id = $module->getProjectSetting('custom-report-id');
         $recordIds = array();
         if(!empty($custom_report_id)) {
+            if($report != null){
+                $custom_report_id = array(0=>$report);
+            }
             foreach ($custom_report_id as $rid) {
                 $q = $module->query("SELECT report_id FROM redcap_reports 
                                     WHERE project_id = ? AND unique_report_name=?",
@@ -49,11 +52,11 @@ class Crons
                     $table_data = array();
 
                     #QUESTION = 1
-                    $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions,$table_data);
+                    $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
                     #QUESTION = 2
-                    $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions,$table_data);
+                    $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
                     #QUESTION = 3,4,5
-                    $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions,$table_data);
+                    $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
                     #CREATE & SAVE FILE
                     $filename = "dashboard_cache_file_" . $project_id . "_report_".$rid.".txt";
                     $filereponame = "Dashboard Cache File - Report: ".$rid;
@@ -64,7 +67,7 @@ class Crons
 
     }
 
-    public static function createQuestion_1($module, $project_id, $multipleRecords, $institutions,$table_data)
+    public static function createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds)
     {
         $question = 1;
         $array_study_1 = ProjectData::getArrayStudyQuestion_1();
@@ -103,7 +106,7 @@ class Crons
                 $missingOverall = 0;
 
                 #NORMAL STUDY
-                $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max);
+                $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max, $recordIds);
                 $tooltipTextArray = $normalStudyCol[0];
                 $array_colors = $normalStudyCol[1];
                 $missingOverall = $normalStudyCol[2];
@@ -111,7 +114,7 @@ class Crons
                 $showLegendNormal = $normalStudyCol[5];
 
                 #MISSING
-                $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max);
+                $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
                 $tooltipTextArray = $missingCol[0];
                 $array_colors = $missingCol[1];
                 $missing_col = $missingCol[2];
@@ -119,7 +122,7 @@ class Crons
                 $showLegendMissing = $missingCol[5];
 
                 #OVERALL COL MISSING
-                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions);
+                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions, $recordIds);
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
                 $showLegendTotal = $totalCol[2];
@@ -154,7 +157,7 @@ class Crons
         return $table_data;
     }
 
-    public static function createQuestion_2($module, $project_id, $multipleRecords, $institutions,$table_data)
+    public static function createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds)
     {
         $question = 2;
         $array_study_2 = ProjectData::getArrayStudyQuestion_2();
@@ -168,7 +171,7 @@ class Crons
         $max = 100;
 
         #INSTITUTIONS
-        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph);
+        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
             foreach ($institutions as $institution) {
                 $totalInstitution = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
@@ -178,11 +181,11 @@ class Crons
 
         foreach ($array_study_2 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
-            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options);
+            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options, $recordIds);
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords);
-            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph);
+            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $recordIds);
             if($study == "race"){
-                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords);
+                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $recordIds);
             }
             foreach ($row_questions_2 as $indexQuestion => $question_2) {
                 $array_colors = array();
@@ -221,7 +224,7 @@ class Crons
         return $table_data;
     }
 
-    public static function createQuestion_3($module, $project_id, $multipleRecords, $institutions,$table_data){
+    public static function createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds){
         $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
         $row_questions = ProjectData::getRowQuestions();
         $array_study_3 = ProjectData::getArrayStudyQuestion_3();
@@ -255,7 +258,7 @@ class Crons
                     $tooltipTextArray = array();
                     $missingOverall = 0;
                     #NORMAL STUDY
-                    $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "");
+                    $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds);
                     $index = $normalStudyCol[1];
                     $missingOverall = $normalStudyCol[2];
                     $showLegendNormal = $normalStudyCol[5];
@@ -263,14 +266,14 @@ class Crons
                     $tooltipTextArray = $normalStudyCol[7];
 
                     #MISSING
-                    $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "");
+                    $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds);
                     $missing_col = $missingCol[2];
                     $showLegendMissing = $missingCol[3];
                     $array_colors = $missingCol[4];
                     $tooltipTextArray = $missingCol[5];
 
                     #OVERALL MISSING
-                    $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions);
+                    $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors, $institutions, $recordIds);
                     $showLegendTotal = $totalCol[2];
                     $array_colors = $totalCol[3];
                     $tooltipTextArray = $totalCol[4];
