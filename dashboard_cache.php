@@ -338,7 +338,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?",[$docsId]);
         while ($row2 = db_fetch_assoc($q2)) {
             $docId = $row2['doc_id'];
-            $q3 = $module->query("SELECT doc_name,stored_name,doc_size,file_extension,mime_type FROM redcap_edocs_metadata WHERE doc_id=?",[$docId]);
+            $q3 = $module->query("SELECT doc_name,stored_name,doc_size,file_extension,mime_type FROM redcap_edocs_metadata WHERE doc_id=? AND delete_date is NULL",[$docId]);
             while ($row3 = $q3->fetch_assoc()) {
                 $path = $module->getSafePath($row3['stored_name'], EDOC_PATH) ;
                 $strJsonFileContents = file_get_contents($path);
