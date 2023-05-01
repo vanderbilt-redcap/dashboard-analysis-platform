@@ -28,7 +28,7 @@ class Crons
 
     public static function runCacheReportCron($module, $project_id, $report)
     {
-        $custom_report_id = $module->getProjectSetting('custom-report-id');
+        $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
         $recordIds = array();
         if(!empty($custom_report_id)) {
             if($report != null){

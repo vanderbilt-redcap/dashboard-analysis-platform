@@ -6,8 +6,8 @@ include_once(__DIR__ . "/../functions.php");
 
 $project_id = (int)$_GET['pid'];
 $email = htmlentities($_REQUEST['email'],ENT_QUOTES);
-$project_id_registration = $module->getProjectSetting('registration');
-$from = empty($module->getProjectSetting('registration_from'))?"noreply@vumc.org":$module->getProjectSetting('registration_from');
+$project_id_registration = $module->getProjectSetting('registration',$project_id);
+$from = empty($module->getProjectSetting('registration_from',$project_id))?"noreply@vumc.org":$module->getProjectSetting('registration_from',$project_id);
 $result = "";
 $numberUsers = 4;
 

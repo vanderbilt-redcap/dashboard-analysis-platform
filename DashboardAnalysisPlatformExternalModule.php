@@ -69,7 +69,7 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
 
 
     public function redcap_module_link_check_display($project_id, $link) {
-        $privacy = $this->getProjectSetting('privacy');
+        $privacy = $this->getProjectSetting('privacy',$project_id);
         if($privacy == "public"){
             $link['url'] = $this->getUrl("index.php?NOAUTH");
 //            return parent::redcap_module_link_check_display($project_id,$link);

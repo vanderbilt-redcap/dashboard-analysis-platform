@@ -41,7 +41,7 @@ $array_study = array(
     "sampling" => "Sampling approach",
     "timing_of_rpps_administration" => "Timing of RPPS administration"
 );
-$custom_filters = $module->getProjectSetting('custom-filter');
+$custom_filters = $module->getProjectSetting('custom-filter',$project_id);
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
 ?>
 <script>

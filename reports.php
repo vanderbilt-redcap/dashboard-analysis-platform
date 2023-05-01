@@ -1,7 +1,7 @@
 
 <?php
-$custom_report_id = $module->getProjectSetting('custom-report-id');
-$custom_report_label = $module->getProjectSetting('custom-report-label');
+$custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
+$custom_report_label = $module->getProjectSetting('custom-report-label',$project_id);
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
 

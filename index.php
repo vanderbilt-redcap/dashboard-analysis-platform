@@ -54,7 +54,7 @@ use ExternalModules\ExternalModules;
 <body>
 <div class="container">
     <?php
-    $privacy = $module->getProjectSetting('privacy');
+    $privacy = $module->getProjectSetting('privacy',$project_id);
     $project_id = (int)$_GET['pid'];
     $report = htmlentities($_GET['report'],ENT_QUOTES);
     if(!empty($report)){
@@ -70,7 +70,7 @@ use ExternalModules\ExternalModules;
     if($privacy == "private"){
         #TOKEN
         $token = "";
-        $project_id_registration = $module->getProjectSetting('registration');
+        $project_id_registration = $module->getProjectSetting('registration',$project_id);
         $option = htmlentities($_REQUEST['option'],ENT_QUOTES);
         if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)){
             $token = $_REQUEST['token'];
