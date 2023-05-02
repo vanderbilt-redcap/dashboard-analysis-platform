@@ -100,10 +100,10 @@ use ExternalModules\ExternalModules;
             echo "<script>$(document).ready(function() { $('#hub_error_message').show(); $('#hub_error_message').html('<strong>This Access Link has expired. </strong> <br />Please request a new Access Link below.');});</script>";
             include('login.php');
         }
-    }else if($privacy == "local"){
-        header('Location: '.$module->getUrl('dashboard_local.php?'.$report));
-    }else{
+    }else if($privacy == "public"){
         header('Location: '.$module->getUrl('dashboard_public.php?NOAUTH'.$report));
+    }else{
+        header('Location: '.$module->getUrl('dashboard_local.php?'.$report));
     }
     ?>
 </div>
