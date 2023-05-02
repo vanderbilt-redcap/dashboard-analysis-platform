@@ -100,11 +100,16 @@ use ExternalModules\ExternalModules;
             echo "<script>$(document).ready(function() { $('#hub_error_message').show(); $('#hub_error_message').html('<strong>This Access Link has expired. </strong> <br />Please request a new Access Link below.');});</script>";
             include('login.php');
         }
-    }else if($privacy == "public"){
-        header('Location: '.$module->getUrl('dashboard_public.php')."&NOAUTH".$report);
     }else{
-        header('Location: '.$module->getUrl('dashboard_local.php').$report);
+        if(array_key_exists('option', $_REQUEST) && $option === 'sac') {
+            include_once('stats_and_charts.php');
+        }else if($privacy == "public"){
+            header('Location: '.$module->getUrl('dashboard_public.php')."&NOAUTH".$report);
+        }else{
+            header('Location: '.$module->getUrl('dashboard_local.php').$report);
+        }
     }
+
     ?>
 </div>
 </body>
