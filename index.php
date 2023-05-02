@@ -60,6 +60,7 @@ use ExternalModules\ExternalModules;
     if(!empty($report)){
         $report = "&report=".$report;
     }
+    $option = htmlentities($_REQUEST['option'],ENT_QUOTES);
 
     #SESSION
     session_write_close();
@@ -71,7 +72,6 @@ use ExternalModules\ExternalModules;
         #TOKEN
         $token = "";
         $project_id_registration = $module->getProjectSetting('registration',$project_id);
-        $option = htmlentities($_REQUEST['option'],ENT_QUOTES);
         if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)){
             $token = $_REQUEST['token'];
         }else if(!empty($_SESSION['token']["EPV".$project_id])&& \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
@@ -101,11 +101,9 @@ use ExternalModules\ExternalModules;
             include('login.php');
         }
     }else if($privacy == "public"){
-        $url = $module->getUrl('dashboard_public.php')."&NOAUTH".$report;
-        header('Location: '.$url);
+        header('Location: '.$module->getUrl('dashboard_public.php')."&NOAUTH".$report);
     }else{
-        $url = $module->getUrl('dashboard_local.php').$report;
-        header('Location: '.$url);
+        header('Location: '.$module->getUrl('dashboard_local.php').$report);
     }
     ?>
 </div>
