@@ -54,8 +54,8 @@ use ExternalModules\ExternalModules;
 <body>
 <div class="container">
     <?php
-    $privacy = $module->getProjectSetting('privacy',$project_id);
     $project_id = (int)$_GET['pid'];
+    $privacy = $module->getProjectSetting('privacy',$project_id);
     $report = htmlentities($_GET['report'],ENT_QUOTES);
     if(!empty($report)){
         $report = "&report=".$report;
