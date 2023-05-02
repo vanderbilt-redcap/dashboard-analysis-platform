@@ -101,9 +101,9 @@ use ExternalModules\ExternalModules;
             include('login.php');
         }
     }else if($privacy == "public"){
-        header('Location: '.$module->getUrl('dashboard_public.php?NOAUTH'.$report));
+        header('Location: '.$module->getUrl('dashboard_public.php')."&NOAUTH".$report);
     }else{
-        header('Location: '.$module->getUrl('dashboard_local.php?'.$report));
+        header('Location: '.$module->getUrl('dashboard_local.php').$report);
     }
     ?>
 </div>

@@ -192,7 +192,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     <div style='width: 100%'>
                     <a href='#' style='float: right' onclick='destroy_session(\"".$logout."\")'> Logout</a>
                     </div>
-                    <a class='btn btn-default' target='_blank' href='".$module->getUrl('index.php?NOAUTH&option=sac')."'>Stats &amp; Charts</a>
+                    <a class='btn btn-default' target='_blank' href='".$module->getUrl('index.php')."&NOAUTH&option=sac"."'>Stats &amp; Charts</a>
                 </div>
                 <h3 class='header'></h3>
                     <div>
@@ -256,7 +256,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $table .='</optgroup>';
     $table .='</select>
                         <input type="daterange" class="form-control" id="daterange" name="daterange" value="'.$daterange.'">
-                        <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php?NOAUTH")).');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
+                        <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php")."&NOAUTH").');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
                     </div>
                 </div>
                 <table class="table dal table-bordered pull-left" id="table_archive">
@@ -585,7 +585,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 No record IDs found in report.</div>
                 </div>";
         }else{
-            $url = $module->getUrl("callCron.php?report=".$report);
+            $url = $module->getUrl("callCron.php")."&report=".$report;
             echo "<div class='optionSelect messageCache' style='margin-top: 20px;'>
                 <div class='alert alert-warning fade in col-md-12' id='errMsgContainerModal'>
                 The Dashboard Cache file has not been generated. This file will be automatically generated every day at 23:50pm.<br/>

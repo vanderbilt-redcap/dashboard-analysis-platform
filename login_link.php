@@ -28,7 +28,7 @@ if(!empty($email)) {
                     $token = ProjectData::getRandomIdentifier(12);
                     $access_dur = 7;
 
-                    $url = $module->getUrl("index.php?token=".$token."&pid=".$project_id."&NOAUTH");
+                    $url = $module->getUrl("index.php")."token=".$token."&pid=".$project_id."&NOAUTH";
                     $message = "<html>Here is your link to access the EPV At-A-Glance Dashboard:<br/><a href='".$url."'>".$url."</a><br/><br/><span style='color:#e74c3c'>**This link is unique to you and should not be forwarded to others.</span><br/>".
                         "This link will expire in ".$access_dur." days. You can request a new link at any time, which will invalidate the old link. If you are logging into the Hub from a public computer, please remember to log out of the Hub to invalidate the link.</html>";
 

@@ -17,7 +17,7 @@ if(!empty($custom_report_id) && $custom_report_id[0] != "" && !empty($custom_rep
                 $isActive = true;
             }
             $navigation .= '<li class="nav-item">
-                    <a class="nav-link '.$active.'" href="'.$module->getUrl("index.php?pid=".$project_id."&report=".$rid).'">'.$custom_report_label[$index].'</a>
+                    <a class="nav-link '.$active.'" href="'.$module->getUrl("index.php")."pid=".$project_id."&report=".$rid.'">'.$custom_report_label[$index].'</a>
                  </li>';
         }
         $active = "";
@@ -26,7 +26,7 @@ if(!empty($custom_report_id) && $custom_report_id[0] != "" && !empty($custom_rep
         }
         ?>
         <li class="nav-item">
-            <a class="nav-link <?=$active?>" aria-current="page" href="<?=$module->getUrl("index.php?report=")?>">All Data</a>
+            <a class="nav-link <?=$active?>" aria-current="page" href="<?=$module->getUrl("index.php")."report="?>">All Data</a>
         </li>
         <?php echo $navigation;?>
     </ul>
