@@ -1,14 +1,12 @@
-
 <?php
 $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
 $custom_report_label = $module->getProjectSetting('custom-report-label',$project_id);
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
 
-if(!empty($custom_report_id)){?>
+if(!empty($custom_report_id) && $custom_report_id[0] != "" && !empty($custom_report_label) && $custom_report_label[0] != ""){?>
 <div style="padding-top: 10px">
     <ul class="nav nav-tabs">
-
         <?php
         $isActive = false;
         $navigation = "";
