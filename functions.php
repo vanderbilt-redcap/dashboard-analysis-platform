@@ -226,6 +226,11 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
     $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($study,$project_id);
     $Proj = new \Project($project_id);
     $event_id = $Proj->firstEventId;
+
+    #report
+    if(!empty($recordIds)){
+        $multipleRecords = $recordIds;
+    }
     foreach ($multipleRecords as $mmrecord){
         if($mmrecord['survey_datetime'] != ""){
             if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (is_array($mmrecord[$study]) && array_count_values($mmrecord[$study])[1] == 0 && $type == "checkbox"))){
