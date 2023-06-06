@@ -9,6 +9,7 @@ class Crons
 {
     public static function runCacheCron($module,$project_id)
     {
+        error_log("dashboardCacheFile - runCacheCron");
         $RecordSetMultiple = \REDCap::getData($project_id, 'array');
         $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
@@ -16,18 +17,23 @@ class Crons
 
         #QUESTION = 1
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
+        error_log("dashboardCacheFile - runCacheCron QUESTION 1");
         #QUESTION = 2
         $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, null);
+        error_log("dashboardCacheFile - runCacheCron QUESTION 1");
         #QUESTION = 3,4,5
         $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, null);
+        error_log("dashboardCacheFile - runCacheCron QUESTION 1");
         #CREATE & SAVE FILE
         $filename = "dashboard_cache_file_" . $project_id .".txt";
         $filereponame = "Dashboard Cache File";
         self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
+        error_log("dashboardCacheFile - runCacheCron File Saved");
     }
 
     public static function runCacheReportCron($module, $project_id, $report)
     {
+        error_log("dashboardCacheFile - runCacheReportCron");
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
         $recordIds = array();
         if(!empty($custom_report_id)) {
@@ -35,6 +41,7 @@ class Crons
                 $custom_report_id = array(0=>$report);
             }
             foreach ($custom_report_id as $rid) {
+                error_log("dashboardCacheFile - runCacheReportCron Report #".$rid);
                 $q = $module->query("SELECT report_id FROM redcap_reports 
                                     WHERE project_id = ? AND unique_report_name=?",
                                     [$project_id,$rid]);
@@ -53,14 +60,18 @@ class Crons
 
                     #QUESTION = 1
                     $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+                    error_log("dashboardCacheFile - runCacheReportCron QUESTION 1");
                     #QUESTION = 2
                     $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+                    error_log("dashboardCacheFile - runCacheReportCron QUESTION 2");
                     #QUESTION = 3,4,5
                     $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+                    error_log("dashboardCacheFile - runCacheReportCron QUESTION 3");
                     #CREATE & SAVE FILE
                     $filename = "dashboard_cache_file_" . $project_id . "_report_".$rid.".txt";
                     $filereponame = "Dashboard Cache File - Report: ".$rid;
                     self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
+                    error_log("dashboardCacheFile - runCacheReportCron File Saved");
                 }
             }
         }
