@@ -103,13 +103,16 @@ class Crons
             $count++;
         }
         $isnofiltercalculated = false;
+        error_log("dashboardCacheFile - QUESTION 1 - Custom filters Created");
         foreach ($array_study_1 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, "Yes - Spanish/Hispanic/Latino");
             }
             $showLegend = false;
+            error_log("dashboardCacheFile - QUESTION 1 - Before row_questions_1");
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                error_log("dashboardCacheFile - QUESTION 1 - Question: ".$question_1);
                 $array_colors = array();
                 $tooltipTextArray = array();
                 $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
@@ -123,6 +126,7 @@ class Crons
                 $missingOverall = $normalStudyCol[2];
                 $index = $normalStudyCol[4];
                 $showLegendNormal = $normalStudyCol[5];
+                error_log("dashboardCacheFile - QUESTION 1 - After NORMAL STUDY");
 
                 #MISSING
                 $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
@@ -131,6 +135,7 @@ class Crons
                 $missing_col = $missingCol[2];
                 $graph = $missingCol[4];
                 $showLegendMissing = $missingCol[5];
+                error_log("dashboardCacheFile - QUESTION 1 - After MISSING");
 
                 #OVERALL COL MISSING
                 $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions, $recordIds);
@@ -141,10 +146,11 @@ class Crons
                     $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
                     $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
                 }
+                error_log("dashboardCacheFile - QUESTION 1 - After OVERALL COL MISSING");
 
                 #INSTITUTIONS
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
-
+                error_log("dashboardCacheFile - QUESTION 1 - After INSTITUTIONS");
                 #MULTIPLE
                 if ($study == "rpps_s_q61") {
                     $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors);
@@ -152,6 +158,7 @@ class Crons
                     $array_colors = $multipleCol[1];
                     $showLegendMultiple = $multipleCol[2];
                 }
+                error_log("dashboardCacheFile - QUESTION 1 - After MULTIPLE");
                 $allData_array[$question][$study][$question_1] = $array_colors;
                 $allDataTooltip_array[$question][$study][$question_1] = $tooltipTextArray;
 
@@ -165,6 +172,7 @@ class Crons
         $table_data['data'] = $allData_array;
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
+        error_log("dashboardCacheFile - QUESTION 1 - Before return table_data");
         return $table_data;
     }
 
