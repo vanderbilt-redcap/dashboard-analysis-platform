@@ -273,5 +273,45 @@ class ProjectData
         );
         return $array_study_3;
     }
+
+    public static function getNumberQuestionsTopScore($project_id, $topScoreMax, $question, $condition, $recordIds)
+    {
+        if ($topScoreMax == 4 || $topScoreMax == 5) {
+            if($question == 'rpps_s_q21' || $question == "rpps_s_q25"){
+                $val = '1';
+            }if($question != 'rpps_s_q21' && $question != "rpps_s_q25"){
+                $val = '4';
+            }
+            $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false,
+                $condition." AND [".$question."] = ".$val);
+            $records = ProjectData::getProjectInfoArray($RecordSet);
+        }else if($topScoreMax == 11){
+            $RecordSet = \REDCap::getData($project_id, 'array', null, 'record_id', null, null, false, false, false,
+                $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
+            $records = ProjectData::getProjectInfoArray($RecordSet);
+
+        }
+
+        return count($records);
+    }
+    public static function getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question, $condition, $recordIds)
+    {
+        $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false,
+            $condition." AND ([".$question."] = '1' OR [".$question."] = '2')");
+        $records = ProjectData::getProjectInfoArray($RecordSet);
+
+        return count($records);
+    }
+
+    public static function getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel)
+    {
+        $topScore = 0;
+        $calc = ($total_records - $score_is_5 - $missing_InfoLabel);
+        if ($topScoreFound > 0 && $calc != 0) {
+            $topScore = number_format(($topScoreFound / $calc * 100), 0);
+        }
+
+        return $topScore;
+    }
 }
 ?>

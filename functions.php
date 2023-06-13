@@ -71,7 +71,8 @@ function GetColorFromRedYellowGreenGradient($percentage)
     return $hexa;
 }
 
-function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$recordIds){
+function getNormalStudyCol($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$max,$recordIds)
+{
     $table_b = '';
     $missingOverall = 0;
     $study_62_array = array(
@@ -83,50 +84,41 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
     );
     $showLegend = false;
     foreach ($study_options as $index => $col_title) {
-        if($study != "" && $index != "") {
+        if ($study != "" && $index != "") {
             $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index, $project_id);
 
-            $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $condition . $conditionDate);
-            $records = ProjectData::getProjectInfoArray($RecordSet);
+            $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false, $condition . $conditionDate);
+            $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
 
-            $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
+            $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
             $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
 
-            $topScoreFound = 0;
             $score_is_5 = 0;
-            foreach ($records as $record) {
-                if ($question == 1) {
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($record[$question_1], $topScoreMax, $question_1)) {
-                        $topScoreFound += 1;
-                    }
-                    if ($record[$question_1] == 5 && $topScoreMax == 5) {
-                        $score_is_5 += 1;
-                    }
-                } else {
-                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1, $record))) {
-                        $topScoreFound += 1;
-                    }
+            if ($question == 1) {
+                $topScoreFound = ProjectData::getNumberQuestionsTopScore($project_id, $topScoreMax, $question_1, $condition . $conditionDate, $recordIds);
+                if ($topScoreMax == 5) {
+                    $RecordSetMissing = \REDCap::getData($project_id, 'array', null, 'record_id', null, null, false, false, false,
+                        $condition . " AND [" . $question_1 . "] = '5'");
+                    $score_is_5 = count(ProjectData::getProjectInfoArray($RecordSetMissing));
                 }
+            } else {
+                $topScoreFound = ProjectData::getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question_1, $condition . $conditionDate, $recordIds);
             }
 
-            if ($topScoreFound > 0) {
-                $topScore = number_format(($topScoreFound / (count($records) - $score_is_5 - $missing_InfoLabel) * 100), 0);
-            } else {
-                $topScore = 0;
-            }
+            $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
 
             if ($topScore > $max) {
                 $max = $topScore;
             }
 
             $missingOverall += $missing_InfoLabel;
-            $responses = count($records) - $missing_InfoLabel;
+            $responses = $total_records - $missing_InfoLabel;
 
             #Etnicity Case
             if ($study == "rpps_s_q62") {
                 if ($index > 1 && $index < 6) {
                     $study_62_array['topscore'] += $topScoreFound;
-                    $study_62_array['totalcount'] += count($records);
+                    $study_62_array['totalcount'] += $total_records;
                     $study_62_array['responses'] += $responses;
                     $study_62_array['missing'] += $missing_InfoLabel;
                     $study_62_array['score5'] += $score_is_5;
@@ -164,47 +156,24 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             }
         }
     }
-
-    if($question == 1) {
-        $aux = array(0=>$tooltipTextArray,1=>$array_colors,2=>$missingOverall,3=>$max,4=>$index,5=>$showLegend);
-    }else{
-        $aux = array(0=>$table_b,1=>$index,2=>$missingOverall,5=>$showLegend,6=>$array_colors,7=>$tooltipTextArray);
+    if ($question == 1) {
+        $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $index, 5 => $showLegend);
+    } else {
+        $aux = array(0 => $table_b, 1 => $index, 2 => $missingOverall, 5 => $showLegend, 6 => $array_colors, 7 => $tooltipTextArray);
     }
-
     return $aux;
-
 }
 
-function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$study,$question_1, $topScoreMax,$indexQuestion,$tooltipTextArray, $array_colors, $index,$max,$recordIds){
-    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
-    $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5);
-    $score_is_5O_overall = 0;
+function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds){
     $showLegendexMissing = false;
-    foreach($missingRecords as $misRecord){
-        if(is_array($misRecord[$question_1])){
-            $value_found = false;
-            foreach ($misRecord[$question_1] as $array_checkbox_val){
-                if($array_checkbox_val != "0"){
-                    $value_found = true;
-                }
-            }
-            if($value_found){
-                if ($topScoreMax == 5) {
-                    $score_is_5O_overall += 1;
-                }
-            }
-        }else{
-            if ($misRecord[$study] == "") {
-                $score_is_5O_overall += 1;
-            }
-        }
-    }
-    $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
+    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
+    $score_is_5O_overall = count(ProjectData::getProjectInfoArray($RecordSetOverall5));
+
+    $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, null, array('record_id',$study,$question_1), null, false, false, false, "[".$question_1."] != ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
 
     $missing = 0;
     $missingTop = 0;
-    $missingTopAll = 0;
     foreach ($missingRecords as $mrecord){
         if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && array_count_values($mrecord[$study])[1] == 0)) {
             $missing += 1;
@@ -217,15 +186,11 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
                     $missingTop += 1;
                 }
             }
-        } else {
-            $missingTopAll += 1;
         }
     }
 
     $missing_col = 0;
     $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($study,$project_id);
-    $Proj = new \Project($project_id);
-    $event_id = $Proj->firstEventId;
 
     #report
     if(!empty($recordIds)){
@@ -238,11 +203,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
             }
         }
     }
-
-    $missingPercent = 0;
-    if($missingTop > 0){
-        $missingPercent = number_format(($missingTop/($missing-$score_is_5O_overall))*100);
-    }
+    $missingPercent = ProjectData::getTopScorePercent($missingTop, $missing, $score_is_5O_overall, 0);
 
     if($missingPercent > $max){
         $max = $missingPercent;
@@ -267,7 +228,7 @@ function getMissingCol($question,$project_id, $conditionDate, $multipleRecords,$
 }
 
 function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$institutions,$recordIds){
-    $RecordSetOverall = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+    $RecordSetOverall = \REDCap::getData($project_id, 'array', $recordIds, null, array('record_id',$question_1), null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
     $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
     $recordsoverallTotal = count($recordsoverall);
     $topScoreFoundO = 0;
@@ -299,7 +260,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         }
     }
 
-    $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
+    $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', $recordIds, null, array('record_id',$question_1), null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5Missing);
     $score_is_5O_overall_missing = 0;
     foreach($missingRecords as $misRecord){
@@ -311,10 +272,8 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     }
 
     $missingOverall += $missing_col;
-    $overall = 0;
-    if($topScoreFoundO > 0){
-        $overall = number_format(($topScoreFoundO/($recordsoverallTotal-$score_is_5O_overall_missing)*100),0);
-    }
+    $overall = ProjectData::getTopScorePercent($topScoreFoundO, $recordsoverallTotal, $score_is_5O_overall_missing, 0);
+
     #Institutions Data
     foreach ($array_institutions as $institution=>$data) {
         $overall_institution = 0;
@@ -376,10 +335,7 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
         }
     }
 
-    $multiplePercent = 0;
-    if($multipleTop > 0){
-        $multiplePercent = number_format(($multipleTop/($multiple-$multiple_not_applicable))*100);
-    }
+    $multiplePercent = ProjectData::getTopScorePercent($multipleTop, $multiple, $multiple_not_applicable, 0);
 
     $responses = $multiple - $multiple_missing;
     $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($responses, $multiple_not_applicable, $multiplePercent, $showLegendexMultiple, "multiple");
