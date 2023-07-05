@@ -282,25 +282,21 @@ class ProjectData
             }if($question != 'rpps_s_q21' && $question != "rpps_s_q25"){
                 $val = '4';
             }
-            $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false,
+            $records = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false,
                 $condition." AND [".$question."] = ".$val);
-            $records = ProjectData::getProjectInfoArray($RecordSet);
         }else if($topScoreMax == 11){
-            $RecordSet = \REDCap::getData($project_id, 'array', null, 'record_id', null, null, false, false, false,
+            $records = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false,
                 $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
-            $records = ProjectData::getProjectInfoArray($RecordSet);
-
         }
 
-        return count($records);
+        return count(json_decode($records));
     }
     public static function getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question, $condition, $recordIds)
     {
-        $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false,
+        $records = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false,
             $condition." AND ([".$question."] = '1' OR [".$question."] = '2')");
-        $records = ProjectData::getProjectInfoArray($RecordSet);
 
-        return count($records);
+        return count(json_decode($records));
     }
 
     public static function getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel)

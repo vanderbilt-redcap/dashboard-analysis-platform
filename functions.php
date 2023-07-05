@@ -87,30 +87,27 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         if ($study != "" && $index != "") {
             $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index, $project_id);
 
-            $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false, $condition . $conditionDate);
-            $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+            $RecordSet = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false, $condition . $conditionDate);
+            $total_records = count(json_decode($RecordSet));
 
-            $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
-            $missing_InfoLabel = count(ProjectData::getProjectInfoArray($RecordSetMissing));
-
+            $RecordSetMissing = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
+            $missing_InfoLabel = count(json_decode($RecordSetMissing));
             $score_is_5 = 0;
             if ($question == 1) {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScore($project_id, $topScoreMax, $question_1, $condition . $conditionDate, $recordIds);
                 if ($topScoreMax == 5) {
-                    $RecordSetMissing = \REDCap::getData($project_id, 'array', null, 'record_id', null, null, false, false, false,
+                    $RecordSetMissing = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false,
                         $condition . " AND [" . $question_1 . "] = '5'");
-                    $score_is_5 = count(ProjectData::getProjectInfoArray($RecordSetMissing));
+                    $score_is_5 = count(json_decode($RecordSetMissing));
                 }
             } else {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question_1, $condition . $conditionDate, $recordIds);
             }
-
             $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
 
             if ($topScore > $max) {
                 $max = $topScore;
             }
-
             $missingOverall += $missing_InfoLabel;
             $responses = $total_records - $missing_InfoLabel;
 
@@ -132,12 +129,10 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
                     $score_is_5 = $study_62_array['score5'];
                 }
             }
-
             $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($responses, $score_is_5, $topScore, $showLegend, "");
             $percent = $percent_array[0];
             $showLegend = $percent_array[1];
             $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
-
             if ($question == 1) {
                 $tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
                 $array_colors[$indexQuestion][$index] = $percent;
@@ -166,8 +161,8 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
 
 function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds){
     $showLegendexMissing = false;
-    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', $recordIds, null, 'record_id', null, false, false, false, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
-    $score_is_5O_overall = count(ProjectData::getProjectInfoArray($RecordSetOverall5));
+    $RecordSetOverall5 = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
+    $score_is_5O_overall = count(json_decode($RecordSetOverall5));
 
     $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, null, array('record_id',$study,$question_1), null, false, false, false, "[".$question_1."] != ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
@@ -396,7 +391,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index,$project_id);
         $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
-        $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+        $total_records = count($RecordSet);
         $total_questions = count($row_questions_1);
         $graph["total_records"][$index] = $total_records;
         foreach ($allRecords as $record) {
@@ -439,7 +434,7 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
     $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
-    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $total_records = count($RecordSet);
     $total_questions = count($row_questions_1);
     $graph["total_records"]["total"] = $total_records;
     foreach ($allRecords as $record) {
@@ -458,7 +453,7 @@ function getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_quest
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
     $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
-    $total_records = count(ProjectData::getProjectInfoArray($RecordSet));
+    $total_records = count($RecordSet);
     $total_questions = count($row_questions_1);
     $graph["total_records"]["total"] = $total_records;
     $array_institutions = array();
