@@ -60,7 +60,7 @@ use ExternalModules\ExternalModules;
     if(!empty($report)){
         $report = "&report=".$report;
     }
-    $option = htmlentities($_REQUEST['option'],ENT_QUOTES);
+    $option = urlencode($_REQUEST['option']);
 
     #SESSION
     session_write_close();

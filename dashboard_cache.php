@@ -618,6 +618,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     ?>
     <script>
         $(function () {
+            var datagraph;
             var graph_url = <?=json_encode($module->getUrl("graph_ajax.php"))?>;
             var study_options = <?=json_encode($study_options)?>;
             var question = <?=json_encode($question)?>;
