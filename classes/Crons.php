@@ -9,21 +9,23 @@ class Crons
 {
     public static function runCacheCron($module,$project_id)
     {
-        $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-        $institutions = ProjectData::getAllInstitutions($multipleRecords);
-        $table_data = array();
+        $filename = "dashboard_cache_file_" . $project_id . ".txt";
+        if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+            $RecordSetMultiple = \REDCap::getData($project_id, 'array');
+            $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+            $institutions = ProjectData::getAllInstitutions($multipleRecords);
+            $table_data = array();
 
-        #QUESTION = 1
-        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-        #QUESTION = 2
-        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-        #QUESTION = 3,4,5
-        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-        #CREATE & SAVE FILE
-        $filename = "dashboard_cache_file_" . $project_id .".txt";
-        $filereponame = "Dashboard Cache File";
-        self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
+            #QUESTION = 1
+            $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
+            #QUESTION = 2
+            $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, null);
+            #QUESTION = 3,4,5
+            $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, null);
+            #CREATE & SAVE FILE
+            $filereponame = "Dashboard Cache File";
+            self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
+        }
     }
 
     public static function runCacheReportCron($module, $project_id, $report)
@@ -35,36 +37,99 @@ class Crons
                 $custom_report_id = array(0=>$report);
             }
             foreach ($custom_report_id as $rid) {
-                $q = $module->query("SELECT report_id FROM redcap_reports 
+                $filename = "dashboard_cache_file_" . $project_id . "_report_" . $rid . ".txt";
+                if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+                    $q = $module->query("SELECT report_id FROM redcap_reports 
                                     WHERE project_id = ? AND unique_report_name=?",
-                                    [$project_id,$rid]);
-                $row = $q->fetch_assoc();
-                $reports = \REDCap::getReport($row['report_id']);
-                if(!empty($reports)) {
-                    foreach ($reports as $record => $data) {
-                        array_push($recordIds, $record);
+                        [$project_id, $rid]);
+                    $row = $q->fetch_assoc();
+                    $reports = \REDCap::getReport($row['report_id']);
+                    if (!empty($reports)) {
+                        foreach ($reports as $record => $data) {
+                            array_push($recordIds, $record);
+                        }
+
+                        //We create the data & file
+                        $RecordSetMultiple = \REDCap::getData($project_id, 'array', $recordIds);
+                        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+                        $institutions = ProjectData::getAllInstitutions($multipleRecords);
+                        $table_data = array();
+
+                        #QUESTION = 1
+                        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+                        #QUESTION = 2
+                        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+                        #QUESTION = 3,4,5
+                        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+                        #CREATE & SAVE FILE
+                        $filereponame = "Dashboard Cache File - Report: " . $rid;
+                        self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
                     }
-
-                    //We create the data & file
-                    $RecordSetMultiple = \REDCap::getData($project_id, 'array',$recordIds);
-                    $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-                    $institutions = ProjectData::getAllInstitutions($multipleRecords);
-                    $table_data = array();
-
-                    #QUESTION = 1
-                    $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                    #QUESTION = 2
-                    $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                    #QUESTION = 3,4,5
-                    $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                    #CREATE & SAVE FILE
-                    $filename = "dashboard_cache_file_" . $project_id . "_report_".$rid.".txt";
-                    $filereponame = "Dashboard Cache File - Report: ".$rid;
-                    self::saveRepositoryFile($module, $project_id, $filename, $table_data,$filereponame);
                 }
             }
         }
 
+    }
+
+    public static function runGraphCron($module,$project_id)
+    {
+        $filename = "dashboard_cache_graph_file_" . $project_id . ".txt";
+        if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+            $array_study_1 = ProjectData::getArrayStudyQuestion_1();
+            $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+            $array_study_2 = ProjectData::getArrayStudyQuestion_2();
+            $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
+            $conditionDate = "";
+            $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
+
+            $graph = array();
+            for ($question = 1; $question < 3; $question++) {
+                $array_study_number = ${"array_study_" . $question};
+                $question_number = ${"row_questions_" . $question};
+
+                $count = 1;
+                foreach ($custom_filters as $index => $sstudy) {
+                    if ($count < 11 && $sstudy != "") {
+                        $array_study_number[$sstudy] = "Custom site value " . $count;
+                    } else {
+                        break;
+                    }
+                    $count++;
+                }
+                foreach ($array_study_number as $study => $label) {
+                    $study_options = $module->getChoiceLabels($study, $project_id);
+                    foreach ($question_number as $indexQuestion => $question_1) {
+                        $graph[$question][$study][$question_1] = array();
+                        $graph[$question][$study][$question_1]["total"] = array();
+                        $graph[$question][$study][$question_1]["total"]['graph_top_score_year'] = array();
+                        $graph[$question][$study][$question_1]["total"]['graph_top_score_month'] = array();
+                        $graph[$question][$study][$question_1]["total"]['graph_top_score_quarter'] = array();
+                        $graph[$question][$study][$question_1]["total"]['years'] = array();
+                        $graph[$question][$study][$question_1]["no"] = array();
+                        $graph[$question][$study][$question_1]["no"]['graph_top_score_year'] = array();
+                        $graph[$question][$study][$question_1]["no"]['graph_top_score_month'] = array();
+                        $graph[$question][$study][$question_1]["no"]['graph_top_score_quarter'] = array();
+                        $graph[$question][$study][$question_1]["no"]['years'] = array();
+
+                        $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+                        $topScoreMax = count($outcome_labels);
+
+                        $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph);
+                        $graph = GraphData::getMissingColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph);
+                        $graph = GraphData::getTotalColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph);
+                        if ($study == "rpps_s_q61") {
+                            $graph = GraphData::getMultipleColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph);
+                        }
+                    }
+                    $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);
+                    $chartgraph[$question]["nofilter"] = GraphData::graphArrays($graph, $question, $study, null);
+                }
+            }
+
+            #CREATE & SAVE FILE
+            $filereponame = "Dashboard Cache Graph File";
+            self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
+        }
     }
 
     public static function createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds)
@@ -304,8 +369,8 @@ class Crons
         return $table_data;
     }
 
-    public static function saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame){
-        if ($table_data != "" && $table_data['data'] != "" && $table_data['tooltip'] != "") {
+    public static function saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, $type = ""){
+        if (($type == "" && $table_data != "" && $table_data['data'] != "" && $table_data['tooltip'] != "") || ($type == "graph" && !empty($table_data))) {
             #SAVE DATA IN FILE
             #create and save file with json
             $storedName = date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt";
@@ -342,6 +407,17 @@ class Crons
 
             $q = $module->query("INSERT INTO redcap_docs_to_edocs (docs_id,doc_id) VALUES(?,?)", [$docsId, $docId]);
         }
+    }
+
+    public static function doesFileAlreadyExist($module, $project_id, $filename){
+        //Check if file already Exists
+        $today = date("Y-m-d");
+        $doesfileExist = false;
+        $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=? AND docs_date=?", [$project_id, $filename, $today]);
+        while ($row = db_fetch_assoc($q)) {
+            return true;
+        }
+        return $doesfileExist;
     }
 }
 ?>

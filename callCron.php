@@ -15,4 +15,5 @@ if(!empty($report) && array_key_exists('report', $_GET)){
 }else{
     Crons::runCacheCron($module, $project_id);
     Crons::runCacheReportCron($module, $project_id, null);
+    Crons::runGraphCron($module, $project_id);
 }
