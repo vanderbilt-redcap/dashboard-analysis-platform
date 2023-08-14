@@ -451,7 +451,9 @@ function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $gr
 
 function getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds){
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
-    $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $conditionDate);
+    $data = $row_questions_1;
+    array_push($data, "record_id");
+    $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, $data, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count($RecordSet);
     $total_questions = count($row_questions_1);
@@ -482,17 +484,17 @@ function getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_quest
                         $num_questions_answered++;
                     }
                 }
-            }
-            $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
-            if ($percent >= 0.8) {
-                $graph["institutions"][$institution]["complete"]++;
-            } else if ($percent < 0.8 && $percent >= 0.5) {
-                $graph["institutions"][$institution]["partial"]++;
-            } else if ($percent < 0.5 && $percent > 0) {
-                $graph["institutions"][$institution]["breakoffs"]++;
-            }
-            if($percent > 0){
-                $graph["institutions"][$institution]["any"]++;
+                $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
+                if ($percent >= 0.8) {
+                    $graph["institutions"][$institution]["complete"]++;
+                } else if ($percent < 0.8 && $percent >= 0.5) {
+                    $graph["institutions"][$institution]["partial"]++;
+                } else if ($percent < 0.5 && $percent > 0) {
+                    $graph["institutions"][$institution]["breakoffs"]++;
+                }
+                if($percent > 0){
+                    $graph["institutions"][$institution]["any"]++;
+                }
             }
         }
     }
