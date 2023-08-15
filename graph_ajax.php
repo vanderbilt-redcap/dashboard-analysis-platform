@@ -33,12 +33,12 @@ while ($row = db_fetch_assoc($q)) {
 }
 $chartgraph = array();
 if($graph != "" && is_array($graph)){
-    $chartgraph["results"]['month'][$question_1] = $graph[$question][$study]["results"]["year"][$question_1];
-    $chartgraph["results"]['quarter'][$question_1] = $graph[$question][$study]["results"]["month"][$question_1];
-    $chartgraph["results"]['year'][$question_1] = $graph[$question][$study]["results"]["month"][$question_1];
-    $chartgraph["labels"]['month'][$question_1] = $graph[$question][$study]["labels"]["year"][$question_1];
-    $chartgraph["labels"]['quarter'][$question_1] = $graph[$question][$study]["labels"]["month"][$question_1];
-    $chartgraph["labels"]['year'][$question_1] = $graph[$question][$study]["labels"]["month"][$question_1];
+    $chartgraph["results"]['month'][$question_1] = $graph[$question][$study]["results"]["month"][$question_1];
+    $chartgraph["results"]['quarter'][$question_1] = $graph[$question][$study]["results"]["quarter"][$question_1];
+    $chartgraph["results"]['year'][$question_1] = $graph[$question][$study]["results"]["year"][$question_1];
+    $chartgraph["labels"]['month'][$question_1] = $graph[$question][$study]["labels"]["month"][$question_1];
+    $chartgraph["labels"]['quarter'][$question_1] = $graph[$question][$study]["labels"]["quarter"][$question_1];
+    $chartgraph["labels"]['year'][$question_1] = $graph[$question][$study]["labels"]["year"][$question_1];
 }
 
 echo json_encode(array(

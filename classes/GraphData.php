@@ -322,7 +322,6 @@ class GraphData
 
     public static function graphArrays($graph,$question,$study,$study_options){
         if($study_options != null) {
-//            $study_options_total = get_object_vars($study_options);
             $study_options_total = $study_options;
             $study_options_total["no"] = "no";
             $study_options_total["multiple"] = "multiple";
