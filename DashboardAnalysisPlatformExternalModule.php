@@ -19,7 +19,7 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
      * See the API Sync module's per project sync settings for a more advanced
      * example of this same concept.
      */
-    function dashboard_cache_file($cronAttributes){
+    function dashboardCacheCron($cronAttributes){
         $hourRange = 6;
         if(date('G') > $hourRange){
             // Only perform actions between 12am and 6am.
@@ -32,7 +32,6 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
             // We're already run recently
             return;
         }
-
         // Perform cron actions here
         foreach ($this->getProjectsWithModuleEnabled() as $project_id){
             try {
@@ -51,12 +50,12 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
                     #We make sure we only do this once a day
                     if ($today > $file_date) {
                         $found = true;
-                        error_log("dashboardCacheFile PID".$project_id);
+                        error_log("dashboardCacheFile PID".$project_id." ".$cronAttributes['cron_name']);
                         include("callCron.php");
                     }
                 }
                 if(!$found){
-                        error_log("dashboardCacheFile PID".$project_id);
+                        error_log("dashboardCacheFile PID".$project_id." ".$cronAttributes['cron_name']);
                         include("callCron.php");
                 }
 
