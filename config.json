@@ -55,6 +55,11 @@
       "type":"radio"
     },
     {
+      "key": "stop-cron",
+      "name": "Stop Nightly Dashboard Update",
+      "type": "checkbox"
+    },
+    {
       "key": "registration",
       "name": "Specify the Project ID from the Project Registration.",
       "type": "text",

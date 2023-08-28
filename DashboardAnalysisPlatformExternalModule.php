@@ -35,28 +35,31 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
         // Perform cron actions here
         foreach ($this->getProjectsWithModuleEnabled() as $project_id){
             try {
-                #CRONS
-                $filename = "dashboard_cache_file_" . $project_id . ".txt";
-                $q = $this->query("SELECT em.stored_name FROM redcap_edocs_metadata em 
+                $stop_cron = $this->getProjectSetting('stop-cron',$project_id);
+                if(!$stop_cron) {
+                    #CRONS
+                    $filename = "dashboard_cache_file_" . $project_id . ".txt";
+                    $q = $this->query("SELECT em.stored_name FROM redcap_edocs_metadata em 
                                     LEFT JOIN redcap_docs_to_edocs de ON em.doc_id = de.doc_id 
                                     LEFT JOIN redcap_docs rd ON rd.docs_id = de.docs_id 
                                     WHERE rd.project_id=? AND rd.docs_name=?",
-                                    [$project_id, $filename]);
-                $found = false;
-                while ($row = db_fetch_assoc($q)) {
-                    $storedName = $row['stored_name'];
-                    $today = strtotime(date("Ymd"));
-                    $file_date = strtotime(date("Ymd",strtotime(explode("_pid" . $project_id . "_", $storedName)[0])));
-                    #We make sure we only do this once a day
-                    if ($today > $file_date) {
-                        $found = true;
-                        error_log("dashboardCacheFile PID".$project_id." ".$cronAttributes['cron_name']);
+                        [$project_id, $filename]);
+                    $found = false;
+                    while ($row = db_fetch_assoc($q)) {
+                        $storedName = $row['stored_name'];
+                        $today = strtotime(date("Ymd"));
+                        $file_date = strtotime(date("Ymd", strtotime(explode("_pid" . $project_id . "_", $storedName)[0])));
+                        #We make sure we only do this once a day
+                        if ($today > $file_date) {
+                            $found = true;
+                            error_log("dashboardCacheFile PID" . $project_id . " " . $cronAttributes['cron_name']);
+                            include("callCron.php");
+                        }
+                    }
+                    if (!$found) {
+                        error_log("dashboardCacheFile PID" . $project_id . " " . $cronAttributes['cron_name']);
                         include("callCron.php");
                     }
-                }
-                if(!$found){
-                        error_log("dashboardCacheFile PID".$project_id." ".$cronAttributes['cron_name']);
-                        include("callCron.php");
                 }
 
             } catch (Throwable $e) {

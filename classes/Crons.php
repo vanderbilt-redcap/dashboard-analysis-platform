@@ -160,7 +160,7 @@ class Crons
         foreach ($array_study_1 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
-                array_push($study_options, "Yes - Spanish/Hispanic/Latino");
+                array_push($study_options, ProjectData::getExtraColumTitle());
             }
             $showLegend = false;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
@@ -311,7 +311,7 @@ class Crons
         foreach ($array_study_3 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
-                array_push($study_options, "Yes - Spanish/Hispanic/Latino");
+                array_push($study_options, ProjectData::getExtraColumTitle());
             }
             for ($question = 3; $question < 6; $question++) {
                 $option = explode("-", $row_questions[$question]);

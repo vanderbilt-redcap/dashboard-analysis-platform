@@ -148,7 +148,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
 
     if($study == "rpps_s_q62"){
-        array_push($study_options,"Yes - Spanish/Hispanic/Latino");
+        array_push($study_options,ProjectData::getExtraColumTitle());
     }
     if($_SESSION[$project_id . "_startDate"] != ""){
         $startDate = date("Y-m-d",strtotime($_SESSION[$project_id . "_startDate"]));

@@ -274,6 +274,11 @@ class ProjectData
         return $array_study_3;
     }
 
+    public static function getExtraColumTitle()
+    {
+        return "Yes - ALL Spanish/Hispanic/Latino";
+    }
+
     public static function getNumberQuestionsTopScore($project_id, $topScoreMax, $question, $condition, $recordIds)
     {
         if ($topScoreMax == 4 || $topScoreMax == 5) {
