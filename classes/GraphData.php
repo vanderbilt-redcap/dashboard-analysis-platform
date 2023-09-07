@@ -34,7 +34,7 @@ class GraphData
             if($question == 2){
                 $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study, $index, $condition.$conditionDate, $graph);
             }else{
-                $RecordSet = \REDCap::getData($project_id, 'array', null, array($question_1,'survey_datetime'), null, null, false, false, false, $condition.$conditionDate);
+                $RecordSet = \REDCap::getData($project_id, 'array', null, array($question_1,'survey_datetime','record_id'), null, null, false, false, false, $condition.$conditionDate);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
                 foreach ($records as $record){
                     if($question == 1) {
@@ -194,7 +194,9 @@ class GraphData
     }
 
     public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate){
-        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, array($study, $question_1, 'rpps_s_q61'), null, null, false, false, false, "[" . $question_1 . "] <> ''" . $conditionDate);
+        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $colType, $project_id);
+
+        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>'' AND ".$condition . $conditionDate);
         $TotalRecordsGraph = count(json_decode($RecordSetGraph));
 
         $score_is_5O_overall_missing = 0;
@@ -221,7 +223,7 @@ class GraphData
         if($percent == "nan"){
             $percent = 0;
         }
-        $graph[$question][$study][$question_1][$colType]['graph_top_score_quarter'][$date] = $percent;
+        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent;
 
         return $graph;
     }
@@ -238,7 +240,7 @@ class GraphData
             $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate);
         }
 
-        foreach ($graph[$question][$study][$question_1][$colType]['years'] as $year){
+        foreach ($graph[$question][$study][$question_1][$colType]['years'] as $year => $count){
             #QUARTERS
             #Q1
             $conditionDate1 = " AND [survey_datetime] >= '".$year."-01-01". "' AND [survey_datetime] < '".$year."-04-01". "'";
