@@ -354,7 +354,7 @@ class GraphData
                         array_push($graph_top_score_quarter_values[$question_1][$index], 0);
                         array_push($graph_top_score_quarter_values[$question_1][$index], 0);
 
-                        foreach ($graph[$question_1][$index]['graph_top_score_quarter'] as $date => $value) {
+                        foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_quarter'] as $date => $value) {
                             $quarter = explode(" ", $date)[0];
                             $year_quarter = explode(" ", $date)[1];
                             if ($year == $year_quarter) {
