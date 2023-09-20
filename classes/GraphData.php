@@ -234,7 +234,7 @@ class GraphData
         }
 
         #MONTH
-        foreach ($graph[$question][$study][$question_1][$colType]['graph_top_score_month'] as $date) {
+        foreach ($graph[$question][$study][$question_1][$colType]['graph_top_score_month'] as $date => $value) {
             $month = date("Y-m",$date);
             $conditionDate = " AND (contains([survey_datetime], \"" . $month . "\"))";
             $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate);
@@ -324,7 +324,7 @@ class GraphData
                     foreach ($labels_year[$question_1][$index] as $year) {
                         for ($month = 1; $month < 13; $month++) {
                             $found = false;
-                            foreach ($graph[$question_1][$index]['graph_top_score_month'] as $date => $value) {
+                            foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_month'] as $date => $value) {
                                 if ($year . "-" . sprintf('%02d', $month) == date("Y-m", $date)) {
                                     $found = true;
                                     array_push($labels_month[$question_1][$index], date("Y-m", $date));
