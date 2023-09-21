@@ -34,7 +34,7 @@ class GraphData
             if($question == 2){
                 $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study, $index, $condition.$conditionDate, $graph);
             }else{
-                $RecordSet = \REDCap::getData($project_id, 'array', null, array($question_1,'survey_datetime'), null, null, false, false, false, $condition.$conditionDate);
+                $RecordSet = \REDCap::getData($project_id, 'array', null, array($question_1,'survey_datetime','record_id'), null, null, false, false, false, $condition.$conditionDate);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
                 foreach ($records as $record){
                     if($question == 1) {
@@ -193,92 +193,73 @@ class GraphData
         return $graph;
     }
 
+    public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate){
+        $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $colType, $project_id);
+
+        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>'' AND ".$condition . $conditionDate);
+        $TotalRecordsGraph = count(json_decode($RecordSetGraph));
+
+        $score_is_5O_overall_missing = 0;
+        if($topScoreMax == 5) {
+            $RecordSetisScore5Graph = \REDCap::getData($project_id, 'json', null, array($question_1), null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate);
+            $score_is_5O_overall_missing = count(json_decode($RecordSetisScore5Graph));
+        }
+
+        if($study == "rpps_s_q62"){
+            if($colType >1 && $colType < 6) {
+                $graph[$question][$study][$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
+                $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
+            }
+        }
+
+        if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
+            $percent = 0;
+        }else {
+            $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
+        }
+        if($study == "rpps_s_q62" && $colType == 6) {
+            $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($graph[$question][$study][$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
+        }
+        if($percent == "nan"){
+            $percent = 0;
+        }
+        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent;
+
+        return $graph;
+    }
 
     public static function calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,$colType,$topScoreMax,$condition){
         if($condition != ""){
             $condition = " AND ".$condition;
         }
-        foreach ($graph[$question][$study][$question_1][$colType] as $type=>$graphp){
-            $percent = 0;
-            foreach ($graphp as $date=>$topscore) {
-                if($type == 'graph_top_score_month'){
-                    $month = date("Y-m",$date);
-                    $conditionDate = " AND (contains([survey_datetime], \"".$month."\"))";
-                }else if($type == 'graph_top_score_quarter'){
-                    $quarter = explode(" ",$date)[0];
-                    $year = explode(" ",$date)[1];
 
-                    if($quarter == "Q1"){
-                        $conditionDate = " AND [survey_datetime] >= '".$year."-01-01". "' AND [survey_datetime] < '".$year."-04-01". "'";
-                    }else if($quarter == "Q2") {
-                        $conditionDate = " AND [survey_datetime] >= '".$year."-04-01". "' AND [survey_datetime] < '".$year."-07-01". "'";
-                    }else if($quarter == "Q3") {
-                        $conditionDate = " AND [survey_datetime] >= '".$year."-07-01". "' AND [survey_datetime] < '".$year."-10-01". "'";
-                    }else if($quarter == "Q4"){
-                        $conditionDate = " AND [survey_datetime] >= '".$year."-10-01"."'";
-                    }
-                }else if($type == 'graph_top_score_year'){
-                    $conditionDate = " AND (contains([survey_datetime], \"".$date."\"))";
-                }
-                if($type != "years" && $date != "totalrecords" && $date != "is5") {
-                    $RecordSetGraph = \REDCap::getData($project_id, 'array', null,  array($study,$question_1,'rpps_s_q61'), null, null, false, false, false, "[".$question_1."] <> ''". $condition . $conditionDate);
-                    $TotalRecordsGraph = 0;
-                    $score_is_5O_overall_missing = 0;
-
-
-                    if($colType == "multiple" && $RecordSetGraph != null){
-                        foreach (ProjectData::getProjectInfoArray($RecordSetGraph) as $totalR) {
-                            if(array_count_values($totalR["rpps_s_q61"])[1] >= 2){
-                                $TotalRecordsGraph += 1;
-                                if($totalR[$question_1] == "5" && $topScoreMax == 5){
-                                    $score_is_5O_overall_missing += 1;
-                                }
-                            }
-                        }
-                    }else{
-                        if($colType == "no"){
-                            $RecordSetMissingGraph = \REDCap::getData($project_id, 'array', null, array($study), null, null, false, false, false, "[".$question_1."] != ''" .$conditionDate);
-                            $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissingGraph);
-                            foreach ($missingRecords as $mrecord) {
-                                if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && array_count_values($mrecord[$study])[1] === 0)) {
-                                    $TotalRecordsGraph += 1;
-                                }
-                            }
-                        }else{
-                            $TotalRecordsGraph = count(ProjectData::getProjectInfoArray($RecordSetGraph));
-                        }
-
-
-                        $RecordSetisScore5Graph = \REDCap::getData($project_id, 'array', null, array($question_1), null, null, false, false, false, "[" . $question_1 . "] = '5'" . $condition . $conditionDate);
-                        $isScore5Graph = ProjectData::getProjectInfoArray($RecordSetisScore5Graph);
-                        foreach ($isScore5Graph as $misRecord) {
-                            if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
-                                $score_is_5O_overall_missing += 1;
-                            }
-                        }
-                    }
-                    if($study == "rpps_s_q62"){
-                        if($colType >1 && $colType < 6) {
-                            $TotalRecordsGraph_62 += $TotalRecordsGraph;
-                            $graph[$question][$study][$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
-                            $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
-                        }
-                    }
-                    if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
-                        $percent = 0;
-                    }else {
-                        $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
-                    }
-                    if($study == "rpps_s_q62" && $colType == 6) {
-                        $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($graph[$question][$study][$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
-                    }
-                    if($percent == "nan"){
-                        $percent = 0;
-                    }
-                    $graph[$question][$study][$question_1][$colType][$type][$date] = $percent;
-                }
-            }
+        #MONTH
+        foreach ($graph[$question][$study][$question_1][$colType]['graph_top_score_month'] as $date => $value) {
+            $month = date("Y-m",$date);
+            $conditionDate = " AND (contains([survey_datetime], \"" . $month . "\"))";
+            $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate);
         }
+
+        foreach ($graph[$question][$study][$question_1][$colType]['years'] as $year => $count){
+            #QUARTERS
+            #Q1
+            $conditionDate1 = " AND [survey_datetime] >= '".$year."-01-01". "' AND [survey_datetime] < '".$year."-04-01". "'";
+            #Q2
+            $conditionDate2 = " AND [survey_datetime] >= '".$year."-04-01". "' AND [survey_datetime] < '".$year."-07-01". "'";
+            #Q3
+            $conditionDate3 = " AND [survey_datetime] >= '".$year."-07-01". "' AND [survey_datetime] < '".$year."-10-01". "'";
+            #Q4
+            $conditionDate4 = " AND [survey_datetime] >= '".$year."-10-01"."'";
+
+            for($quarter = 1; $quarter < 5; $quarter++) {
+                $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_quarter',"Q".$quarter." ".$year,${"conditionDate".$quarter});
+            }
+
+            #YEAR
+            $conditionDate = " AND (contains([survey_datetime], \"".$year."\"))";
+            $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_year',$year,$conditionDate);
+        }
+
         return $graph;
     }
 
@@ -343,7 +324,7 @@ class GraphData
                     foreach ($labels_year[$question_1][$index] as $year) {
                         for ($month = 1; $month < 13; $month++) {
                             $found = false;
-                            foreach ($graph[$question_1][$index]['graph_top_score_month'] as $date => $value) {
+                            foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_month'] as $date => $value) {
                                 if ($year . "-" . sprintf('%02d', $month) == date("Y-m", $date)) {
                                     $found = true;
                                     array_push($labels_month[$question_1][$index], date("Y-m", $date));
@@ -373,7 +354,7 @@ class GraphData
                         array_push($graph_top_score_quarter_values[$question_1][$index], 0);
                         array_push($graph_top_score_quarter_values[$question_1][$index], 0);
 
-                        foreach ($graph[$question_1][$index]['graph_top_score_quarter'] as $date => $value) {
+                        foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_quarter'] as $date => $value) {
                             $quarter = explode(" ", $date)[0];
                             $year_quarter = explode(" ", $date)[1];
                             if ($year == $year_quarter) {

@@ -31,12 +31,12 @@ class Crons
     public static function runCacheReportCron($module, $project_id, $report)
     {
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
-        $recordIds = array();
         if(!empty($custom_report_id)) {
             if($report != null){
                 $custom_report_id = array(0=>$report);
             }
             foreach ($custom_report_id as $rid) {
+                $recordIds = array();
                 $filename = "dashboard_cache_file_" . $project_id . "_report_" . $rid . ".txt";
                 if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
                     $q = $module->query("SELECT report_id FROM redcap_reports 
@@ -233,6 +233,7 @@ class Crons
         $allLabel_array = $table_data['legend'];
         $conditionDate = "";
         $max = 100;
+        $graph = array();
 
         #INSTITUTIONS
         $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
