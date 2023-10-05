@@ -5,6 +5,7 @@ require_once (dirname(__FILE__)."/classes/GraphData.php");
 require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
+$banner = $module->getProjectSetting('banner',$project_id);
 include_once "reports.php";
 
 $daterange = $_SESSION[$project_id . "_startDate"]." - ".$_SESSION[$project_id . "_endDate"];
@@ -43,7 +44,6 @@ $array_study = array(
 );
 $custom_filters = $module->getProjectSetting('custom-filter',$project_id);
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
-
 ?>
 <script>
     $( document ).ready(function() {
@@ -186,7 +186,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
 
     $logout = $module->getUrl('index.php?pid='.$project_id.'&sout');
-    $table = "<div class='optionSelect' id='loadTable'>
+    $table = "";
+    if($banner != ""){
+        $table .= "<div style='margin-top: 20px;'>
+                        <div class='alert alert-info'>".$banner."</div>
+                    </div>";
+    }
+    $table .= "<div class='optionSelect' id='loadTable'>
                <div style='width: 621px;' class='forme'>
                 <img src='".$module->getUrl('epv-2colorhorizontal1300__1_.jpg')."' width='300px'>
                 <div style='float: right;padding-top: 23px;'>
