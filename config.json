@@ -60,6 +60,11 @@
       "type": "checkbox"
     },
     {
+      "key": "banner",
+      "name": "Add text that will diplay at the top of the page as a banner.",
+      "type": "textarea"
+    },
+    {
       "key": "registration",
       "name": "Specify the Project ID from the Project Registration.",
       "type": "text",
