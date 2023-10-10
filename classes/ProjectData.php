@@ -290,7 +290,7 @@ class ProjectData
             $records = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false,
                 $condition." AND [".$question."] = ".$val);
         }else if($topScoreMax == 11){
-            $records = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false,
+            $records = \REDCap::getData($project_id, 'json', $recordIds, 'record_id', null, null, false, false, false,
                 $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
         }
 
