@@ -199,7 +199,7 @@ class GraphData
             $condition = " AND ".\Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $colType, $project_id);
         }
 
-        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>'' ".$condition . $conditionDate);
+        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>''" . $conditionDate);
         $TotalRecordsGraph = count(json_decode($RecordSetGraph));
 
         $score_is_5O_overall_missing = 0;
@@ -214,7 +214,6 @@ class GraphData
                 $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
             }
         }
-
         if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
             $percent = 0;
         }else {
@@ -243,6 +242,7 @@ class GraphData
             $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate);
         }
 
+        $current_year = date('Y');
         foreach ($graph[$question][$study][$question_1][$colType]['years'] as $year => $count){
             #QUARTERS
             #Q1
@@ -252,7 +252,11 @@ class GraphData
             #Q3
             $conditionDate3 = " AND [survey_datetime] >= '".$year."-07-01". "' AND [survey_datetime] < '".$year."-10-01". "'";
             #Q4
-            $conditionDate4 = " AND [survey_datetime] >= '".$year."-10-01"."'";
+            if($year == $current_year){
+                $conditionDate4 = " AND [survey_datetime] >= '".$year."-10-01"."'";
+            }else{
+                $conditionDate4 = " AND [survey_datetime] >= '".$year."-10-01". "' AND [survey_datetime] < '".($year+1)."-01-01". "'";
+            }
 
             for($quarter = 1; $quarter < 5; $quarter++) {
                 $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_quarter',"Q".$quarter." ".$year,${"conditionDate".$quarter});
