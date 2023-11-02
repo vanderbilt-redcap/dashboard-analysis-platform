@@ -199,12 +199,12 @@ class GraphData
             $condition = " AND ".\Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $colType, $project_id);
         }
 
-        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>''" . $conditionDate);
+        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>''" . $conditionDate.$condition);
         $TotalRecordsGraph = count(json_decode($RecordSetGraph));
 
         $score_is_5O_overall_missing = 0;
         if($topScoreMax == 5) {
-            $RecordSetisScore5Graph = \REDCap::getData($project_id, 'json', null, array($question_1), null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate);
+            $RecordSetisScore5Graph = \REDCap::getData($project_id, 'json', null, array($question_1), null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
             $score_is_5O_overall_missing = count(json_decode($RecordSetisScore5Graph));
         }
 
