@@ -96,7 +96,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             if ($question == 1) {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScore($project_id, $topScoreMax, $question_1, $condition . $conditionDate, $recordIds);
                 if ($topScoreMax == 5) {
-                    $RecordSetMissing = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false,
+                    $RecordSetMissing = \REDCap::getData($project_id, 'json', $recordIds, 'record_id', null, null, false, false, false,
                         $condition . " AND [" . $question_1 . "] = '5'");
                     $score_is_5 = count(json_decode($RecordSetMissing));
                 }
