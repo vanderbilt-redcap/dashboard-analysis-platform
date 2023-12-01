@@ -383,6 +383,10 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     $graph["complete"] = array();
     $graph["partial"] = array();
     $graph["breakoffs"] = array();
+    $study_62_array = array(
+        "totalcount" => 0,
+        "responses" => 0
+    );
     foreach ($study_options as $index => $col_title) {
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index,$project_id);
         $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
@@ -395,6 +399,14 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 if ($record[$question_1] != "") {
                     $num_questions_answered++;
+                }
+            }
+            #Etnicity Case
+            if ($study == "ethnicity") {
+                if ($index > 1 && $index < 7) {
+                    $study_62_array['responses'] += $num_questions_answered;
+                } else if ($index == 7) {
+                    $num_questions_answered = $study_62_array['responses'];
                 }
             }
             $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, $index, $graph);
