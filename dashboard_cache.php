@@ -8,9 +8,7 @@ $report = htmlentities($_GET['report'],ENT_QUOTES);
 $banner = $module->getProjectSetting('banner',$project_id);
 include_once "reports.php";
 
-$daterange = $_SESSION[$project_id . "_startDate"]." - ".$_SESSION[$project_id . "_endDate"];
 if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
-    $daterange = "Select a date range...";
     if($_SESSION[$project_id . "_question"] == "" || $_SESSION[$project_id . "_study"] == "" || empty($_GET['dash'])){
         $_SESSION[$project_id . "_question"] = "1";
         $_SESSION[$project_id . "_study"] = "nofilter";
@@ -262,7 +260,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     }
     $table .='</optgroup>';
     $table .='</select>
-                        <input type="daterange" class="form-control" id="daterange" name="daterange" value="'.$daterange.'">
                         <button onclick=\'loadTable('.json_encode($module->getUrl("loadTable.php")."&NOAUTH").');\' class="btn btn-primary" id="loadTablebtn">Load Table</button>
                     </div>
                 </div>
