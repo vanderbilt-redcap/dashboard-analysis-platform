@@ -98,6 +98,9 @@ class Crons
                 }
                 foreach ($array_study_number as $study => $label) {
                     $study_options = $module->getChoiceLabels($study, $project_id);
+                    if ($study == "ethnicity") {
+                        array_push($study_options, ProjectData::getExtraColumTitle());
+                    }
                     foreach ($question_number as $indexQuestion => $question_1) {
                         $graph[$question][$study][$question_1] = array();
                         $graph[$question][$study][$question_1]["total"] = array();

@@ -9,21 +9,22 @@ class GraphData
      */
 
     public static function getNormalStudyColGraph($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph){
-        if ($study == "rpps_s_q62") {
-            $graph[$question][$study][$question_1][6] = array();
-            $graph[$question][$study][$question_1][6]['graph_top_score_year'] = array();
-            $graph[$question][$study][$question_1][6]['graph_top_score_month'] = array();
-            $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = array();
-            $graph[$question][$study][$question_1][6]['years'] = array();
-            $graph[$question][$study][$question_1][6]['graph_top_score_year']["totalrecords"] = 0;
-            $graph[$question][$study][$question_1][6]['graph_top_score_year']["is5"] = 0;
-            $graph[$question][$study][$question_1][6]['graph_top_score_month']["totalrecords"] = 0;
-            $graph[$question][$study][$question_1][6]['graph_top_score_month']["is5"] = 0;
-            $graph[$question][$study][$question_1][6]['graph_top_score_quarter']["totalrecords"] = 0;
-            $graph[$question][$study][$question_1][6]['graph_top_score_quarter']["is5"] = 0;
+        if ($study == "rpps_s_q62" || $study == "ethnicity") {
+            $index_ethnicity = count($study_options);
+            $graph[$question][$study][$question_1][$index_ethnicity] = array();
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_year'] = array();
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_month'] = array();
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_quarter'] = array();
+            $graph[$question][$study][$question_1][$index_ethnicity]['years'] = array();
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_year']["totalrecords"] = 0;
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_year']["is5"] = 0;
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_month']["totalrecords"] = 0;
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_month']["is5"] = 0;
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_quarter']["totalrecords"] = 0;
+            $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_quarter']["is5"] = 0;
         }
         foreach ($study_options as $index => $col_title) {
-            if(($study == "rpps_s_q62" && $index != 6) || $study != "rpps_s_q62"){
+            if((($study == "rpps_s_q62" || $study == "ethnicity") && $index != count($study_options)) || $study != "rpps_s_q62" && $study != "ethnicity"){
                 $graph[$question][$study][$question_1][$index] = array();
                 $graph[$question][$study][$question_1][$index]['graph_top_score_year'] = array();
                 $graph[$question][$study][$question_1][$index]['graph_top_score_month'] = array();
@@ -50,13 +51,14 @@ class GraphData
                 $graph = self::calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,$index,$topScoreMax,$condition);
             }
         }
-        if ($study == "rpps_s_q62") {
-            unset($graph[$question][$study][$question_1][6]["graph_top_score_year"]["totalrecords"]);
-            unset($graph[$question][$study][$question_1][6]["graph_top_score_year"]["is5"]);
-            unset($graph[$question][$study][$question_1][6]["graph_top_score_month"]["totalrecords"]);
-            unset($graph[$question][$study][$question_1][6]["graph_top_score_month"]["is5"]);
-            unset($graph[$question][$study][$question_1][6]["graph_top_score_quarter"]["totalrecords"]);
-            unset($graph[$question][$study][$question_1][6]["graph_top_score_quarter"]["is5"]);
+        if ($study == "rpps_s_q62" || $study == "ethnicity") {
+            $index_ethnicity = count($study_options);
+            unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_year"]["totalrecords"]);
+            unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_year"]["is5"]);
+            unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_month"]["totalrecords"]);
+            unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_month"]["is5"]);
+            unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_quarter"]["totalrecords"]);
+            unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_quarter"]["is5"]);
         }
         return $graph;
     }
