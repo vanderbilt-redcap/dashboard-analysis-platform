@@ -390,14 +390,22 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
     foreach ($study_options as $index => $col_title) {
         $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index,$project_id);
         #Etnicity Case
-        if ($study == "ethnicity" && $index == 7) {
+        if ($study == "ethnicity" && $index == count($study_options)) {
+            $condition = "";
             $type = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getFieldType($study, $project_id);
-            if ($type == "checkbox") {
-                $condition = "[" . $study . "(2)] = '1' OR [" . $study . "(3)] = '1' OR [" . $study . "(4)] = '1' OR [" . $study . "(5)] = '1' OR [" . $study . "(6)] = '1'";
-            }else{
-                $condition = "[" . $study . "] = '2' OR [" . $study . "] = '3' OR [" . $study . "] = '4' OR [" . $study . "] = '5' OR [" . $study . "] = '6'";
+            for($i=2;$i<count($study_options);$i++){
+                if($type == "checkbox"){
+                    $condition .= "[" . $study . "(".$i.")] = '1'";
+                }else{
+                    $condition .= "[" . $study . "] = '".$i."'";
+                }
+
+                if($i != (count($study_options)-1)){
+                    $condition .= " OR ";
+                }
             }
         }
+
 
         $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
