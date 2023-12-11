@@ -35,7 +35,7 @@ class GraphData
             if($question == 2){
                 $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study, $index, $condition.$conditionDate, $graph);
             }else{
-                $RecordSet = \REDCap::getData($project_id, 'array', null, array($question_1,'survey_datetime','record_id'), null, null, false, false, false, $condition.$conditionDate);
+                $RecordSet = \REDCap::getData($project_id, 'json-array', null, array($question_1,'survey_datetime','record_id'), null, null, false, false, false, $condition.$conditionDate);
                 $records = ProjectData::getProjectInfoArray($RecordSet);
                 foreach ($records as $record){
                     if($question == 1) {
@@ -67,7 +67,7 @@ class GraphData
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"no", "[" . $study."] = ''".$conditionDate, $graph);
         }else if($question == 1) {
-            $RecordSetMissing = \REDCap::getData($project_id, 'array', null, array($study,$question_1,'survey_datetime'), null, null, false, false, false, "[" . $question_1 . "] != ''" . $conditionDate);
+            $RecordSetMissing = \REDCap::getData($project_id, 'json-array', null, array($study,$question_1,'survey_datetime'), null, null, false, false, false, "[" . $question_1 . "] != ''" . $conditionDate);
             $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
             foreach ($missingRecords as $mrecord) {
                 if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && array_count_values($mrecord[$study])[1] === 0)) {
@@ -91,7 +91,7 @@ class GraphData
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"total", $conditionDate,  $graph);
         }else if($question == 1){
-            $RecordSetOverall = \REDCap::getData($project_id, 'array', null,  array($question_1,'survey_datetime'), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+            $RecordSetOverall = \REDCap::getData($project_id, 'json-array', null,  array($question_1,'survey_datetime'), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
             $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
             foreach ($recordsoverall as $recordo){
                 if($question == 1){
@@ -114,7 +114,7 @@ class GraphData
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, "multiple", $conditionDate, $graph);
         }else {
-            $RecordSetMultiple = \REDCap::getData($project_id, 'array', null,  array($study,$question_1,'survey_datetime'), null, null, false, false, false, $conditionDate);
+            $RecordSetMultiple = \REDCap::getData($project_id, 'json-array', null,  array($study,$question_1,'survey_datetime'), null, null, false, false, false, $conditionDate);
             $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
             foreach ($multipleRecords as $multirecord) {
                 if (array_count_values($multirecord[$study])[1] >= 2) {
@@ -201,12 +201,12 @@ class GraphData
             $condition = " AND ".\Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $colType, $project_id);
         }
 
-        $RecordSetGraph = \REDCap::getData($project_id, 'json', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>''" . $conditionDate.$condition);
-        $TotalRecordsGraph = count(json_decode($RecordSetGraph));
+        $RecordSetGraph = \REDCap::getData($project_id, 'json-array', null, 'record_id', null, null, false, false, false, "[".$question_1."] <>''" . $conditionDate.$condition);
+        $TotalRecordsGraph = count($RecordSetGraph);
 
         $score_is_5O_overall_missing = 0;
         if($topScoreMax == 5) {
-            $RecordSetisScore5Graph = \REDCap::getData($project_id, 'json', null, array($question_1), null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
+            $RecordSetisScore5Graph = \REDCap::getData($project_id, 'json-array', null, array($question_1), null, null, false, false, false, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
             $score_is_5O_overall_missing = count(json_decode($RecordSetisScore5Graph));
         }
 
@@ -292,7 +292,7 @@ class GraphData
         array_push($data,$study);
         array_push($data,$question_1);
         array_push($data,"survey_datetime");
-        $RecordSet = \REDCap::getData($project_id, 'array', null, $data, null, null, false, false, false, $condition);
+        $RecordSet = \REDCap::getData($project_id, 'json-array', null, $data, null, null, false, false, false, $condition);
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
         $graph[$question][$study][$question_1]["total_records"][$type] = count($RecordSet);
         foreach ($allRecords as $record) {
