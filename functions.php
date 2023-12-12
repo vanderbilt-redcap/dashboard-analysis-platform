@@ -83,6 +83,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         "score5" => 0,
     );
     $showLegend = false;
+    error_log("runCacheCron - getNormalStudyCol - study: ".$study." ".time());
     foreach ($study_options as $index => $col_title) {
         if ($study != "" && $index != "") {
             $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index, $project_id);
@@ -103,8 +104,9 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             } else {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question_1, $condition . $conditionDate, $recordIds);
             }
+            error_log("runCacheCron - getNormalStudyCol - Tops calculated ".time());
             $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
-
+            error_log("runCacheCron - getNormalStudyCol - getTopScorePercent: ".$topScore." ".time());
             if ($topScore > $max) {
                 $max = $topScore;
             }
@@ -130,6 +132,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
                 }
             }
             $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($responses, $score_is_5, $topScore, $showLegend, "");
+            error_log("runCacheCron - getNormalStudyCol - getPercent: ".$percent_array[0]." ".time());
             $percent = $percent_array[0];
             $showLegend = $percent_array[1];
             $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
@@ -151,6 +154,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             }
         }
     }
+    error_log("runCacheCron - getNormalStudyCol - END ".time());
     if ($question == 1) {
         $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $index, 5 => $showLegend);
     } else {
