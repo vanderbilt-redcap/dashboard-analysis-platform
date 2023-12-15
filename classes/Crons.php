@@ -29,6 +29,7 @@ class Crons
             #CREATE & SAVE FILE
             $filereponame = "Dashboard Cache File";
             self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
+            error_log("runCacheCron - After File Saved - ".time());
         }
     }
 
@@ -218,6 +219,8 @@ class Crons
                 if ($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal) {
                     $showLegend = true;
                 }
+                error_log("runCacheCron - Data calculated for NoFilter question: ".$question_1." ".time());
+                error_log(json_encode($allData_array[$question]["nofilter"][$question_1],JSON_PRETTY_PRINT));
             }
             $isnofiltercalculated = true;
             $allLabel_array[$question][$study] = $showLegend;

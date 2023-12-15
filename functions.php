@@ -104,7 +104,8 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             } else {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question_1, $condition . $conditionDate, $recordIds);
             }
-            error_log("runCacheCron - getNormalStudyCol - Tops calculated ".time());
+            error_log("runCacheCron - getNormalStudyCol - Tops calculated: ".$topScoreFound." ".time());
+            error_log("runCacheCron - getNormalStudyCol - score_is_5: ".$score_is_5." ".time());
             $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
             error_log("runCacheCron - getNormalStudyCol - getTopScorePercent: ".$topScore." ".time());
             if ($topScore > $max) {
