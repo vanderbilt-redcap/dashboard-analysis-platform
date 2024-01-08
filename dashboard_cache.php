@@ -136,13 +136,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $graph = array();
     if($question == 2){
-        $array_study = array(
-            "age" => "Age",
-            "ethnicity" => "Ethnicity",
-            "gender_identity" => "Gender Identity",
-            "race" => "Race",
-            "sex" => "Sex"
-        );
+        $array_study = ProjectData::getArrayStudyQuestion_2();
     }
 
     if($study == "rpps_s_q62" || $study == "ethnicity"){
@@ -273,7 +267,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             foreach ($study_options as $indexstudy => $col_title) {
                 $class = "";
                 $attribute = "";
-                if ($indexstudy != 1 && (($study == "rpps_s_q62" && $indexstudy < 6) || ($study == "ethnicity" && $indexstudy < 7))) {
+                if ($indexstudy != 1 && (($study == "rpps_s_q62"  || $study == "ethnicity") && $indexstudy < count($study_options))) {
                     $class = "hide";
                     $attribute = "etnicity='1'";
                 }
@@ -307,7 +301,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         margin-left: 38px;
                         color: #5592c6;
                     }</style>";
-            if (($indexstudy == 6 && $study == "rpps_s_q62") || ($study == "ethnicity" && $indexstudy == 7)) {
+            if ($study == "rpps_s_q62" || $study == "ethnicity" && $indexstudy == count($study_options)) {
                 $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
             } else if ($indexstudy != 1) {
                 $table .= '<td class="hide" etnicity="1"></td>';
@@ -489,7 +483,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     foreach ($dash_array['data'][$question][$study][$question_2] as $i => $value){
                         $class = "";
                         $attribute = "";
-                        if($study == "ethnicity" && $i > 1 && $i < 7){
+                        if($study == "ethnicity" && $i > 1 && $i < count($study_options)){
                             $class = "hide";
                             $attribute = "etnicity = '1'";
                         }
