@@ -83,31 +83,27 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
         "score5" => 0,
     );
     $showLegend = false;
-    error_log("runCacheCron - getNormalStudyCol - study: ".$study." ".time());
     foreach ($study_options as $index => $col_title) {
         if ($study != "" && $index != "") {
             $condition = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getParamOnType($study, $index, $project_id);
 
-            $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false, $condition . $conditionDate);
+            $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, 'record_id', null, null, false, false, false, $condition . $conditionDate);
             $total_records = count($RecordSet);
 
-            $RecordSetMissing = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
+            $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, 'record_id', null, null, false, false, false, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
             $missing_InfoLabel = count($RecordSetMissing);
             $score_is_5 = 0;
             if ($question == 1) {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScore($project_id, $topScoreMax, $question_1, $condition . $conditionDate, $recordIds);
                 if ($topScoreMax == 5) {
-                    $RecordSetMissing = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false,
+                    $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, 'record_id', null, null, false, false, false,
                         $condition . " AND [" . $question_1 . "] = '5'");
                     $score_is_5 = count($RecordSetMissing);
                 }
             } else {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question_1, $condition . $conditionDate, $recordIds);
             }
-            error_log("runCacheCron - getNormalStudyCol - Tops calculated: ".$topScoreFound." ".time());
-            error_log("runCacheCron - getNormalStudyCol - score_is_5: ".$score_is_5." ".time());
-            $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
-            error_log("runCacheCron - getNormalStudyCol - getTopScorePercent: ".$topScore." ".time());
+            $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);;
             if ($topScore > $max) {
                 $max = $topScore;
             }
@@ -133,7 +129,6 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
                 }
             }
             $percent_array = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getPercent($responses, $score_is_5, $topScore, $showLegend, "");
-            error_log("runCacheCron - getNormalStudyCol - getPercent: ".$percent_array[0]." ".time());
             $percent = $percent_array[0];
             $showLegend = $percent_array[1];
             $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
@@ -155,7 +150,6 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             }
         }
     }
-    error_log("runCacheCron - getNormalStudyCol - END ".time());
     if ($question == 1) {
         $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $index, 5 => $showLegend);
     } else {
@@ -166,10 +160,10 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
 
 function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds){
     $showLegendexMissing = false;
-    $RecordSetOverall5 = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
+    $RecordSetOverall5 = \REDCap::getData($project_id, 'array', $recordIds, 'record_id', null, null, false, false, false, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
     $score_is_5O_overall = count($RecordSetOverall5);
 
-    $RecordSetMissing = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
+    $RecordSetMissing = \REDCap::getData($project_id, 'array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetMissing);
 
     $missing = 0;
@@ -224,7 +218,7 @@ function getMissingCol($question, $project_id, $conditionDate, $multipleRecords,
 }
 
 function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$institutions,$recordIds){
-    $RecordSetOverall = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+    $RecordSetOverall = \REDCap::getData($project_id, 'array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
     $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
     $recordsoverallTotal = count($recordsoverall);
     $topScoreFoundO = 0;
@@ -256,7 +250,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         }
     }
 
-    $RecordSetOverall5Missing = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
+    $RecordSetOverall5Missing = \REDCap::getData($project_id, 'array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
     $missingRecords = ProjectData::getProjectInfoArray($RecordSetOverall5Missing);
     $score_is_5O_overall_missing = 0;
     foreach($missingRecords as $misRecord){
@@ -412,7 +406,7 @@ function getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $g
         }
 
 
-        $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
+        $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
         $allRecords = ProjectData::getProjectInfoArray($RecordSet);
         $total_records = count($RecordSet);
         $total_questions = count($row_questions_1);
@@ -455,7 +449,7 @@ function getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $
 
 function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $recordIds){
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
-    $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $conditionDate);
+    $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count($RecordSet);
     $total_questions = count($row_questions_1);
@@ -476,7 +470,7 @@ function getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_quest
     $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\addZeros($graph, "total");
     $data = $row_questions_1;
     array_push($data, "record_id");
-    $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, $data, null, null, false, false, false, $conditionDate);
+    $RecordSet = \REDCap::getData($project_id, 'array', $recordIds, $data, null, null, false, false, false, $conditionDate);
     $allRecords = ProjectData::getProjectInfoArray($RecordSet);
     $total_records = count($RecordSet);
     $total_questions = count($row_questions_1);
@@ -590,7 +584,7 @@ function getResponseRate($questions, $total_records){
  * @return bool
  */
 function isTokenCorrect($token,$pidPeople){
-    $projectPeople = \REDCap::getData($pidPeople, 'json-array', null,null,null,null,false,false,false,"[token_1] = '".$token."' or [token_2] = '".$token."' or [token_3] = '".$token."' or [token_4] = '".$token."'");
+    $projectPeople = \REDCap::getData($pidPeople, 'array', null,null,null,null,false,false,false,"[token_1] = '".$token."' or [token_2] = '".$token."' or [token_3] = '".$token."' or [token_4] = '".$token."'");
     $people = ProjectData::getProjectInfoArray($projectPeople)[0];
     $numberUsers = 4;
     if(!empty($people)){

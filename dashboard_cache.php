@@ -349,7 +349,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             }
         }
     }
-
     $showLegendNoFilter = false;
     if($dash_array != "" && is_array($dash_array)){
         $max = 100;

@@ -15,21 +15,15 @@ class Crons
             $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
             $institutions = ProjectData::getAllInstitutions($multipleRecords);
             $table_data = array();
-            error_log("runCacheCron - PID #".$project_id);
-            error_log("runCacheCron - Question 1 - ".time());
             #QUESTION = 1
             $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-            error_log("runCacheCron - Question 2 - ".time());
             #QUESTION = 2
             $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, null);
             #QUESTION = 3,4,5
-            error_log("runCacheCron - Question 3 - ".time());
             $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-            error_log("runCacheCron - Save File - ".time());
             #CREATE & SAVE FILE
             $filereponame = "Dashboard Cache File";
             self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
-            error_log("runCacheCron - After File Saved - ".time());
         }
     }
 
@@ -219,8 +213,6 @@ class Crons
                 if ($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal) {
                     $showLegend = true;
                 }
-                error_log("runCacheCron - Data calculated for NoFilter question: ".$question_1." ".time());
-                error_log(json_encode($allData_array[$question]["nofilter"][$question_1],JSON_PRETTY_PRINT));
             }
             $isnofiltercalculated = true;
             $allLabel_array[$question][$study] = $showLegend;
