@@ -15,7 +15,6 @@ class Crons
             $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
             $institutions = ProjectData::getAllInstitutions($multipleRecords);
             $table_data = array();
-
             #QUESTION = 1
             $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
             #QUESTION = 2

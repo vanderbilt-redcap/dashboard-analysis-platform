@@ -103,8 +103,7 @@ function getNormalStudyCol($question,$project_id, $study_options,$study,$questio
             } else {
                 $topScoreFound = ProjectData::getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question_1, $condition . $conditionDate, $recordIds);
             }
-            $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
-
+            $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);;
             if ($topScore > $max) {
                 $max = $topScore;
             }
