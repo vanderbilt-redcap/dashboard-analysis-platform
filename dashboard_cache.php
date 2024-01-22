@@ -301,7 +301,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         margin-left: 38px;
                         color: #5592c6;
                     }</style>";
-            if ($study == "rpps_s_q62" || $study == "ethnicity" && $indexstudy == count($study_options)) {
+            if (($study == "rpps_s_q62" || $study == "ethnicity") && $indexstudy == count($study_options)) {
                 $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
             } else if ($indexstudy != 1) {
                 $table .= '<td class="hide" etnicity="1"></td>';
@@ -413,7 +413,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             }
                             $class = "";
                             $attribute = "";
-                            if($study == "rpps_s_q62" && $i > 1 && $i < 6){
+                            if($study == "rpps_s_q62" && $i > 1 && $i < count($study_options)){
                                 $class = "hide";
                                 $attribute = "etnicity = '1'";
                             }
@@ -539,7 +539,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex] as $arrayIndex => $value) {
                                 $class = "";
                                 $attribute = "";
-                                if ($study == "rpps_s_q62" && $arrayIndex > 1 && $arrayIndex < 6) {
+                                if ($study == "rpps_s_q62" && $arrayIndex > 1 && $arrayIndex < count($study_options)) {
                                     $class = "hide";
                                     $attribute = "etnicity = '1'";
                                 }
