@@ -143,6 +143,13 @@
       "method": "dashboardCacheCron",
       "cron_frequency": "21600",
       "cron_max_run_time": "3600"
+    },
+    {
+      "cron_name": "dashboard_cache_file_graph_report",
+      "cron_description": "Cron that runs once a day to save all dashboard Graph data on Report data",
+      "method": "dashboardCacheCron",
+      "cron_frequency": "21600",
+      "cron_max_run_time": "3600"
     }
   ],
 

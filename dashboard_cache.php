@@ -3,6 +3,7 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/classes/ProjectData.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
 require_once (dirname(__FILE__)."/classes/Crons.php");
+
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
 $banner = $module->getProjectSetting('banner',$project_id);
@@ -627,6 +628,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             var question = <?=json_encode($question)?>;
             var conditionDate = <?=json_encode($conditionDate)?>;
             var studyOption = <?=json_encode($study)?>;
+            var report = <?=json_encode($report)?>;
 
             var config_dash = {
                 type: 'line',
@@ -724,7 +726,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 dash_chart_big.update();
                 $.ajax({
                     url: graph_url,
-                    data: "&studyOption="+studyOption+"&question="+question+"&question_1="+question_1+"&study="+studyOption+"&study_options="+JSON.stringify(study_options)+"&conditionDate="+conditionDate,
+                    data: "&studyOption="+studyOption+"&question="+question+"&question_1="+question_1+"&study="+studyOption+"&study_options="+JSON.stringify(study_options)+"&conditionDate="+conditionDate+"&report="+report,
                     type: 'POST',
                     success: function(returnData) {
                         var data = JSON.parse(returnData);

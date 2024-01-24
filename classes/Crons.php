@@ -78,59 +78,56 @@ class Crons
             $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
             $array_study_2 = ProjectData::getArrayStudyQuestion_2();
             $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-            $conditionDate = "";
             $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
 
-            $graph = array();
-            for ($question = 1; $question < 3; $question++) {
-                $array_study_number = ${"array_study_" . $question};
-                $question_number = ${"row_questions_" . $question};
-
-                $count = 1;
-                foreach ($custom_filters as $index => $sstudy) {
-                    if ($count < 11 && $sstudy != "") {
-                        $array_study_number[$sstudy] = "Custom site value " . $count;
-                    } else {
-                        break;
-                    }
-                    $count++;
-                }
-                foreach ($array_study_number as $study => $label) {
-                    $study_options = $module->getChoiceLabels($study, $project_id);
-                    if ($study == "ethnicity") {
-                        array_push($study_options, ProjectData::getExtraColumTitle());
-                    }
-                    foreach ($question_number as $indexQuestion => $question_1) {
-                        $graph[$question][$study][$question_1] = array();
-                        $graph[$question][$study][$question_1]["total"] = array();
-                        $graph[$question][$study][$question_1]["total"]['graph_top_score_year'] = array();
-                        $graph[$question][$study][$question_1]["total"]['graph_top_score_month'] = array();
-                        $graph[$question][$study][$question_1]["total"]['graph_top_score_quarter'] = array();
-                        $graph[$question][$study][$question_1]["total"]['years'] = array();
-                        $graph[$question][$study][$question_1]["no"] = array();
-                        $graph[$question][$study][$question_1]["no"]['graph_top_score_year'] = array();
-                        $graph[$question][$study][$question_1]["no"]['graph_top_score_month'] = array();
-                        $graph[$question][$study][$question_1]["no"]['graph_top_score_quarter'] = array();
-                        $graph[$question][$study][$question_1]["no"]['years'] = array();
-
-                        $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
-                        $topScoreMax = count($outcome_labels);
-
-                        $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph);
-                        $graph = GraphData::getMissingColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph);
-                        $graph = GraphData::getTotalColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph);
-                        if ($study == "rpps_s_q61") {
-                            $graph = GraphData::getMultipleColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph);
-                        }
-                    }
-                    $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);
-                    $chartgraph[$question]["nofilter"] = GraphData::graphArrays($graph, $question, $study, null);
-                }
-            }
+            #Create Calculations
+            $chartgraph = array();
+            $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,null);
 
             #CREATE & SAVE FILE
             $filereponame = "Dashboard Cache Graph File";
             self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
+        }
+    }
+
+    public static function runGraphReportCron($module, $project_id, $report)
+    {
+        $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
+        if(!empty($custom_report_id)) {
+            if ($report != null) {
+                $custom_report_id = array(0 => $report);
+            }
+
+            $array_study_1 = ProjectData::getArrayStudyQuestion_1();
+            $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+            $array_study_2 = ProjectData::getArrayStudyQuestion_2();
+            $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
+            $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
+
+            foreach ($custom_report_id as $rid) {
+                $recordIds = array();
+                $filename = "dashboard_cache_graph_file_" . $project_id . "_report_" . $rid . ".txt";
+                if (!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+                    $q = $module->query("SELECT report_id FROM redcap_reports 
+                                    WHERE project_id = ? AND unique_report_name=?",
+                        [$project_id, $rid]);
+                    $row = $q->fetch_assoc();
+                    $reports = \REDCap::getReport($row['report_id']);
+                    if (!empty($reports)) {
+                        foreach ($reports as $record => $data) {
+                            array_push($recordIds, $record);
+                        }
+
+                        #Create Calculations
+                        $chartgraph = array();
+                        $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);
+
+                    }
+                    #CREATE & SAVE FILE
+                    $filereponame = "Dashboard Cache Graph File";
+                    self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
+                }
+            }
         }
     }
 
@@ -373,6 +370,57 @@ class Crons
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
         return $table_data;
+    }
+
+    public static function createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds){
+        $conditionDate = "";
+        $graph = array();
+        for ($question = 1; $question < 3; $question++) {
+            $array_study_number = ${"array_study_" . $question};
+            $question_number = ${"row_questions_" . $question};
+
+            $count = 1;
+            foreach ($custom_filters as $index => $sstudy) {
+                if ($count < 11 && $sstudy != "") {
+                    $array_study_number[$sstudy] = "Custom site value " . $count;
+                } else {
+                    break;
+                }
+                $count++;
+            }
+            foreach ($array_study_number as $study => $label) {
+                $study_options = $module->getChoiceLabels($study, $project_id);
+                if ($study == "ethnicity") {
+                    array_push($study_options, ProjectData::getExtraColumTitle());
+                }
+                foreach ($question_number as $indexQuestion => $question_1) {
+                    $graph[$question][$study][$question_1] = array();
+                    $graph[$question][$study][$question_1]["total"] = array();
+                    $graph[$question][$study][$question_1]["total"]['graph_top_score_year'] = array();
+                    $graph[$question][$study][$question_1]["total"]['graph_top_score_month'] = array();
+                    $graph[$question][$study][$question_1]["total"]['graph_top_score_quarter'] = array();
+                    $graph[$question][$study][$question_1]["total"]['years'] = array();
+                    $graph[$question][$study][$question_1]["no"] = array();
+                    $graph[$question][$study][$question_1]["no"]['graph_top_score_year'] = array();
+                    $graph[$question][$study][$question_1]["no"]['graph_top_score_month'] = array();
+                    $graph[$question][$study][$question_1]["no"]['graph_top_score_quarter'] = array();
+                    $graph[$question][$study][$question_1]["no"]['years'] = array();
+
+                    $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+                    $topScoreMax = count($outcome_labels);
+
+                    $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    $graph = GraphData::getMissingColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    $graph = GraphData::getTotalColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    if ($study == "rpps_s_q61") {
+                        $graph = GraphData::getMultipleColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    }
+                }
+                $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);
+                $chartgraph[$question]["nofilter"] = GraphData::graphArrays($graph, $question, $study, null);
+            }
+        }
+        return $chartgraph;
     }
 
     public static function saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, $type = ""){
