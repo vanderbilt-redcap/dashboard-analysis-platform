@@ -122,10 +122,10 @@ class Crons
                         $chartgraph = array();
                         $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);
 
+                        #CREATE & SAVE FILE
+                        $filereponame = "Dashboard Cache Graph File";
+                        self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
                     }
-                    #CREATE & SAVE FILE
-                    $filereponame = "Dashboard Cache Graph File";
-                    self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
                 }
             }
         }
