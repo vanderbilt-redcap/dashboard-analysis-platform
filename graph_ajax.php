@@ -12,11 +12,17 @@ $study = $_REQUEST['study'];
 $studyOption = $_REQUEST['studyOption'];
 $study_options = json_decode($_REQUEST['study_options']);
 $conditionDate = $_REQUEST['conditionDate'];
+$report = $_REQUEST['report'];
 $question = $_REQUEST['question'];
 $project_id = $_GET['pid'];
 
 #LOAD THE FILE
-$filename = "dashboard_cache_graph_file_".$project_id.".txt";
+if(!empty($report)){
+    $filename = "dashboard_cache_graph_file_" . $project_id . "_report_" . $report . ".txt";
+}else{
+    $filename = "dashboard_cache_graph_file_".$project_id.".txt";
+}
+
 $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?",[$project_id,$filename]);
 while ($row = db_fetch_assoc($q)) {
     $docsId = $row['docs_id'];
@@ -31,6 +37,7 @@ while ($row = db_fetch_assoc($q)) {
         }
     }
 }
+
 $chartgraph = array();
 if($graph != "" && is_array($graph)){
     $chartgraph["results"]['month'][$question_1] = $graph[$question][$study]["results"]["month"][$question_1];

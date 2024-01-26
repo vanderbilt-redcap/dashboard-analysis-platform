@@ -14,10 +14,12 @@ if($cronAttributes['cron_name'] == ""){
     #MANUAL
     if(!empty($report) && array_key_exists('report', $_GET)) {
         Crons::runCacheReportCron($module, $project_id, $report);
+        Crons::runGraphReportCron($module, $project_id, $report);
     }else {
         Crons::runCacheCron($module, $project_id);
         Crons::runCacheReportCron($module, $project_id, null);
         Crons::runGraphCron($module, $project_id);
+        Crons::runGraphReportCron($module, $project_id, null);
     }
 }else{
     #CRONS
@@ -27,5 +29,7 @@ if($cronAttributes['cron_name'] == ""){
         Crons::runCacheReportCron($module, $project_id, null);
     }else if ($cronAttributes['cron_name'] == 'dashboard_cache_file_graph'){
         Crons::runGraphCron($module, $project_id);
+    }else if ($cronAttributes['cron_name'] == 'dashboard_cache_file_graph_report'){
+        Crons::runGraphReportCron($module, $project_id, null);
     }
 }
