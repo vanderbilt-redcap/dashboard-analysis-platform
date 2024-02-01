@@ -450,9 +450,7 @@ class Crons
             }
 
             //Save document on DB
-            $q = $module->query("INSERT INTO redcap_edocs_metadata (stored_name,doc_name,doc_size,file_extension,mime_type,gzipped,project_id,stored_date) VALUES(?,?,?,?,?,?,?,?)",
-                [$storedName, $filename, $filesize, 'txt', 'text/plain', '0', $project_id, date('Y-m-d H:i:s')]);
-            $docId = db_insert_id();
+            $docId = \REDCap::storeFile(EDOC_PATH . $storedName, $project_id, $filename);
 
             //Save document in File Repository
             $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",
