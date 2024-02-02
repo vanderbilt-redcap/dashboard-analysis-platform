@@ -53,12 +53,12 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
                         if ($today > $file_date) {
                             $found = true;
                             error_log("dashboardCacheFile PID" . $project_id . " " . $cronAttributes['cron_name']);
-//                            include("callCron.php");
+                            include("callCron.php");
                         }
                     }
                     if (!$found) {
                         error_log("dashboardCacheFile PID" . $project_id . " " . $cronAttributes['cron_name']);
-//                        include("callCron.php");
+                        include("callCron.php");
                     }
                 }
 
