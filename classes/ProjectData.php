@@ -294,7 +294,12 @@ class ProjectData
                 $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
         }
 
-        return count(json_decode($records));
+        $numberQuestions = 0;
+        if(!empty($records)){
+            $numberQuestions = count(json_decode($records));
+        }
+
+        return $numberQuestions;
     }
     public static function getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question, $condition, $recordIds)
     {

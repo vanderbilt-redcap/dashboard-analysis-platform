@@ -303,25 +303,27 @@ function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_
     $multiple_missing = 0;
     $showLegendexMultiple = false;
     foreach ($multipleRecords as $multirecord){
-        if(array_count_values($multirecord[$study])[1] >= 2){
-            $multiple += 1;
-            if($question == 1){
-                if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
-                    $multipleTop += 1;
+        if(!empty($multirecord[$study])) {
+            if (array_count_values($multirecord[$study])[1] >= 2) {
+                $multiple += 1;
+                if ($question == 1) {
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
+                        $multipleTop += 1;
+                    }
+                    if ($multirecord[$question_1] == "5" && $topScoreMax == 5) {
+                        $multiple_not_applicable += 1;
+                    }
+                } else {
+                    if (\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
+                        $multipleTop += 1;
+                    }
                 }
-                if($multirecord[$question_1] == "5" && $topScoreMax == 5){
-                    $multiple_not_applicable += 1;
-                }
-            }else{
-                if(\Vanderbilt\DashboardAnalysisPlatformExternalModule\isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1,$multirecord))) {
-                    $multipleTop += 1;
-                }
-            }
 
-            if($multirecord[$question_1] == '' || !array_key_exists($question_1,$multirecord)){
-                $multiple_missing += 1;
-            }
+                if ($multirecord[$question_1] == '' || !array_key_exists($question_1, $multirecord)) {
+                    $multiple_missing += 1;
+                }
 
+            }
         }
     }
 
@@ -523,20 +525,24 @@ function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, 
     $graph["total_records"]["multiple"] = 0;
     $total_questions = count($row_questions_1);
     foreach ($multipleRecords as $multirecord){
-        if(array_count_values($multirecord[$study])[1] >= 2) {
-            $graph["total_records"]["multiple"] += 1;
+        if(!empty($multirecord[$study])) {
+            if (array_count_values($multirecord[$study])[1] >= 2) {
+                $graph["total_records"]["multiple"] += 1;
+            }
         }
     }
 
     foreach ($multipleRecords as $multirecord){
         $num_questions_answered = 0;
-        if(array_count_values($multirecord[$study])[1] >= 2) {
-            foreach ($row_questions_1 as $indexQuestion => $question_1) {
-                if ($multirecord[$question_1] != "") {
-                    $num_questions_answered++;
+        if(!empty($multirecord[$study])) {
+            if (array_count_values($multirecord[$study])[1] >= 2) {
+                foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                    if ($multirecord[$question_1] != "") {
+                        $num_questions_answered++;
+                    }
                 }
+                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "multiple", $graph);
             }
-            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\calculateResponseRate($num_questions_answered, $total_questions, "multiple", $graph);
         }
     }
 
