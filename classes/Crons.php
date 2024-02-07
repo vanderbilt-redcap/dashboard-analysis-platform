@@ -29,17 +29,14 @@ class Crons
 
     public static function runCacheReportCron($module, $project_id, $report)
     {
-        error_log("runCacheReportCron - PID: ".$project_id);
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
         if(!empty($custom_report_id)) {
             if($report != null){
                 $custom_report_id = array(0=>$report);
             }
-            error_log("runCacheReportCron - custom_report_id");
             foreach ($custom_report_id as $rid) {
                 $recordIds = array();
                 $filename = "dashboard_cache_file_" . $project_id . "_report_" . $rid . ".txt";
-                error_log("runCacheReportCron - rid: ".$rid);
                 if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
                     $q = $module->query("SELECT report_id FROM redcap_reports 
                                     WHERE project_id = ? AND unique_report_name=?",
@@ -47,7 +44,6 @@ class Crons
                     $row = $q->fetch_assoc();
                     $reports = \REDCap::getReport($row['report_id']);
                     if (!empty($reports)) {
-                        error_log("runCacheReportCron - reports");
                         foreach ($reports as $record => $data) {
                             array_push($recordIds, $record);
                         }
@@ -64,11 +60,9 @@ class Crons
                         $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
                         #QUESTION = 3,4,5
                         $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                        error_log("runCacheReportCron - before saving file");
                         #CREATE & SAVE FILE
                         $filereponame = "Dashboard Cache File - Report: " . $rid;
                         self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
-                        error_log("runCacheReportCron - after saving file");
                     }
                 }
             }
