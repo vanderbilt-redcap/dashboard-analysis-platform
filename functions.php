@@ -217,7 +217,7 @@ function getMissingCol($question, $project_id, $conditionDate, $multipleRecords,
     }
 }
 
-function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$missingOverall,$tooltipTextArray,$array_colors,$institutions,$recordIds){
+function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$missing_col,$tooltipTextArray,$array_colors,$institutions,$recordIds){
     $RecordSetOverall = \REDCap::getData($project_id, 'array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
     $recordsoverall = ProjectData::getProjectInfoArray($RecordSetOverall);
     $recordsoverallTotal = count($recordsoverall);
@@ -261,7 +261,18 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
         }
     }
 
-    $missingOverall += $missing_col;
+    $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
+    $RecordSetOverallMissing = \REDCap::getData($project_id, 'array', $recordIds, null, null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
+    $missingRecordsNoFilter = ProjectData::getProjectInfoArray($RecordSetOverallMissing);
+    $missingOverall = 0;
+    foreach($missingRecordsNoFilter as $misRecordNF) {
+        foreach ($row_questions_1 as $questionNF){
+            if($misRecordNF[$questionNF] !== ""){
+                $missingOverall += 1;
+                break;
+            }
+        }
+    }
     $overall = ProjectData::getTopScorePercent($topScoreFoundO, $recordsoverallTotal, $score_is_5O_overall_missing, 0);
 
     #Institutions Data
