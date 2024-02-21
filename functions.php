@@ -262,8 +262,7 @@ function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreM
     }
 
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
-    $data = implode(",",$row_questions_1);
-    $RecordSetOverallMissing = \REDCap::getData($project_id, 'array', $recordIds, array($data), null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
+    $RecordSetOverallMissing = \REDCap::getData($project_id, 'array', $recordIds, $row_questions_1, null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
     $missingRecordsNoFilter = ProjectData::getProjectInfoArray($RecordSetOverallMissing);
     $missingOverall = 0;
     foreach($missingRecordsNoFilter as $misRecordNF) {
