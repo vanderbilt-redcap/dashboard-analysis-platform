@@ -186,7 +186,7 @@ class Crons
                 $showLegendMissing = $missingCol[5];
 
                 #OVERALL COL MISSING
-                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors,$institutions, $recordIds);
+                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
                 $showLegendTotal = $totalCol[2];
