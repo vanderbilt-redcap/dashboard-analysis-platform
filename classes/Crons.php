@@ -449,8 +449,14 @@ class Crons
                 }
             }
 
-            //Save document on DB
-            $docId = \REDCap::storeFile(EDOC_PATH . $storedName, $project_id, $filename);
+            if(\REDCap::versionCompare(REDCAP_VERSION, '13.11.3') >= 0){
+                //Save document on DB
+                $docId = \REDCap::storeFile(EDOC_PATH . $storedName, $project_id, $filename);
+            }else{
+                //Save document on DB
+                $docId = \REDCap::storeFile(EDOC_PATH . $storedName, $project_id);
+                $module->query("UPDATE redcap_edocs_metadata SET doc_name = ? WHERE doc_id = ?",[$filename,$docId]);
+            }
 
             //Save document in File Repository
             $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",
