@@ -478,7 +478,7 @@ class Crons
     }
 
     public static function doesFileAlreadyExist($module, $project_id, $filename){
-        $path = $module->getProjectSetting('path',$project_id);
+        $path = ProjectData::getS3Path($module, $project_id);
         $today = date("Y-m-d");
         $doesfileExist = false;
         if(empty($path)){
