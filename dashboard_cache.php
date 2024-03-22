@@ -9,10 +9,6 @@ $report = htmlentities($_GET['report'],ENT_QUOTES);
 $banner = $module->getProjectSetting('banner',$project_id);
 include_once "reports.php";
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
     if($_SESSION[$project_id . "_question"] == "" || $_SESSION[$project_id . "_study"] == "" || empty($_GET['dash'])){
         $_SESSION[$project_id . "_question"] = "1";
