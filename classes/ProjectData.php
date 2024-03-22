@@ -393,7 +393,7 @@ class ProjectData
                 }
             }
         }else{
-            $strJsonFileContents = file_get_contents($path);
+            $strJsonFileContents = file_get_contents($path.$filename);
             $graph = json_decode($strJsonFileContents, true);
         }
         return $graph;
