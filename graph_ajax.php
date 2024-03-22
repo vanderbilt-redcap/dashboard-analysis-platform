@@ -15,7 +15,13 @@ $conditionDate = $_REQUEST['conditionDate'];
 $report = $_REQUEST['report'];
 $question = $_REQUEST['question'];
 $project_id = $_GET['pid'];
+#Check if we have a different path than edocs
 $path = $module->getProjectSetting('path',$project_id);
+if (stripos($path, "s3://") === 0) {
+    //It matches
+}else{
+    $path = null;
+}
 
 #LOAD THE FILE
 if(!empty($report)){

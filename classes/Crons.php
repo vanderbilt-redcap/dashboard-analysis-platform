@@ -430,6 +430,11 @@ class Crons
 
             #Check if we have a different path than edocs
             $path = $module->getProjectSetting('path',$project_id);
+            if (stripos($path, "s3://") === 0) {
+                //It matches
+            }else{
+                $path = null;
+            }
             $storedName = $path == null ? date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt" : $filename;
             $filePath = $path == null ? APP_PATH_TEMP . $storedName : $path . $storedName;
 

@@ -7,7 +7,13 @@ require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
 $banner = $module->getProjectSetting('banner',$project_id);
+#Check if we have a different path than edocs
 $path = $module->getProjectSetting('path',$project_id);
+if (stripos($path, "s3://") === 0) {
+    //It matches
+}else{
+    $path = null;
+}
 include_once "reports.php";
 
 ini_set('display_errors', 1);
