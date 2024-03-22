@@ -7,13 +7,6 @@ require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
 $banner = $module->getProjectSetting('banner',$project_id);
-#Check if we have a different path than edocs
-$path = $module->getProjectSetting('path',$project_id);
-if (stripos($path, "s3://") === 0) {
-    //It matches
-}else{
-    $path = null;
-}
 include_once "reports.php";
 
 ini_set('display_errors', 1);
@@ -27,31 +20,9 @@ if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_sta
     }
 }
 
-$array_questions = array(
-    1 => "Participant perception",
-    2 => "Response/Completion Rates",
-    3 => "Reasons for joining a study",
-    4 => "Reasons for leaving a study",
-    5 => "Reasons for staying in a study"
-);
+$array_questions = ProjectData::getFilterQuestionsArray();
+$array_study = ProjectData::getStudyArray();
 
-$array_study = array(
-    "header0" => "About the participants:",
-    "rpps_s_q60" => "Age",
-    "rpps_s_q59" => "Education",
-    "rpps_s_q62" => "Ethnicity",
-    "rpps_s_q65" => "Gender",
-    "rpps_s_q61" => "Race",
-    "rpps_s_q63" => "Sex",
-    "header1" => "About the research study:",
-    "rpps_s_q58" => "Demands of study",
-    "rpps_s_q15" => "Disease/disorder to enroll",
-    "rpps_s_q66" => "Informed Consent setting",
-    "rpps_s_q16" => "Study Type",
-    "header2" => "About the survey fielding:",
-    "sampling" => "Sampling approach",
-    "timing_of_rpps_administration" => "Timing of RPPS administration"
-);
 $custom_filters = $module->getProjectSetting('custom-filter',$project_id);
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
 ?>
@@ -336,30 +307,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
 
     #LOAD THE FILE
-    $filename = "dashboard_cache_file_".$project_id.".txt";
-    if(!empty($report)){
-        $filename = "dashboard_cache_file_".$project_id."_report_".$report.".txt";
-    }
-
-    if(empty($path)) {
-        $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?",[$project_id,$filename]);
-        while ($row = db_fetch_assoc($q)) {
-            $docsId = $row['docs_id'];
-            $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?",[$docsId]);
-            while ($row2 = db_fetch_assoc($q2)) {
-                $docId = $row2['doc_id'];
-                $q3 = $module->query("SELECT doc_name,stored_name,doc_size,file_extension,mime_type FROM redcap_edocs_metadata WHERE doc_id=? AND delete_date is NULL",[$docId]);
-                while ($row3 = $q3->fetch_assoc()) {
-                    $path = $module->getSafePath($row3['stored_name'], EDOC_PATH) ;
-                    $strJsonFileContents = file_get_contents($path);
-                    $dash_array = json_decode($strJsonFileContents, true);
-                }
-            }
-        }
-    }else{
-        $strJsonFileContents = file_get_contents($path);
-        $dash_array = json_decode($strJsonFileContents, true);
-    }
+    $dash_array = ProjectData::getFileData($module, $project_id, "dashboard_cache_file_", $report);
 
     $showLegendNoFilter = false;
     if($dash_array != "" && is_array($dash_array)){

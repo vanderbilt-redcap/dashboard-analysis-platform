@@ -184,10 +184,44 @@ class ProjectData
         return false;
     }
 
+    public static function getFilterQuestionsArray()
+    {
+        $array_questions = array(
+            1 => "Participant perception",
+            2 => "Response/Completion Rates",
+            3 => "Reasons for joining a study",
+            4 => "Reasons for leaving a study",
+            5 => "Reasons for staying in a study"
+        );
+        return $array_questions;
+    }
+
     public static function getRowQuestions()
     {
         $row_questions = array(2 => "2-15", 3 => "26-39", 4 => "40-55");
         return $row_questions;
+    }
+
+    public static function getStudyArray()
+    {
+        $array_study = array(
+            "header0" => "About the participants:",
+            "rpps_s_q60" => "Age",
+            "rpps_s_q59" => "Education",
+            "rpps_s_q62" => "Ethnicity",
+            "rpps_s_q65" => "Gender",
+            "rpps_s_q61" => "Race",
+            "rpps_s_q63" => "Sex",
+            "header1" => "About the research study:",
+            "rpps_s_q58" => "Demands of study",
+            "rpps_s_q15" => "Disease/disorder to enroll",
+            "rpps_s_q66" => "Informed Consent setting",
+            "rpps_s_q16" => "Study Type",
+            "header2" => "About the survey fielding:",
+            "sampling" => "Sampling approach",
+            "timing_of_rpps_administration" => "Timing of RPPS administration"
+        );
+        return $array_study;
     }
 
     public static function getRowQuestionsParticipantPerception()
@@ -318,6 +352,51 @@ class ProjectData
         }
 
         return $topScore;
+    }
+
+    public static function getS3Path($module, $project_id){
+        $path = $module->getProjectSetting('path',$project_id);
+
+        if (stripos($path, "s3://") === 0) {
+            //It matches
+        }else{
+            $path = null;
+        }
+
+        return $path;
+    }
+
+    public static function getFileData($module, $project_id, $filenametext, $report){
+        #Check if we have a different path than edocs
+        $path = self::getS3Path($module, $project_id);
+
+        if(!empty($report)){
+            $filename = $filenametext . $project_id . "_report_" . $report . ".txt";
+        }else{
+            $filename = $filenametext . $project_id.".txt";
+        }
+
+
+        if(empty($path)) {
+            $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?", [$project_id, $filename]);
+            while ($row = db_fetch_assoc($q)) {
+                $docsId = $row['docs_id'];
+                $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
+                while ($row2 = db_fetch_assoc($q2)) {
+                    $docId = $row2['doc_id'];
+                    $q3 = $module->query("SELECT doc_name,stored_name,doc_size,file_extension,mime_type FROM redcap_edocs_metadata WHERE doc_id=? AND delete_date is NULL", [$docId]);
+                    while ($row3 = $q3->fetch_assoc()) {
+                        $path = $module->getSafePath($row3['stored_name'], EDOC_PATH);
+                        $strJsonFileContents = file_get_contents($path);
+                        $graph = json_decode($strJsonFileContents, true);
+                    }
+                }
+            }
+        }else{
+            $strJsonFileContents = file_get_contents($path);
+            $graph = json_decode($strJsonFileContents, true);
+        }
+        return $graph;
     }
 }
 ?>
