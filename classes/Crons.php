@@ -427,47 +427,70 @@ class Crons
         if (($type == "" && $table_data != "" && $table_data['data'] != "" && $table_data['tooltip'] != "") || ($type == "graph" && !empty($table_data))) {
             #SAVE DATA IN FILE
             #create and save file with json
-            $storedName = date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt";
 
-            $file = fopen(EDOC_PATH . $storedName, "wb");
+            #Check if we have a different path than edocs
+            $path = ProjectData::getS3Path($module, $project_id);
+            $storedName = $path == null ? date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt" : $filename;
+            $filePath = $path == null ? APP_PATH_TEMP . $storedName : $path . $storedName;
+
+            #delete previous file
+            unlink($filePath);
+            $file = fopen($filePath, "wb");
             fwrite($file, json_encode($table_data, JSON_FORCE_OBJECT));
             fclose($file);
 
-            $output = file_get_contents(EDOC_PATH . $storedName);
-            $filesize = file_put_contents(EDOC_PATH . $storedName, $output);
+            $output = file_get_contents($filePath);
+            $filesize = file_put_contents($filePath, $output);
 
-            //Check if file already Exists and Delete old one
-            $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?", [$project_id, $filename]);
-            while ($row = db_fetch_assoc($q)) {
-                $docsId = $row['docs_id'];
-                $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
-                while ($row2 = db_fetch_assoc($q2)) {
-                    $docId = $row2['doc_id'];
-                    $module->query("DELETE FROM redcap_edocs_metadata WHERE project_id = ? AND doc_id=?", [$project_id, $docId]);
-                    $module->query("DELETE FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
-                    $module->query("DELETE FROM redcap_docs WHERE project_id = ? AND docs_id=?", [$project_id, $docsId]);
+            if(empty($path)) {
+                //Check if file already Exists and Delete old one
+                $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=?", [$project_id, $filename]);
+                while ($row = db_fetch_assoc($q)) {
+                    $docsId = $row['docs_id'];
+                    $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
+                    while ($row2 = db_fetch_assoc($q2)) {
+                        $docId = $row2['doc_id'];
+                        $module->query("DELETE FROM redcap_edocs_metadata WHERE project_id = ? AND doc_id=?", [$project_id, $docId]);
+                        $module->query("DELETE FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
+                        $module->query("DELETE FROM redcap_docs WHERE project_id = ? AND docs_id=?", [$project_id, $docsId]);
+                    }
                 }
+
+                if (\REDCap::versionCompare(REDCAP_VERSION, '13.11.3') >= 0) {
+                    //Save document on DB
+                    $docId = \REDCap::storeFile($filePath, $project_id, $filename);
+                } else {
+                    //Save document on DB
+                    $docId = \REDCap::storeFile($filePath, $project_id);
+                    $module->query("UPDATE redcap_edocs_metadata SET doc_name = ? WHERE doc_id = ?", [$filename, $docId]);
+                }
+                #we clean the extra copy
+                unlink($filePath);
+
+                //Save document in File Repository
+                $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",
+                    [$project_id, date('Y-m-d'), $filename, $filesize, 'application/octet-stream', $filereponame]);
+                $docsId = db_insert_id();
+
+                $q = $module->query("INSERT INTO redcap_docs_to_edocs (docs_id,doc_id) VALUES(?,?)", [$docsId, $docId]);
             }
-
-            //Save document on DB
-            $docId = \REDCap::storeFile(EDOC_PATH . $storedName, $project_id, $filename);
-
-            //Save document in File Repository
-            $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",
-                [$project_id, date('Y-m-d'), $filename, $filesize, 'application/octet-stream', $filereponame ]);
-            $docsId = db_insert_id();
-
-            $q = $module->query("INSERT INTO redcap_docs_to_edocs (docs_id,doc_id) VALUES(?,?)", [$docsId, $docId]);
         }
     }
 
     public static function doesFileAlreadyExist($module, $project_id, $filename){
-        //Check if file already Exists
+        $path = ProjectData::getS3Path($module, $project_id);
         $today = date("Y-m-d");
         $doesfileExist = false;
-        $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=? AND docs_date=?", [$project_id, $filename, $today]);
-        while ($row = db_fetch_assoc($q)) {
-            return true;
+        if(empty($path)){
+            //Check if file already Exists
+            $q = $module->query("SELECT docs_id FROM redcap_docs WHERE project_id=? AND docs_name=? AND docs_date=?", [$project_id, $filename, $today]);
+            while ($row = db_fetch_assoc($q)) {
+                return true;
+            }
+        }else{
+            if($today == date ("Y-m-d", filemtime($path.$filename))){
+                return true;
+            }
         }
         return $doesfileExist;
     }
