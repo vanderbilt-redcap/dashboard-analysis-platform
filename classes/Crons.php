@@ -431,7 +431,7 @@ class Crons
             #Check if we have a different path than edocs
             $path = ProjectData::getS3Path($module, $project_id);
             $storedName = $path == null ? date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt" : $filename;
-            $filePath = $path == null ? $module->getSafePath(APP_PATH_TEMP . $storedName) : $path . $storedName;
+            $filePath = $path == null ? $module->getSafePath($storedName, APP_PATH_TEMP) : $path . $storedName;
 
             #delete previous file
             unlink($filePath);
