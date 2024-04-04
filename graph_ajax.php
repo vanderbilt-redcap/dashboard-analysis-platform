@@ -12,7 +12,7 @@ $study = $_REQUEST['study'];
 $studyOption = $_REQUEST['studyOption'];
 $report = $_REQUEST['report'];
 $question = $_REQUEST['question'];
-$project_id = $_GET['pid'];
+$project_id = (int)$_GET['pid'];
 
 #LOAD THE FILE
 $graph = ProjectData::getFileData($module, $project_id, "dashboard_cache_graph_file_", $report);

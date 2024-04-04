@@ -2,31 +2,31 @@
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/ProjectData.php");
 require_once (dirname(__FILE__)."/GraphData.php");
+require_once (dirname(__FILE__)."/CronData.php");
 include_once(__DIR__ . "/../functions.php");
 
 
 class Crons
 {
+    /**
+     * Function that calculates the table values
+     * @param $module
+     * @param $project_id
+     */
     public static function runCacheCron($module,$project_id)
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
         if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
-            $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-            $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-            $institutions = ProjectData::getAllInstitutions($multipleRecords);
-            $table_data = array();
-            #QUESTION = 1
-            $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-            #QUESTION = 2
-            $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-            #QUESTION = 3,4,5
-            $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, null);
-            #CREATE & SAVE FILE
-            $filereponame = "Dashboard Cache File";
-            self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
+            self:self::runCacheCronData($module, $project_id, $filename, null);
         }
     }
 
+    /**
+     * Function that calculates the table values of the report tabs
+     * @param $module
+     * @param $project_id
+     * @param $report, the report id saved in the EM configuration page
+     */
     public static function runCacheReportCron($module, $project_id, $report)
     {
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
@@ -47,22 +47,7 @@ class Crons
                         foreach ($reports as $record => $data) {
                             array_push($recordIds, $record);
                         }
-
-                        //We create the data & file
-                        $RecordSetMultiple = \REDCap::getData($project_id, 'array', $recordIds);
-                        $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
-                        $institutions = ProjectData::getAllInstitutions($multipleRecords);
-                        $table_data = array();
-
-                        #QUESTION = 1
-                        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                        #QUESTION = 2
-                        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                        #QUESTION = 3,4,5
-                        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-                        #CREATE & SAVE FILE
-                        $filereponame = "Dashboard Cache File - Report: " . $rid;
-                        self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
+                        self:self::runCacheCronData($module, $project_id, $filename, $recordIds);
                     }
                 }
             }
@@ -70,6 +55,35 @@ class Crons
 
     }
 
+    /**
+     * Function that runs all the table calculations including the report ones
+     * @param $module
+     * @param $project_id
+     * @param $filename
+     * @param $recordIds
+     */
+    public static function runCacheCronData($module, $project_id, $filename, $recordIds){
+        $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
+        $institutions = ProjectData::getAllInstitutions($multipleRecords);
+        $table_data = array();
+
+        #QUESTION = 1 PARTICIPANT PERCEPTION
+        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+        #QUESTION = 2 RESPONSE/COMPLETION RATES
+        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+        #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
+        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+
+        #CREATE & SAVE FILE
+        $filereponame = "Dashboard Cache File";
+        self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
+    }
+
+    /**
+     * Function that calculates the graph values by MONTH/QUARTER/YEAR
+     * @param $module
+     * @param $project_id
+     */
     public static function runGraphCron($module,$project_id)
     {
         $filename = "dashboard_cache_graph_file_" . $project_id . ".txt";
@@ -80,16 +94,16 @@ class Crons
             $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
             $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
 
-            #Create Calculations
-            $chartgraph = array();
-            $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,null);
-
-            #CREATE & SAVE FILE
-            $filereponame = "Dashboard Cache Graph File";
-            self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
+            self::runGraphCronData($module, $project_id, $filename, null, $custom_filters, $array_study_1, $row_questions_1, $array_study_2, $row_questions_2);
         }
     }
 
+    /**
+     * Function that calculates the graph values by MONTH/QUARTER/YEAR of the report tabs
+     * @param $module
+     * @param $project_id
+     * @param $report, the report id saved in the EM configuration page
+     */
     public static function runGraphReportCron($module, $project_id, $report)
     {
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
@@ -117,20 +131,45 @@ class Crons
                         foreach ($reports as $record => $data) {
                             array_push($recordIds, $record);
                         }
-
-                        #Create Calculations
-                        $chartgraph = array();
-                        $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);
-
-                        #CREATE & SAVE FILE
-                        $filereponame = "Dashboard Cache Graph File";
-                        self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
+                        self::runGraphCronData($module, $project_id, $filename, $recordIds, $custom_filters, $array_study_1, $row_questions_1, $array_study_2, $row_questions_2);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Function that runs all the graph calculations including the report ones
+     * @param $module
+     * @param $project_id
+     * @param $filename
+     * @param $recordIds
+     * @param $custom_filters
+     * @param $array_study_1
+     * @param $row_questions_1
+     * @param $array_study_2
+     * @param $row_questions_2
+     */
+    public static function runGraphCronData($module, $project_id, $filename, $recordIds, $custom_filters, $array_study_1, $row_questions_1, $array_study_2, $row_questions_2){
+        #Create Calculations
+        $chartgraph = array();
+        $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);
+
+        #CREATE & SAVE FILE
+        $filereponame = "Dashboard Cache Graph File";
+        self::saveRepositoryFile($module, $project_id, $filename, $chartgraph, $filereponame, "graph");
+    }
+
+    /**
+     * Function that makes the table calculations for PARTICIPANT PERCEPTION
+     * @param $module
+     * @param $project_id
+     * @param $multipleRecords
+     * @param $institutions
+     * @param $table_data
+     * @param $recordIds
+     * @return mixed
+     */
     public static function createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds)
     {
         $question = 1;
@@ -140,7 +179,6 @@ class Crons
         $allData_array = array();
         $allDataTooltip_array = array();
         $allLabel_array = array();
-        $graph = array();
         $conditionDate = "";
         $max = 100;
 
@@ -170,7 +208,7 @@ class Crons
                 $missingOverall = 0;
 
                 #NORMAL STUDY
-                $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max, $recordIds);
+                $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max, $recordIds);
                 $tooltipTextArray = $normalStudyCol[0];
                 $array_colors = $normalStudyCol[1];
                 $missingOverall = $normalStudyCol[2];
@@ -178,15 +216,14 @@ class Crons
                 $showLegendNormal = $normalStudyCol[5];
 
                 #MISSING
-                $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
+                $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
                 $tooltipTextArray = $missingCol[0];
                 $array_colors = $missingCol[1];
                 $missing_col = $missingCol[2];
-                $graph = $missingCol[4];
                 $showLegendMissing = $missingCol[5];
 
                 #OVERALL COL MISSING
-                $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
+                $totalCol = CronData::getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
                 $showLegendTotal = $totalCol[2];
@@ -199,7 +236,7 @@ class Crons
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
                 #MULTIPLE
                 if ($study == "rpps_s_q61") {
-                    $multipleCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors);
+                    $multipleCol = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors);
                     $tooltipTextArray = $multipleCol[0];
                     $array_colors = $multipleCol[1];
                     $showLegendMultiple = $multipleCol[2];
@@ -220,6 +257,16 @@ class Crons
         return $table_data;
     }
 
+    /**
+     * Function that makes the table calculations for RESPONSE/COMPLETION RATES
+     * @param $module
+     * @param $project_id
+     * @param $multipleRecords
+     * @param $institutions
+     * @param $table_data
+     * @param $recordIds
+     * @return mixed
+     */
     public static function createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds)
     {
         $question = 2;
@@ -235,10 +282,10 @@ class Crons
         $graph = array();
 
         #INSTITUTIONS
-        $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
+        $graph = CronData::getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
             foreach ($institutions as $institution) {
-                $totalInstitution = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
+                $totalInstitution = CronData::getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
                 $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
             }
         }
@@ -248,16 +295,16 @@ class Crons
             if ($study == "ethnicity") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
-            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options, $recordIds);
-            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords);
-            $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $recordIds);
+            $graph = CronData::getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options, $recordIds);
+            $graph = CronData::getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords);
+            $graph = CronData::getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $recordIds);
             if($study == "race"){
-                $graph = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $recordIds);
+                $graph = CronData::getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $recordIds);
             }
             foreach ($row_questions_2 as $indexQuestion => $question_2) {
                 $array_colors = array();
                 $tooltipTextArray = array();
-                $total = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph[$question_2]["total"], $graph["total_records"]["total"]);
+                $total = CronData::getResponseRate($graph[$question_2]["total"], $graph["total_records"]["total"]);
                 $allData_array[$question]["nofilter"][$question_2][0] = $total[0];
                 $allDataTooltip_array[$question]["nofilter"][$question_2][0] = $total[1];
                 array_push($array_colors, $total[0]);
@@ -265,18 +312,18 @@ class Crons
 
                 #NORMAL
                 foreach ($study_options as $index => $col_title) {
-                    $normal = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph[$question_2][$index], $graph["total_records"][$index]);
+                    $normal = CronData::getResponseRate($graph[$question_2][$index], $graph["total_records"][$index]);
                     array_push($array_colors, $normal[0]);
                     array_push($tooltipTextArray, $normal[1]);
                 }
                 #MISSING
-                $missing = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph[$question_2]["missing"], $graph["total_records"]["missing"]);
+                $missing = CronData::getResponseRate($graph[$question_2]["missing"], $graph["total_records"]["missing"]);
                 $array_colors[count($study_options) + 1] = $missing[0];
                 $tooltipTextArray[count($study_options) + 1] = $missing[1];
 
                 if($study == "race") {
                     #MULTIPLE
-                    $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getResponseRate($graph[$question_2]["multiple"], $graph["total_records"]["multiple"]);
+                    $multiple = CronData::getResponseRate($graph[$question_2]["multiple"], $graph["total_records"]["multiple"]);
                     $array_colors[count($study_options) + 2] = $multiple[0];
                     $tooltipTextArray[count($study_options) + 2] = $multiple[1];
                 }
@@ -291,6 +338,16 @@ class Crons
         return $table_data;
     }
 
+    /**
+     * Function that makes the table calculations for REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
+     * @param $module
+     * @param $project_id
+     * @param $multipleRecords
+     * @param $institutions
+     * @param $table_data
+     * @param $recordIds
+     * @return mixed
+     */
     public static function createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds){
         $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
         $row_questions = ProjectData::getRowQuestions();
@@ -325,7 +382,7 @@ class Crons
                     $tooltipTextArray = array();
                     $missingOverall = 0;
                     #NORMAL STUDY
-                    $normalStudyCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds);
+                    $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds);
                     $index = $normalStudyCol[1];
                     $missingOverall = $normalStudyCol[2];
                     $showLegendNormal = $normalStudyCol[5];
@@ -333,14 +390,15 @@ class Crons
                     $tooltipTextArray = $normalStudyCol[7];
 
                     #MISSING
-                    $missingCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds);
+                    $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds);
                     $missing_col = $missingCol[2];
                     $showLegendMissing = $missingCol[3];
                     $array_colors = $missingCol[4];
                     $tooltipTextArray = $missingCol[5];
 
                     #OVERALL MISSING
-                    $totalCol = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getTotalCol($question, $project_id, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $missing_col, $missingOverall, $tooltipTextArray, $array_colors, $institutions, $recordIds);
+                    $totalCol = CronData::getTotalCol($question, $project_id, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, $institutions, $recordIds);
+
                     $showLegendTotal = $totalCol[2];
                     $array_colors = $totalCol[3];
                     $tooltipTextArray = $totalCol[4];
@@ -350,7 +408,7 @@ class Crons
 
                     #MULTIPLE
                     if ($study == "rpps_s_q61") {
-                        $multiple = \Vanderbilt\DashboardAnalysisPlatformExternalModule\getMultipleCol($question, $project_id, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $index, $tooltipTextArray, $array_colors);
+                        $multiple = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $index, $tooltipTextArray, $array_colors);
                         $showLegendMultiple = $multiple[2];
                         $array_colors = $multiple[3];
                         $tooltipTextArray = $multiple[4];
@@ -372,6 +430,19 @@ class Crons
         return $table_data;
     }
 
+    /**
+     * Function that creates the graph data
+     * @param $module
+     * @param $project_id
+     * @param $chartgraph
+     * @param $custom_filters
+     * @param $array_study_1
+     * @param $row_questions_1
+     * @param $array_study_2
+     * @param $row_questions_2
+     * @param $recordIds
+     * @return mixed
+     */
     public static function createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds){
         $conditionDate = "";
         $graph = array();
@@ -408,8 +479,8 @@ class Crons
 
                     $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
-
                     $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    $topScoreMax = count($outcome_labels);
                     $graph = GraphData::getMissingColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
                     $graph = GraphData::getTotalColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
                     if ($study == "rpps_s_q61") {
@@ -423,10 +494,19 @@ class Crons
         return $chartgraph;
     }
 
+    /**
+     * Function that saves the JSON file for the different calculations
+     * @param $module
+     * @param $project_id
+     * @param $filename
+     * @param $table_data
+     * @param $filereponame
+     * @param string $type
+     */
     public static function saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, $type = ""){
         if (($type == "" && $table_data != "" && $table_data['data'] != "" && $table_data['tooltip'] != "") || ($type == "graph" && !empty($table_data))) {
             #SAVE DATA IN FILE
-            #create and save file with json
+            #create and save file as a json
 
             #Check if we have a different path than edocs
             $path = ProjectData::getS3Path($module, $project_id);
@@ -456,11 +536,10 @@ class Crons
                     }
                 }
 
+                //Save document on DB
                 if (\REDCap::versionCompare(REDCAP_VERSION, '13.11.3') >= 0) {
-                    //Save document on DB
                     $docId = \REDCap::storeFile($filePath, $project_id, $filename);
                 } else {
-                    //Save document on DB
                     $docId = \REDCap::storeFile($filePath, $project_id);
                     $module->query("UPDATE redcap_edocs_metadata SET doc_name = ? WHERE doc_id = ?", [$filename, $docId]);
                 }
@@ -475,8 +554,17 @@ class Crons
                 $q = $module->query("INSERT INTO redcap_docs_to_edocs (docs_id,doc_id) VALUES(?,?)", [$docsId, $docId]);
             }
         }
+        #clear data
+        unset($table_data);
     }
 
+    /**
+     * Function that checks if the file has already been generated that day
+     * @param $module
+     * @param $project_id
+     * @param $filename
+     * @return bool
+     */
     public static function doesFileAlreadyExist($module, $project_id, $filename){
         $path = ProjectData::getS3Path($module, $project_id);
         $today = date("Y-m-d");
