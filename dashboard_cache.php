@@ -109,8 +109,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
     $study_options = $module->getChoiceLabels($study, $project_id);
 
-    $RecordSetMultiple = \REDCap::getData($project_id, 'array');
-    $multipleRecords = ProjectData::getProjectInfoArray($RecordSetMultiple);
+    $multipleRecords = \REDCap::getData($project_id, 'json-array');
     $institutions = ProjectData::getAllInstitutions($multipleRecords);
 
     $graph = array();
@@ -301,7 +300,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     $table .= '</thead>';
 
-
     #LOAD THE FILE
     $dash_array = ProjectData::getFileData($module, $project_id, "dashboard_cache_file_", $report);
 
@@ -315,7 +313,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
                     #PRINT RESULTS
-                    $question_popover_content = \Vanderbilt\DashboardAnalysisPlatformExternalModule\returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
+                    $question_popover_content = returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
                     $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
                     $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 
@@ -338,7 +336,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 $showLegendNoFilter = true;
                             }
                             $percent = ($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] / ($max)) * 100;
-                            $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                            $color = GetColorFromRedYellowGreenGradient($percent);
                         }
                         $extraSpace100 = '';
                         if ($dash_array['data'][$question]["nofilter"][$question_1][$indexQuestion][0] == "100 *") {
@@ -357,7 +355,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                         $showLegendNoFilter = true;
                                     }
                                     $percent = ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] / ($max)) * 100;
-                                    $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                                    $color = GetColorFromRedYellowGreenGradient($percent);
                                 }
                                 $extraSpace100 = '';
                                 if ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "100 *") {
@@ -373,7 +371,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 $color = "#c4c4c4";
                             }else{
                                 $percent = ($value/($max))*100;
-                                $color = \Vanderbilt\DashboardAnalysisPlatformExternalModule\GetColorFromRedYellowGreenGradient($percent);
+                                $color = GetColorFromRedYellowGreenGradient($percent);
                             }
                             $class = "";
                             $attribute = "";

@@ -72,9 +72,9 @@ use ExternalModules\ExternalModules;
         #TOKEN
         $token = "";
         $project_id_registration = $module->getProjectSetting('registration',$project_id);
-        if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)){
+        if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && isTokenCorrect($_REQUEST['token'],$project_id_registration)){
             $token = $_REQUEST['token'];
-        }else if(!empty($_SESSION['token']["EPV".$project_id])&& \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
+        }else if(!empty($_SESSION['token']["EPV".$project_id])&& isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
             $token = $_SESSION['token']["EPV".$project_id];
         }
 
@@ -87,14 +87,14 @@ use ExternalModules\ExternalModules;
             $_SESSION['token']["EPV".$project_id] = "";
         }
 
-        if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_REQUEST['token'],$project_id_registration)) {
+        if(array_key_exists('token', $_REQUEST)  && !empty($_REQUEST['token']) && isTokenCorrect($_REQUEST['token'],$project_id_registration)) {
             $_SESSION['token']["EPV".$project_id] = $_REQUEST['token'];
         }
         if( !array_key_exists('token', $_REQUEST) && !array_key_exists('request', $_REQUEST) && empty($_SESSION['token']["EPV".$project_id])){
             include('login.php');
-        }else if(!array_key_exists('option', $_REQUEST) && !empty($_SESSION['token']["EPV".$project_id]) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)){
+        }else if(!array_key_exists('option', $_REQUEST) && !empty($_SESSION['token']["EPV".$project_id]) && isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)){
             include "dashboard_private.php";
-        }else if(array_key_exists('option', $_REQUEST) && $option === 'sac' && !empty($_SESSION['token']["EPV".$project_id]) && \Vanderbilt\DashboardAnalysisPlatformExternalModule\isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
+        }else if(array_key_exists('option', $_REQUEST) && $option === 'sac' && !empty($_SESSION['token']["EPV".$project_id]) && isTokenCorrect($_SESSION['token']["EPV".$project_id],$project_id_registration)) {
             include_once('stats_and_charts.php');
         }else{
             echo "<script>$(document).ready(function() { $('#hub_error_message').show(); $('#hub_error_message').html('<strong>This Access Link has expired. </strong> <br />Please request a new Access Link below.');});</script>";

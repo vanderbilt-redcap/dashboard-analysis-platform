@@ -4,101 +4,6 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
 class ProjectData
 {
-    /**
-     * Function that returns the info array from a specific project
-     * @param $project, the project id
-     * @param $info_array, array that contains the conditionals
-     * @param string $type, if its single or a multidimensional array
-     * @return array, the info array
-     */
-    public static function getProjectInfoArray($records){
-        $array = array();
-        foreach ($records as $event) {
-            foreach ($event as $data) {
-                array_push($array,$data);
-            }
-        }
-
-        return $array;
-    }
-
-    public static function getProjectInfoArrayRepeatingInstruments($records,$filterLogic=null){
-        $array = array();
-        $found = array();
-        $index=0;
-        foreach ($filterLogic as $filterkey => $filtervalue){
-            array_push($found, false);
-        }
-        foreach ($records as $record=>$record_array) {
-            $count = 0;
-            foreach ($filterLogic as $filterkey => $filtervalue){
-                $found[$count] = false;
-                $count++;
-            }
-            foreach ($record_array as $event=>$data) {
-                if($event == 'repeat_instances'){
-                    foreach ($data as $eventarray){
-                        $datarepeat = array();
-                        foreach ($eventarray as $instrument=>$instrumentdata){
-                            $count = 0;
-                            foreach ($instrumentdata as $instance=>$instancedata){
-                                foreach ($instancedata as $field_name=>$value){
-                                    if(!array_key_exists($field_name,$array[$index])){
-                                        $array[$index][$field_name] = array();
-                                    }
-
-                                    if($value != "" && (!is_array($value) || (is_array($value) && !empty($value)))){
-                                        $datarepeat[$field_name][$instance] = $value;
-                                        $count = 0;
-                                        foreach ($filterLogic as $filterkey => $filtervalue){
-                                            if($value == $filtervalue && $field_name == $filterkey){
-                                                $found[$count] = true;
-                                            }
-                                            $count++;
-                                        }
-                                    }
-
-                                }
-                                $count++;
-                            }
-                        }
-                        foreach ($datarepeat as $field=>$datai){
-                            #check if non repeatable value is empty and add repeatable value
-                            #empty value or checkboxes
-                            if($array[$index][$field] == "" || (is_array($array[$index][$field]) && empty($array[$index][$field][1]))){
-                                $array[$index][$field] = $datarepeat[$field];
-                            }
-                        }
-                    }
-                }else{
-                    $array[$index] = $data;
-                    foreach ($data as $fname=>$fvalue) {
-                        $count = 0;
-                        foreach ($filterLogic as $filterkey => $filtervalue){
-                            if($fvalue == $filtervalue && $fname == $filterkey){
-                                $found[$count] = true;
-                            }
-                            $count++;
-                        }
-                    }
-                }
-            }
-            $found_total = true;
-            foreach ($found as $fname=>$fvalue) {
-                if($fvalue == false){
-                    $found_total = false;
-                    break;
-                }
-            }
-            if(!$found_total && $filterLogic != null){
-                unset($array[$index]);
-            }
-
-            $index++;
-        }
-        return $array;
-    }
-
     public static function getRandomIdentifier($length = 6) {
         $output = "";
         $startNum = pow(32,5) + 1;
@@ -321,26 +226,20 @@ class ProjectData
             }if($question != 'rpps_s_q21' && $question != "rpps_s_q25"){
                 $val = '4';
             }
-            $records = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false,
+            $records = \REDCap::getData($project_id, 'json-array', $recordIds, null, 'record_id', null, false, false, false,
                 $condition." AND [".$question."] = ".$val);
         }else if($topScoreMax == 11){
-            $records = \REDCap::getData($project_id, 'json', $recordIds, 'record_id', null, null, false, false, false,
+            $records = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false,
                 $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
         }
 
         $numberQuestions = 0;
         if(!empty($records)){
-            $numberQuestions = count(json_decode($records));
+            $numberQuestions = count($records);
         }
+        unset($records);
 
         return $numberQuestions;
-    }
-    public static function getNumberQuestionsTopScoreVeryOrSomewhatImportant($project_id, $question, $condition, $recordIds)
-    {
-        $records = \REDCap::getData($project_id, 'json', $recordIds, null, 'record_id', null, false, false, false,
-            $condition." AND ([".$question."] = '1' OR [".$question."] = '2')");
-
-        return count(json_decode($records));
     }
 
     public static function getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel)
@@ -397,6 +296,33 @@ class ProjectData
             $graph = json_decode($strJsonFileContents, true);
         }
         return $graph;
+    }
+
+    public static function getDataTotalCount($project_id, $recordIds, $condition, $params="record_id"){
+        $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, array($params), null, null, false, false, false, $condition);
+        $total_count = count($RecordSet);
+        unset($RecordSet);
+        return $total_count;
+    }
+
+    public static function isMultiplesCheckbox($project_id, $data, $study, $option=''){
+        if(getFieldType($study, $project_id) == "checkbox") {
+            $count = 0;
+            foreach ($data as $index => $value) {
+                if ($data[$study . '___' . $index] == '1') {
+                    $count++;
+                    if($option != 'none'){
+                        return false;
+                    }
+                }
+                if($count >= 2)
+                    return true;
+            }
+            if($option == 'none' && $count ==  "0"){
+                return true;
+            }
+        }
+        return false;
     }
 }
 ?>
