@@ -69,7 +69,6 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
         $this->setSystemSetting($lastRunSettingName, time());
     }
 
-
     public function redcap_module_link_check_display($project_id, $link) {
         $privacy = $this->getProjectSetting('privacy',$project_id);
         if($privacy == "public"){
@@ -78,6 +77,16 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
         }
         #Let users always see the link/page if they are added into the project
         return true;
+    }
+
+    /**
+     * Function to increase the Maximum Execution Time
+     * @param $hours
+     */
+    public function increaseProcessingMax($hours) {
+        require_once(APP_PATH_DOCROOT."Classes/System.php");
+
+        \System::increaseMaxExecTime($hours * 3600);
     }
 }
 ?>
