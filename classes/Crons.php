@@ -63,6 +63,10 @@ class Crons
      * @param $recordIds
      */
     public static function runCacheCronData($module, $project_id, $filename, $recordIds){
+        # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
+        # !! ONLY do this if the cron is running at night
+        $module->increaseProcessingMax(3);
+
         $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
         $table_data = array();
@@ -151,6 +155,10 @@ class Crons
      * @param $row_questions_2
      */
     public static function runGraphCronData($module, $project_id, $filename, $recordIds, $custom_filters, $array_study_1, $row_questions_1, $array_study_2, $row_questions_2){
+        # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
+        # !! ONLY do this if the cron is running at night
+        $module->increaseProcessingMax(3);
+
         #Create Calculations
         $chartgraph = array();
         $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);
