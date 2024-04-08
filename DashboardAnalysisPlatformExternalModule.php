@@ -83,7 +83,7 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
      * Function to increase the Maximum Execution Time
      * @param $hours
      */
-    public static function increaseProcessingMax($hours) {
+    public function increaseProcessingMax($hours) {
         require_once(APP_PATH_DOCROOT."Classes/System.php");
 
         \System::increaseMaxExecTime($hours * 3600);
