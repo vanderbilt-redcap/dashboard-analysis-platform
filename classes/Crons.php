@@ -54,7 +54,7 @@ class Crons
                         foreach ($reports as $record => $data) {
                             array_push($recordIds, $record);
                         }
-                        self:self::runCacheCronData($module, $project_id, $filename, $recordIds);
+                        self::runCacheCronData($module, $project_id, $filename, $recordIds);
                     }
                 }
             }
@@ -89,6 +89,10 @@ class Crons
 		$GLOBALS["startTime"] = $GLOBALS["endTime"];
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+		echo "<br /><pre>";
+		var_dump($table_data);
+		echo "</pre><br />";
+		die();
 		$GLOBALS["endTime"] = microtime(true);
 		echo "Finished the first question: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
 		$GLOBALS["startTime"] = $GLOBALS["endTime"];
