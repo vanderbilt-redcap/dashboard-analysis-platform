@@ -4,6 +4,8 @@ namespace Vanderbilt\REDCapDataCore;
 ## All functions here assume that the data is in json-array format with "redcap_record_id" as the record id field
 class REDCapCalculations
 {
+	public static $recordIdField = "record_id";
+	
 	public static function calculateBracketStats($recordData, $fieldName, $brackets) {
 		$counts = [];
 		foreach($brackets as $label => $range) {
@@ -115,10 +117,10 @@ class REDCapCalculations
 				}
 				
 				if($returnValues) {
-					$returnData[$thisRow["record_id"]] = $thisRow[$fieldName];
+					$returnData[$thisRow[self::$recordIdField]] = $thisRow[$fieldName];
 				}
 				else {
-					$returnData[$thisRow["record_id"]] = 1;
+					$returnData[$thisRow[self::$recordIdField]] = 1;
 				}
 			}
 		}
@@ -131,7 +133,7 @@ class REDCapCalculations
 		$recordData = self::filterDataByField($recordData,$fieldName);
 		foreach($recordData as $thisRow) {
 			if($thisRow[$fieldName] >= $minimumValue && $thisRow[$fieldName] < $upperCutoff) {
-				$returnData[$thisRow["record_id"]] = 1;
+				$returnData[$thisRow[self::$recordIdField]] = 1;
 			}
 		}
 		return $returnData;
@@ -150,7 +152,7 @@ class REDCapCalculations
 	## Compare an array of data with record ID keys to a json-array format record data and only return matches
 	public static function filterDataByArray($recordData, $filterRecords) {
 		return array_filter($recordData,function($thisRow) use ($filterRecords) {
-			return array_key_exists($thisRow["record_id"],$filterRecords);
+			return array_key_exists($thisRow[self::$recordIdField],$filterRecords);
 		});
 	}
 }

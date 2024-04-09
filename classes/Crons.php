@@ -70,6 +70,7 @@ class Crons
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
 
+		REDCapCalculations::$recordIdField = $module->getRecordIdField($project_id);
         $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
         $table_data = array();
@@ -212,6 +213,10 @@ class Crons
         foreach ($array_study_1 as $study => $label) {
 			if($study == "") continue;
 			
+			$tooltipTextArray[$study] = [];
+			$array_colors[$study] = [];
+			
+			$fieldType = getFieldType($study,$project_id);
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
@@ -221,7 +226,14 @@ class Crons
 			foreach($study_options as $value => $label) {
 				if($value == "" ) continue;
 				
-				$recordsInCategory = REDCapCalculations::mapFieldByRecord($multipleRecords,$study,[$value],false);
+				if($fieldType == "checkbox") {
+					$studyField = $study."___".$value;
+					$value = 1;
+				}
+				else {
+					$studyField = $study;
+				}
+				$recordsInCategory = REDCapCalculations::mapFieldByRecord($multipleRecords,$studyField,[$value],false);
 				
 				## Special handling for the category "Are you of Spanish or Hispanic..."
 				## with value 6 => "Yes - ALL Spanish/Hispanic/Latino"
@@ -239,7 +251,7 @@ class Crons
 					$containsData = REDCapCalculations::filterDataByField($filteredData,$question_1);
 					$containsDataCount = count($containsData);
 					
-					$missingCount = count($recordsInCategory) - count($containsData);
+					$missingCount = count($recordsInCategory) - $containsDataCount;
 					if(!array_key_exists($indexQuestion,$missingBySurveyQuestion)) {
 						$missingBySurveyQuestion[$indexQuestion] = 0;
 					}
@@ -248,11 +260,11 @@ class Crons
 					$doesNotApplyCount = 0;
 					## For survey questions with 5 choices, a 5 usually indicates a "Does not apply" answer
 					if($topScoreMax == 5) {
-						$doesNotApplyRecords = REDCapCalculations::mapFieldByRecord($filteredData,$indexQuestion,['5'],false);
+						$doesNotApplyRecords = REDCapCalculations::mapFieldByRecord($filteredData,$question_1,['5'],false);
 						$doesNotApplyCount = count($doesNotApplyRecords);
 					}
-					$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$indexQuestion);
-					$topScoreRecords = REDCapCalculations::mapFieldByRecord($filteredData,$indexQuestion,$topScoreValues,false);
+					$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$question_1);
+					$topScoreRecords = REDCapCalculations::mapFieldByRecord($filteredData,$question_1,$topScoreValues,false);
 					
 					$answeredCount = $totalRecords - $missingCount - $doesNotApplyCount;
 					$topScorePercent = 0;
@@ -279,12 +291,12 @@ class Crons
 					## Only done for question 1 list
 					$tooltip .= ", ".$doesNotApplyCount." not applicable";
 					
-					if(!array_key_exists($indexQuestion,$tooltipTextArray)) {
-						$tooltipTextArray[$indexQuestion] = [];
-						$array_colors[$indexQuestion] = [];
+					if(!array_key_exists($indexQuestion,$tooltipTextArray[$study])) {
+						$tooltipTextArray[$study][$indexQuestion] = [];
+						$array_colors[$study][$indexQuestion] = [];
 					}
-					$tooltipTextArray[$indexQuestion][$value] = $tooltip;
-					$array_colors[$indexQuestion][$value] = $topScorePercent;
+					$tooltipTextArray[$study][$indexQuestion][$value] = $tooltip;
+					$array_colors[$study][$indexQuestion][$value] = $topScorePercent;
 				}
 			}
 
