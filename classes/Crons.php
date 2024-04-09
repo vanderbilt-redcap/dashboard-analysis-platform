@@ -1,8 +1,11 @@
 <?php
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
+use Vanderbilt\REDCapDataCore\REDCapCalculations;
+
 require_once (dirname(__FILE__)."/ProjectData.php");
 require_once (dirname(__FILE__)."/GraphData.php");
 require_once (dirname(__FILE__)."/CronData.php");
+require_once (dirname(__FILE__)."/REDCapCalculations.php");
 include_once(__DIR__ . "/../functions.php");
 
 
@@ -201,13 +204,92 @@ class Crons
             }
             $count++;
         }
-        $isnofiltercalculated = false;
+		$showLegend = false;
+		$isnofiltercalculated = false;
+		$tooltipTextArray = [];
+		$array_colors = [];
+		$table_b = "";
         foreach ($array_study_1 as $study => $label) {
+			if($study == "") continue;
+			
             $study_options = $module->getChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
-            $showLegend = false;
+			
+			$missingBySurveyQuestion = [];
+			foreach($study_options as $value => $label) {
+				if($value == "" ) continue;
+				
+				$recordsInCategory = REDCapCalculations::mapFieldByRecord($multipleRecords,$study,[$value],false);
+				
+				## Special handling for the category "Are you of Spanish or Hispanic..."
+				## with value 6 => "Yes - ALL Spanish/Hispanic/Latino"
+				if($study == "rpps_s_62" && $value == 6) {
+					$recordsInCategory = REDCapCalculations::mapFieldByRecord($multipleRecords,$study,["2","3","4","5"],false);
+				}
+				$filteredData = REDCapCalculations::filterDataByArray($multipleRecords,$recordsInCategory);
+				$totalRecords = count($recordsInCategory);
+				
+				foreach($row_questions_1 as $indexQuestion => $question_1) {
+					$outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+					$topScoreMax = count($outcome_labels);
+					
+					## Get list of records that have data for the row question
+					$containsData = REDCapCalculations::filterDataByField($filteredData,$question_1);
+					$containsDataCount = count($containsData);
+					
+					$missingCount = count($recordsInCategory) - count($containsData);
+					if(!array_key_exists($indexQuestion,$missingBySurveyQuestion)) {
+						$missingBySurveyQuestion[$indexQuestion] = 0;
+					}
+					$missingBySurveyQuestion[$indexQuestion] += $missingCount;
+					
+					$doesNotApplyCount = 0;
+					## For survey questions with 5 choices, a 5 usually indicates a "Does not apply" answer
+					if($topScoreMax == 5) {
+						$doesNotApplyRecords = REDCapCalculations::mapFieldByRecord($filteredData,$indexQuestion,['5'],false);
+						$doesNotApplyCount = count($doesNotApplyRecords);
+					}
+					$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$indexQuestion);
+					$topScoreRecords = REDCapCalculations::mapFieldByRecord($filteredData,$indexQuestion,$topScoreValues,false);
+					
+					$answeredCount = $totalRecords - $missingCount - $doesNotApplyCount;
+					$topScorePercent = 0;
+					if($answeredCount > 0) {
+						$topScorePercent = number_format(count($topScoreRecords) / $answeredCount * 100,0);
+					}
+					
+					if($containsDataCount == 0) {
+						$topScorePercent = "-";
+					}
+					else if($containsDataCount < 5) {
+						$topScorePercent = "x";
+					}
+					else if($containsDataCount < 20) {
+						$topScorePercent = $topScorePercent." *";
+					}
+					
+					if($containsDataCount < 20) {
+						$showLegend = true;
+					}
+					
+					$tooltip = $containsDataCount." responses, ". $missingCount ." missing";
+					
+					## Only done for question 1 list
+					$tooltip .= ", ".$doesNotApplyCount." not applicable";
+					
+					if(!array_key_exists($indexQuestion,$tooltipTextArray)) {
+						$tooltipTextArray[$indexQuestion] = [];
+						$array_colors[$indexQuestion] = [];
+					}
+					$tooltipTextArray[$indexQuestion][$value] = $tooltip;
+					$array_colors[$indexQuestion][$value] = $topScorePercent;
+				}
+			}
+
+			continue;
+			$showLegend = false;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $array_colors = array();
                 $tooltipTextArray = array();
@@ -259,6 +341,13 @@ class Crons
             $isnofiltercalculated = true;
             $allLabel_array[$question][$study] = $showLegend;
         }
+		echo "<br /><pre>";
+		var_dump($tooltipTextArray);
+		echo "</pre><br />";
+		echo "<br /><pre>";
+		var_dump($array_colors);
+		echo "</pre><br />";
+		die();
         $table_data['data'] = $allData_array;
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
