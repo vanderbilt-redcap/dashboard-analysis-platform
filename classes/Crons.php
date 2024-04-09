@@ -3,8 +3,10 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 require_once (dirname(__FILE__)."/ProjectData.php");
 require_once (dirname(__FILE__)."/GraphData.php");
 require_once (dirname(__FILE__)."/CronData.php");
+require_once (dirname(__FILE__)."/REDCapCalculations.php");
 include_once(__DIR__ . "/../functions.php");
 
+use \Vanderbilt\REDCapDataCore\REDCapCalculations;
 
 class Crons
 {
@@ -29,6 +31,8 @@ class Crons
      */
     public static function runCacheReportCron($module, $project_id, $report)
     {
+		$GLOBALS["startTime"] = microtime(true);
+		echo "Start Report Cron <Br />";
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
         if(!empty($custom_report_id)) {
             if($report != null){
@@ -43,6 +47,9 @@ class Crons
                         [$project_id, $rid]);
                     $row = $q->fetch_assoc();
                     $reports = \REDCap::getReport($row['report_id']);
+					$GLOBALS["endTime"] = microtime(true);
+					echo "Got the report Data: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+					$GLOBALS["startTime"] = $GLOBALS["endTime"];
                     if (!empty($reports)) {
                         foreach ($reports as $record => $data) {
                             array_push($recordIds, $record);
@@ -52,8 +59,11 @@ class Crons
                 }
             }
         }
-
-    }
+		$GLOBALS["endTime"] = microtime(true);
+		echo "Finished the cache report cron: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+		$GLOBALS["startTime"] = $GLOBALS["endTime"];
+	die();
+	}
 
     /**
      * Function that runs all the table calculations including the report ones
@@ -68,13 +78,25 @@ class Crons
         $module->increaseProcessingMax(3);
 
         $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
+		$GLOBALS["endTime"] = microtime(true);
+		echo "Got all the data: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+		$GLOBALS["startTime"] = $GLOBALS["endTime"];
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
         $table_data = array();
-
+	
+		$GLOBALS["endTime"] = microtime(true);
+		echo "Got the project data: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+		$GLOBALS["startTime"] = $GLOBALS["endTime"];
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+		$GLOBALS["endTime"] = microtime(true);
+		echo "Finished the first question: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+		$GLOBALS["startTime"] = $GLOBALS["endTime"];
         #QUESTION = 2 RESPONSE/COMPLETION RATES
         $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+		$GLOBALS["endTime"] = microtime(true);
+		echo "Finished the second question: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+		$GLOBALS["startTime"] = $GLOBALS["endTime"];
         #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
         $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
 
@@ -203,33 +225,106 @@ class Crons
         }
         $isnofiltercalculated = false;
         foreach ($array_study_1 as $study => $label) {
-            $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options = $module->getCachedChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             $showLegend = false;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
+				$completedRecords = REDCapCalculations::mapFieldByRecord($multipleRecords,[$question_1],$conditionDate,false);
                 $array_colors = array();
                 $tooltipTextArray = array();
-                $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+                $outcome_labels = $module->getCachedChoiceLabels($question_1, $project_id);
                 $topScoreMax = count($outcome_labels);
                 $missingOverall = 0;
 
                 #NORMAL STUDY
-                $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max, $recordIds);
-                $tooltipTextArray = $normalStudyCol[0];
-                $array_colors = $normalStudyCol[1];
-                $missingOverall = $normalStudyCol[2];
-                $index = $normalStudyCol[4];
-                $showLegendNormal = $normalStudyCol[5];
-
+                //$normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max, $recordIds,$multipleRecords);
+	
+				$table_b = '';
+				$missingOverall = 0;
+				$study_62_array = array(
+					"topscore" => 0,
+					"totalcount" => 0,
+					"responses" => 0,
+					"missing" => 0,
+					"score5" => 0,
+				);
+				$fieldType = getFieldType($study,$project_id);
+				$showLegend = false;
+				foreach ($study_options as $index => $col_title) {
+					if($fieldType == "checkbox") {
+						$studyField = $study."___".$index;
+						$index = 1;
+					}
+					else {
+						$studyField = $study;
+					}
+					if ($topScoreMax == 4 || $topScoreMax == 5) {
+						if($question == 'rpps_s_q21' || $question == "rpps_s_q25"){
+							$topScoreVals = ['1'];
+						}
+						else {
+							$topScoreVals = ['4'];
+						}
+					}else if($topScoreMax == 11){
+						$topScoreVals = ['9','10'];
+					}
+					
+					$total_records = 0;
+					$missing_InfoLabel = 0;
+					$topScoreFound = 0;
+					$score_is_5 = 0;
+					foreach($multipleRecords as $thisRow) {
+						if($thisRow[$studyField] == $index) {
+							$total_records++;
+							if(array_key_exists($thisRow["record_id"],$completedRecords)) {
+								$missing_InfoLabel++;
+							}
+							if(array_key_exists($question,$thisRow) && in_array($thisRow[$question],$topScoreVals)) {
+								$topScoreFound++;
+							}
+							if($topScoreMax == 5 && array_key_exists($question,$thisRow) && $thisRow[$question] == "5") {
+								$score_is_5++;
+							}
+						}
+					}
+					
+					$topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);;
+					if ($topScore > $max) {
+						$max = $topScore;
+					}
+					$missingOverall += $missing_InfoLabel;
+					$responses = $total_records - $missing_InfoLabel;
+					
+					$percent_array = CronData::getPercent($responses, $score_is_5, $topScore, $showLegend, "");
+					
+					$percent = $percent_array[0];
+					$showLegend = $percent_array[1];
+					$tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
+					
+					$tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
+					$array_colors[$indexQuestion][$index] = $percent;
+				}
+	
+                $showLegendNormal = $showLegend;
+	
+				$GLOBALS["endTime"] = microtime(true);
+				echo "Done normal study col: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+				$GLOBALS["startTime"] = $GLOBALS["endTime"];
                 #MISSING
                 $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
                 $tooltipTextArray = $missingCol[0];
                 $array_colors = $missingCol[1];
                 $missing_col = $missingCol[2];
                 $showLegendMissing = $missingCol[5];
-
+	
+				echo "<br /><pre>";
+				var_dump($missingCol);
+				echo "</pre><br />";
+				$GLOBALS["endTime"] = microtime(true);
+				echo "Done Missing col: ".($GLOBALS["endTime"] - $GLOBALS["startTime"])."<br />";
+				$GLOBALS["startTime"] = $GLOBALS["endTime"];
                 #OVERALL COL MISSING
                 $totalCol = CronData::getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
                 $tooltipTextArray = $totalCol[0];
@@ -239,7 +334,10 @@ class Crons
                     $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
                     $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
                 }
-
+	
+				echo "<br /><pre>";
+				var_dump($totalCol);
+				echo "</pre><br />";
                 #INSTITUTIONS
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
                 #MULTIPLE
@@ -299,7 +397,7 @@ class Crons
         }
 
         foreach ($array_study_2 as $study => $label) {
-            $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options = $module->getCachedChoiceLabels($study, $project_id);
             if ($study == "ethnicity") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -377,7 +475,7 @@ class Crons
             $count++;
         }
         foreach ($array_study_3 as $study => $label) {
-            $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options = $module->getCachedChoiceLabels($study, $project_id);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -390,7 +488,7 @@ class Crons
                     $tooltipTextArray = array();
                     $missingOverall = 0;
                     #NORMAL STUDY
-                    $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds);
+                    $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds,$multipleRecords);
                     $index = $normalStudyCol[1];
                     $missingOverall = $normalStudyCol[2];
                     $showLegendNormal = $normalStudyCol[5];
@@ -468,7 +566,7 @@ class Crons
                 $count++;
             }
             foreach ($array_study_number as $study => $label) {
-                $study_options = $module->getChoiceLabels($study, $project_id);
+                $study_options = $module->getCachedChoiceLabels($study, $project_id);
                 if ($study == "ethnicity") {
                     array_push($study_options, ProjectData::getExtraColumTitle());
                 }
@@ -485,7 +583,7 @@ class Crons
                     $graph[$question][$study][$question_1]["no"]['graph_top_score_quarter'] = array();
                     $graph[$question][$study][$question_1]["no"]['years'] = array();
 
-                    $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+                    $outcome_labels = $module->getCachedChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
                     $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
                     $topScoreMax = count($outcome_labels);

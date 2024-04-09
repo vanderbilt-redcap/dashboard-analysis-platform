@@ -8,6 +8,8 @@ use ExternalModules\ExternalModules;
 
 class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
 {
+	public static $cachedLabels = [];
+	
     /**
      * This cron will only perform actions once a day between the hours
      * of midnight and 6am, regardless of how often it is scheduled.
@@ -68,6 +70,17 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
         }
         $this->setSystemSetting($lastRunSettingName, time());
     }
+	
+	public function getCachedChoiceLabels($fieldName, $projectId) {
+		if(!array_key_exists($projectId,self::$cachedLabels)) {
+			self::$cachedLabels[$projectId] = [];
+		}
+		
+		if(!array_key_exists($fieldName,self::$cachedLabels[$projectId])) {
+			self::$cachedLabels[$projectId][$fieldName] = $this->getChoiceLabels($fieldName,$projectId);
+		}
+		return self::$cachedLabels[$projectId][$fieldName];
+	}
 
     public function redcap_module_link_check_display($project_id, $link) {
         $privacy = $this->getProjectSetting('privacy',$project_id);

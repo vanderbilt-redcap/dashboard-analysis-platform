@@ -107,7 +107,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $row_questions = ProjectData::getRowQuestions();
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-    $study_options = $module->getChoiceLabels($study, $project_id);
+    $study_options = $module->getCachedChoiceLabels($study, $project_id);
 
     $multipleRecords = \REDCap::getData($project_id, 'json-array');
     $institutions = ProjectData::getAllInstitutions($multipleRecords);
@@ -313,7 +313,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
                     #PRINT RESULTS
-                    $question_popover_content = returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
+                    $question_popover_content = returnTopScoresLabels($question_1,$module->getCachedChoiceLabels($question_1, $project_id));
                     $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
                     $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 

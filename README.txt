@@ -1,0 +1,2 @@
+To manually run/test the cron processes, visit external_modules/?prefix=[folder_name]&pid=[project_id]&page=callCron
+-Add &report=[custom-report-name-setting-value] to limit manual cron to a single report
