@@ -159,7 +159,7 @@ class ProjectData
             if(!array_key_exists($institution,$array_institutions)){
 				$array_institutions[$institution] = [];
             }
-			$array_institutions[$institution][$record] = 1;
+			$array_institutions[$institution][$record['record_id']] = 1;
         }
         return $array_institutions;
     }
