@@ -215,6 +215,7 @@ class Crons
 		$isnofiltercalculated = false;
 		$tooltipTextArray = [];
 		$array_colors = [];
+		$array_colors_institutions = [];
 		$table_b = "";
 		
         foreach ($array_study_1 as $study => $label) {
@@ -281,9 +282,6 @@ class Crons
 				$totalRecords = count($filteredData);
 				
 				foreach($row_questions_1 as $indexQuestion => $question_1) {
-					$outcome_labels = $module->getChoiceLabels($question_1, $project_id);
-					$topScoreMax = count($outcome_labels);
-					
 					## Get list of records that have data for the row question
 					$containsData = REDCapCalculations::filterDataByField($filteredData,$question_1);
 					$containsDataCount = count($containsData);
@@ -294,20 +292,8 @@ class Crons
 					}
 					$missingBySurveyQuestion[$indexQuestion] += $missingCount;
 					
-					$doesNotApplyCount = 0;
-					## For survey questions with 5 choices, a 5 usually indicates a "Does not apply" answer
-					if($topScoreMax == 5) {
-						$doesNotApplyRecords = REDCapCalculations::mapFieldByRecord($filteredData,$question_1,['5'],false);
-						$doesNotApplyCount = count($doesNotApplyRecords);
-					}
-					$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$question_1);
-					$topScoreRecords = REDCapCalculations::mapFieldByRecord($filteredData,$question_1,$topScoreValues,false);
-					
-					$answeredCount = $totalRecords - $missingCount - $doesNotApplyCount;
-					$topScorePercent = 0;
-					if($answeredCount > 0) {
-						$topScorePercent = number_format(count($topScoreRecords) / $answeredCount * 100,0);
-					}
+					$doesNotApplyCount = CronData::getDoesNotApplyCount($filteredData,$question_1,$project_id);
+					$topScorePercent = CronData::getTopScorePercent($filteredData,$question_1,$project_id,$containsDataCount - $doesNotApplyCount);
 					
 					$topScorePercent = CronData::getPercent($containsDataCount, $topScorePercent);
 					$showLegend = CronData::getShowLegend($containsDataCount, $showLegend);
@@ -323,9 +309,26 @@ class Crons
 					}
 					$tooltipTextArray[$study][$indexQuestion][$value] = $tooltip;
 					$array_colors[$study][$indexQuestion][$value] = $topScorePercent;
+					
+					## Institution totals
+					foreach($institutions as $institutionId => $institutionRecords) {
+						$filteredData = REDCapCalculations::filterDataByArray($answeredStudyData,$institutionRecords);
+						$institutionHasSurvey = REDCapCalculations::mapFieldByRecord($filteredData,$question_1,[],false);
+						$doesNotApplyCount = CronData::getDoesNotApplyCount($filteredData,$question_1,$project_id);
+						
+						$institutionDataCount = count($institutionHasSurvey) - $doesNotApplyCount;
+						$topScorePercent = CronData::getTopScorePercent($filteredData,$question_1,$project_id,$institutionDataCount);
+						
+						$topScorePercent = CronData::getPercent($institutionDataCount,$topScorePercent);
+						$showLegendxTotal = CronData::getShowLegend($containsDataCount, $showLegendxTotal);
+						if(!array_key_exists($institutionId,$array_colors_institutions)) {
+							$array_colors_institutions[$institutionId] = [];
+						}
+						$array_colors_institutions[$institutionId][$indexQuestion][0] = $topScorePercent;
+					}
 				}
 			}
-	
+			
 			continue;
 			
 			$showLegend = false;
@@ -385,6 +388,9 @@ class Crons
 		echo "</pre><br />";
 		echo "<br /><pre>";
 		var_dump($array_colors);
+		echo "</pre><br />";
+		echo "<br /><pre>";
+		var_dump($array_colors_institutions);
 		echo "</pre><br />";
 		die();
         $table_data['data'] = $allData_array;

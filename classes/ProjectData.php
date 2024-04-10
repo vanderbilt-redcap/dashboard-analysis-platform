@@ -153,12 +153,13 @@ class ProjectData
     }
 
     public static function getAllInstitutions($multipleRecords){
-        $array_institutions = array();
+        $array_institutions = [];
         foreach ($multipleRecords as $record){
             $institution = trim(explode("-",$record['record_id'])[0]);
-            if(!in_array($institution,$array_institutions)){
-                array_push($array_institutions,$institution);
+            if(!array_key_exists($institution,$array_institutions)){
+				$array_institutions[$institution] = [];
             }
+			$array_institutions[$institution][$record] = 1;
         }
         return $array_institutions;
     }

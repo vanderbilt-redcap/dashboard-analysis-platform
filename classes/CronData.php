@@ -1,9 +1,14 @@
 <?php
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
+use Vanderbilt\REDCapDataCore\REDCapCalculations;
+
 require_once (dirname(__FILE__)."/ProjectData.php");
+
+CronData::$module = $module;
 
 class CronData
 {
+	public static $module;
     /**
      * Function that calculates the percentages for the filter studies like age, ethnicity,... for PARTICIPANT PERCEPTION
      * @param $question
@@ -350,8 +355,38 @@ class CronData
             return array(0=>$percent,1=>$tooltip,2=>$showLegendexMultiple,3=>$array_colors,4=>$tooltipTextArray);
         }
     }
-
-     public static function getPercent($recordsTotal, $percent){
+	
+	public static function getDoesNotApplyCount($filteredData,$fieldName,$project_id) {
+		$doesNotApplyCount = 0;
+		
+		$outcome_labels = self::$module->getChoiceLabels($fieldName, $project_id);
+		$topScoreMax = count($outcome_labels);
+		
+		## For survey questions with 5 choices, a 5 usually indicates a "Does not apply" answer
+		if($topScoreMax == 5) {
+			$doesNotApplyRecords = REDCapCalculations::mapFieldByRecord($filteredData,$fieldName,['5'],false);
+			$doesNotApplyCount = count($doesNotApplyRecords);
+		}
+		
+		return $doesNotApplyCount;
+	}
+	
+	public static function getTopScorePercent($filteredData,$fieldName,$project_id,$recordCountWithData) {
+		$outcome_labels = self::$module->getChoiceLabels($fieldName, $project_id);
+		$topScoreMax = count($outcome_labels);
+		
+		$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$fieldName);
+		
+		$topScoreRecords = REDCapCalculations::mapFieldByRecord($filteredData,$fieldName,$topScoreValues,false);
+		
+		$topScorePercent = 0;
+		if($recordCountWithData > 0) {
+			$topScorePercent = number_format(count($topScoreRecords) / $recordCountWithData * 100,0);
+		}
+		return $topScorePercent;
+	}
+	
+	public static function getPercent($recordsTotal, $percent){
         if($recordsTotal == 0) {
             //No responses
             $percent = "-";
