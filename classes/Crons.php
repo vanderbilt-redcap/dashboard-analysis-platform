@@ -247,6 +247,9 @@ class Crons
 				}
 			}
 			
+			## Add label for missing the study field
+			$study_options["missing"] = "Missing";
+			
 			$answeredStudyData = REDCapCalculations::filterDataByArray($multipleRecords,$answeredStudyQuestion);
 			$emptyStudyData = REDCapCalculations::filterDataByArray($multipleRecords,$emptyStudyQuestion);
 			
@@ -254,22 +257,28 @@ class Crons
 			foreach($study_options as $value => $label) {
 				if($value == "" ) continue;
 				
-				if($fieldType == "checkbox") {
-					$studyField = $study."___".$value;
-					$value = 1;
+				if($value == "missing") {
+					$filteredData = $emptyStudyData;
 				}
 				else {
-					$studyField = $study;
+					if($fieldType == "checkbox") {
+						$studyField = $study."___".$value;
+						$value = 1;
+					}
+					else {
+						$studyField = $study;
+					}
+					$recordsInCategory = REDCapCalculations::mapFieldByRecord($answeredStudyData,$studyField,[$value],false);
+					
+					## Special handling for the category "Are you of Spanish or Hispanic..."
+					## with value 6 => "Yes - ALL Spanish/Hispanic/Latino"
+					if($study == "rpps_s_62" && $value == 6) {
+						$recordsInCategory = REDCapCalculations::mapFieldByRecord($answeredStudyData,$study,["2","3","4","5"],false);
+					}
+					$filteredData = REDCapCalculations::filterDataByArray($answeredStudyData,$recordsInCategory);
 				}
-				$recordsInCategory = REDCapCalculations::mapFieldByRecord($answeredStudyData,$studyField,[$value],false);
 				
-				## Special handling for the category "Are you of Spanish or Hispanic..."
-				## with value 6 => "Yes - ALL Spanish/Hispanic/Latino"
-				if($study == "rpps_s_62" && $value == 6) {
-					$recordsInCategory = REDCapCalculations::mapFieldByRecord($answeredStudyData,$study,["2","3","4","5"],false);
-				}
-				$filteredData = REDCapCalculations::filterDataByArray($answeredStudyData,$recordsInCategory);
-				$totalRecords = count($recordsInCategory);
+				$totalRecords = count($filteredData);
 				
 				foreach($row_questions_1 as $indexQuestion => $question_1) {
 					$outcome_labels = $module->getChoiceLabels($question_1, $project_id);
@@ -279,7 +288,7 @@ class Crons
 					$containsData = REDCapCalculations::filterDataByField($filteredData,$question_1);
 					$containsDataCount = count($containsData);
 					
-					$missingCount = count($recordsInCategory) - $containsDataCount;
+					$missingCount = $totalRecords - $containsDataCount;
 					if(!array_key_exists($indexQuestion,$missingBySurveyQuestion)) {
 						$missingBySurveyQuestion[$indexQuestion] = 0;
 					}
@@ -316,35 +325,9 @@ class Crons
 					$array_colors[$study][$indexQuestion][$value] = $topScorePercent;
 				}
 			}
-
-			### Missing Data Column
-			foreach($row_questions_1 as $indexQuestion => $question_1) {
-				$outcome_labels = $module->getChoiceLabels($question_1, $project_id);
-				$topScoreMax = count($outcome_labels);
-				
-				$score_is_50_overall = REDCapCalculations::mapFieldByRecord($emptyStudyData,$question_1,["5"],false);
-				
-				$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$question_1);
-				$topScoreRecords = REDCapCalculations::mapFieldByRecord($emptyStudyData,$question_1,$topScoreValues,false);
-				
-				$containsData = REDCapCalculations::mapFieldByRecord($emptyStudyData,$question_1,[],false);
-				$missing_col = count($emptyStudyData) - count($containsData);
-				
-				$topScorePercent = 0;
-				if(count($containsData) > 0) {
-					$topScorePercent = number_format(count($topScoreRecords) / count($containsData) * 100,0);
-				}
-				
-				$topScorePercent = CronData::getPercent(count($containsData),$topScorePercent);
-				$showLegendMissing = CronData::getShowLegend(count($containsData), $showLegendMissing);
-				
-				$tooltip = count($containsData)." responses, ".$missing_col." missing";
-				$tooltip .= ", ".count($score_is_50_overall)." not applicable";
-				$tooltipTextArray[$study][$indexQuestion][] = $tooltip;
-				$array_colors[$study][$indexQuestion][] = $topScorePercent;
-			}
-				
-				continue;
+	
+			continue;
+			
 			$showLegend = false;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $array_colors = array();
