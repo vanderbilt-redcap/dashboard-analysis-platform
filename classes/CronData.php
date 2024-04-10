@@ -351,24 +351,25 @@ class CronData
         }
     }
 
-     public static function getPercent($recordsTotal, $missing, $overall, $showLegend, $option){
-        if($recordsTotal == 0 || ($recordsTotal == $missing && $option != "multiple")){
+     public static function getPercent($recordsTotal, $percent){
+        if($recordsTotal == 0) {
             //No responses
             $percent = "-";
-            $showLegend = true;
-        }else if(($recordsTotal - $missing) < 5){
+        }
+		else if(($recordsTotal) < 5){
             //Fewer than 5 responses
             $percent = "x";
-            $showLegend = true;
-        }else if(($recordsTotal - $missing) < 20){
-            //Fewer than 20 responses
-            $percent = $overall." *";
-            $showLegend = true;
-        }else{
-            $percent = $overall;
         }
-        return array(0=>$percent,1=>$showLegend);
+		else if(($recordsTotal) < 20){
+            //Fewer than 20 responses
+            $percent = $percent." *";
+        }
+        return $percent;
     }
+	
+	public static function getShowLegend($recordsTotal, $showLegend) {
+		return $showLegend || ($recordsTotal < 20);
+	}
 
      public static function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
