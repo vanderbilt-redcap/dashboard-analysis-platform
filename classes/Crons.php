@@ -279,26 +279,26 @@ class Crons
 					$filteredData = REDCapCalculations::filterDataByArray($answeredStudyData,$recordsInCategory);
 				}
 				
-				$totalRecords = count($filteredData);
+				$countThisAnswer = count($filteredData);
 				
 				foreach($row_questions_1 as $indexQuestion => $question_1) {
 					## Get list of records that have data for the row question
-					$containsData = REDCapCalculations::filterDataByField($filteredData,$question_1);
-					$containsDataCount = count($containsData);
+					$containsSurveyData = REDCapCalculations::filterDataByField($filteredData,$question_1);
+					$containsSurveyCount = count($containsSurveyData);
 					
-					$missingCount = $totalRecords - $containsDataCount;
+					$missingCount = $countThisAnswer - $containsSurveyCount;
 					if(!array_key_exists($indexQuestion,$missingBySurveyQuestion)) {
 						$missingBySurveyQuestion[$indexQuestion] = 0;
 					}
 					$missingBySurveyQuestion[$indexQuestion] += $missingCount;
 					
 					$doesNotApplyCount = CronData::getDoesNotApplyCount($filteredData,$question_1,$project_id);
-					$topScorePercent = CronData::getTopScorePercent($filteredData,$question_1,$project_id,$containsDataCount - $doesNotApplyCount);
+					$topScorePercent = CronData::getTopScorePercent($filteredData,$question_1,$project_id,$containsSurveyCount - $doesNotApplyCount);
 					
-					$topScorePercent = CronData::getPercent($containsDataCount, $topScorePercent);
-					$showLegend = CronData::getShowLegend($containsDataCount, $showLegend);
+					$topScorePercent = CronData::getPercent($containsSurveyCount, $topScorePercent);
+					$showLegend = CronData::getShowLegend($containsSurveyCount, $showLegend);
 					
-					$tooltip = $containsDataCount." responses, ". $missingCount ." missing";
+					$tooltip = $containsSurveyCount." responses, ". $missingCount ." missing";
 					
 					## Only done for question 1 list
 					$tooltip .= ", ".$doesNotApplyCount." not applicable";
@@ -310,25 +310,28 @@ class Crons
 					$tooltipTextArray[$study][$indexQuestion][$value] = $tooltip;
 					$array_colors[$study][$indexQuestion][$value] = $topScorePercent;
 					
-					## Institution totals
-					foreach($institutions as $institutionId => $institutionRecords) {
-						$filteredData = REDCapCalculations::filterDataByArray($answeredStudyData,$institutionRecords);
-						$institutionHasSurvey = REDCapCalculations::mapFieldByRecord($filteredData,$question_1,[],false);
-						$doesNotApplyCount = CronData::getDoesNotApplyCount($filteredData,$question_1,$project_id);
-						
-						$institutionDataCount = count($institutionHasSurvey) - $doesNotApplyCount;
-						$topScorePercent = CronData::getTopScorePercent($filteredData,$question_1,$project_id,$institutionDataCount);
-						
-						$topScorePercent = CronData::getPercent($institutionDataCount,$topScorePercent);
-						$showLegendxTotal = CronData::getShowLegend($containsDataCount, $showLegendxTotal);
-						if(!array_key_exists($institutionId,$array_colors_institutions)) {
-							$array_colors_institutions[$institutionId] = [];
-						}
-						$array_colors_institutions[$institutionId][$indexQuestion][0] = $topScorePercent;
-					}
 				}
 			}
 			
+			foreach($row_questions_1 as $indexQuestion => $question_1) {
+				## Institution totals
+				foreach($institutions as $institutionId => $institutionRecords) {
+					$institutionData = REDCapCalculations::filterDataByArray($answeredStudyData,$institutionRecords);
+					$institutionHasSurvey = REDCapCalculations::mapFieldByRecord($institutionData,$question_1,[],false);
+					$doesNotApplyCount = CronData::getDoesNotApplyCount($institutionData,$question_1,$project_id);
+					
+					$institutionDataCount = count($institutionHasSurvey) - $doesNotApplyCount;
+					$topScorePercent = CronData::getTopScorePercent($institutionData,$question_1,$project_id,$institutionDataCount);
+					
+					$topScorePercent = CronData::getPercent($institutionDataCount,$topScorePercent);
+					$showLegendxTotal = CronData::getShowLegend($institutionDataCount, $showLegendxTotal);
+					if(!array_key_exists($institutionId,$array_colors_institutions)) {
+						$array_colors_institutions[$institutionId] = [];
+					}
+					$array_colors_institutions[$institutionId][$indexQuestion][0] = $topScorePercent;
+				}
+			}
+	
 			continue;
 			
 			$showLegend = false;
