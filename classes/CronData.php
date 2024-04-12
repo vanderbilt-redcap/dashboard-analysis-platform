@@ -371,36 +371,35 @@ class CronData
 		return $doesNotApplyCount;
 	}
 	
-	public static function getTopScorePercent($filteredData,$fieldName,$project_id,$recordCountWithData) {
+	public static function getTopScoreRecords($filteredData,$fieldName,$project_id) {
 		$outcome_labels = self::$module->getChoiceLabels($fieldName, $project_id);
 		$topScoreMax = count($outcome_labels);
 		
 		$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$fieldName);
 		
-		$topScoreRecords = REDCapCalculations::mapFieldByRecord($filteredData,$fieldName,$topScoreValues,false);
-		
-		$topScorePercent = 0;
-		if($recordCountWithData > 0) {
-			$topScorePercent = number_format(count($topScoreRecords) / $recordCountWithData * 100,0);
-		}
-		return $topScorePercent;
+		return REDCapCalculations::mapFieldByRecord($filteredData,$fieldName,$topScoreValues,false);
 	}
 	
-	public static function getPercent($recordsTotal, $percent){
-        if($recordsTotal == 0) {
-            //No responses
-            $percent = "-";
-        }
-		else if(($recordsTotal) < 5){
-            //Fewer than 5 responses
-            $percent = "x";
-        }
-		else if(($recordsTotal) < 20){
-            //Fewer than 20 responses
-            $percent = $percent." *";
-        }
-        return $percent;
-    }
+	public static function calcScorePercent($scoreCount, $totalCount) {
+		$scorePercent = 0;
+		if($scoreCount > 0) {
+			$scorePercent = number_format($scoreCount / $totalCount * 100,0);
+		}
+		
+		if($totalCount == 0) {
+			//No responses
+			$scorePercent = "-";
+		}
+		else if(($totalCount) < 5){
+			//Fewer than 5 responses
+			$scorePercent = "x";
+		}
+		else if(($totalCount) < 20){
+			//Fewer than 20 responses
+			$scorePercent = $scorePercent." *";
+		}
+		return $scorePercent;
+	}
 	
 	public static function getShowLegend($recordsTotal, $showLegend) {
 		return $showLegend || ($recordsTotal < 20);
