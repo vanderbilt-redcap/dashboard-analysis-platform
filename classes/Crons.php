@@ -346,8 +346,11 @@ class Crons
 				$NATotal = 0;
 				$topScoreTotal = 0;
 				foreach($tooltipCounts[$study][$indexQuestion] as $value => $counts) {
+					## Skip the missing value
+					if($value != "missing") {
+						$missingTotal += $counts["missing"];
+					}
 					$responsesTotal += $counts["responses"];
-					$missingTotal += $counts["missing"];
 					$NATotal += $counts["NA"];
 					$topScoreTotal += $counts["topScore"];
 				}
