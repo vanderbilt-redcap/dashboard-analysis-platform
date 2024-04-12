@@ -225,6 +225,7 @@ class Crons
 			$tooltipTextArray[$study] = [];
 			$array_colors[$study] = [];
 			$tooltipCounts[$study] = [];
+			$array_colors_institutions[$study] = [];
 			
 			$fieldType = getFieldType($study,$project_id);
             $study_options = $module->getChoiceLabels($study, $project_id);
@@ -335,10 +336,10 @@ class Crons
 					$topScorePercent = CronData::calcScorePercent(count($topScoreRecords),$institutionDataCount);
 					
 					$showLegendxTotal = CronData::getShowLegend($institutionDataCount, $showLegendxTotal);
-					if(!array_key_exists($institutionId,$array_colors_institutions)) {
-						$array_colors_institutions[$institutionId] = [];
+					if(!array_key_exists($institutionId,$array_colors_institutions[$study])) {
+						$array_colors_institutions[$study][$institutionId] = [];
 					}
-					$array_colors_institutions[$institutionId][$indexQuestion][0] = $topScorePercent;
+					$array_colors_institutions[$study][$institutionId][$indexQuestion] = $topScorePercent;
 				}
 				
 				$responsesTotal = 0;
@@ -364,60 +365,6 @@ class Crons
 				
 				$array_colors[$study][$indexQuestion][0] = $topScorePercent;
 			}
-	
-			continue;
-	
-			$showLegend = false;
-			foreach ($row_questions_1 as $indexQuestion => $question_1) {
-				$array_colors = array();
-				$tooltipTextArray = array();
-				$outcome_labels = $module->getChoiceLabels($question_1, $project_id);
-				$topScoreMax = count($outcome_labels);
-				$missingOverall = 0;
-		
-				#NORMAL STUDY
-				$normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $max, $recordIds);
-				$tooltipTextArray = $normalStudyCol[0];
-				$array_colors = $normalStudyCol[1];
-				$missingOverall = $normalStudyCol[2];
-				$index = $normalStudyCol[4];
-				$showLegendNormal = $normalStudyCol[5];
-		
-				#MISSING
-				$missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
-				$tooltipTextArray = $missingCol[0];
-				$array_colors = $missingCol[1];
-				$missing_col = $missingCol[2];
-				$showLegendMissing = $missingCol[5];
-		
-				#OVERALL COL MISSING
-				$totalCol = CronData::getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
-				$tooltipTextArray = $totalCol[0];
-				$array_colors = $totalCol[1];
-				$showLegendTotal = $totalCol[2];
-				if(!$isnofiltercalculated) {
-					$allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
-					$allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
-				}
-		
-				#INSTITUTIONS
-				$allData_array[$question]["institutions"][$question_1] = $totalCol[3];
-				#MULTIPLE
-				if ($study == "rpps_s_q61") {
-					$multipleCol = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors);
-					$tooltipTextArray = $multipleCol[0];
-					$array_colors = $multipleCol[1];
-					$showLegendMultiple = $multipleCol[2];
-				}
-				$allData_array[$question][$study][$question_1] = $array_colors;
-				$allDataTooltip_array[$question][$study][$question_1] = $tooltipTextArray;
-		
-				if ($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal) {
-					$showLegend = true;
-				}
-			}
-			$isnofiltercalculated = true;
-			$allLabel_array[$question][$study] = $showLegend;
 		}
 		echo "<br /><pre>";
 		var_dump($tooltipTextArray);
