@@ -161,12 +161,12 @@ class REDCapCalculations
 	}
 	
 	public static function filterRecordsNotInArray($recordList, $filterRecords) {
-		$recordList = array_filter($recordList,function($value,$key) use ($filterRecords) {
+		$recordList = array_filter($recordList,function($key) use ($filterRecords) {
 			if(array_key_exists($key,$filterRecords)) {
 				return false;
 			}
 			return true;
-		});
+		},ARRAY_FILTER_USE_KEY);
 		
 		return $recordList;
 	}

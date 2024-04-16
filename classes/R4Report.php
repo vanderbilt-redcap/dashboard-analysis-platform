@@ -190,7 +190,7 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function getNARecords($fieldName) {
-		if(!in_array($fieldName,ProjectData::getArrayStudyQuestion_1())) {
+		if(!in_array($fieldName,ProjectData::getRowQuestionsParticipantPerception())) {
 			return false;
 		}
 		$outcome_labels = $this->getFieldChoices($fieldName);
@@ -226,7 +226,7 @@ class R4Report extends AbstractExternalModule
 		$studyOptions = $this->getFieldChoices($study);
 		
 		## Add label for missing the study field
-		$study_options["missing"] = "Missing";
+		$studyOptions["missing"] = "Missing";
 		
 		foreach($studyOptions as $value => $label) {
 			$matchesStudyValue = $this->getRecordsByFieldValue($study,$value);
@@ -249,14 +249,9 @@ class R4Report extends AbstractExternalModule
 				$applicableRecords = REDCapCalculations::filterRecordsNotInArray($applicableRecords,$naSurvey);
 			}
 			
-			
-			$topScorePercent = 0;
-			if(count($applicableRecords) > 0) {
-				$topScorePercent = $this->tooltipCounts[$study][$survey][$value]["topScore"] / count($applicableRecords);
-			}
-			
 			$this->tooltipTextArray[$study][$survey][$value] = $tooltip;
-			$this->surveyPercentages[$study][$survey][$value] = $topScorePercent;
+			$this->surveyPercentages[$study][$survey][$value] =
+				CronData::calcScorePercent($this->tooltipCounts[$study][$survey][$value]["topScore"], count($applicableRecords));
 		}
 		
 		foreach($this->institutionList as $institutionId => $institutionRecords) {
@@ -266,11 +261,8 @@ class R4Report extends AbstractExternalModule
 			}
 			
 			$instTopScoreRecords = array_intersect($topScoreSurvey,$institutionRecords);
-			$topScorePercent = 0;
-			if(count($applicableRecords) > 0) {
-				$topScorePercent = count($instTopScoreRecords) / count($applicableRecords);
-			}
-			$this->surveyPercentagesInstitutions[$study][$institutionId][$survey] = $topScorePercent;
+			$this->surveyPercentagesInstitutions[$study][$institutionId][$survey] =
+				CronData::calcScorePercent(count($instTopScoreRecords),count($applicableRecords));
 		}
 		
 		$responsesTotal = 0;
@@ -288,8 +280,10 @@ class R4Report extends AbstractExternalModule
 		}
 		$tooltip = $responsesTotal." responses, ". $missingTotal ." missing";
 		
-		## Only done for question 1 list
-		$tooltip .= ", ".$NATotal." not applicable";
+		if($naSurvey !== false) {
+			## Only done for question 1 list
+			$tooltip .= ", ".$NATotal." not applicable";
+		}
 		$this->tooltipTextArray[$study][$survey][0] = $tooltip;
 		
 		$topScorePercent = CronData::calcScorePercent($topScoreTotal,$responsesTotal);
