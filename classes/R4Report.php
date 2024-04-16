@@ -30,6 +30,8 @@ class R4Report extends AbstractExternalModule
 	private $cachedRecordContainsField = [];
 	private $cachedRecordMissingField = [];
 	private $cachedRecordWithFieldValue = [];
+	private $cachedNARecordsByField = [];
+	private $cachedTopScoreRecordsByField = [];
 	
 	public function __construct($projectId, $recordIds = []) {
 		## Since we're extended AbstractExternalModule, need a PREFIX and VERSION from the parent module
@@ -174,36 +176,57 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function getTopScoreRecords($fieldName) {
-		$outcome_labels = $this->getFieldChoices($fieldName);
-		$topScoreMax = count($outcome_labels);
-		
-		$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$fieldName);
-		
-		$topScoreRecords = [];
-		foreach($topScoreValues as $thisVal) {
-			$topScoreRecords = array_merge(
-				$topScoreRecords,
-				$this->getRecordsByFieldValue($fieldName,$thisVal)
-			);
+		if(!array_key_exists($fieldName,$this->cachedTopScoreRecordsByField)) {
+			$outcome_labels = $this->getFieldChoices($fieldName);
+			$topScoreMax = count($outcome_labels);
+			
+			$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$fieldName);
+			
+			$topScoreRecords = [];
+			foreach($topScoreValues as $thisVal) {
+				$topScoreRecords = array_merge(
+					$topScoreRecords,
+					$this->getRecordsByFieldValue($fieldName,$thisVal)
+				);
+			}
+			
+			$this->cachedTopScoreRecordsByField[$fieldName] = $topScoreRecords;
 		}
-		return $topScoreRecords;
+		return $this->cachedTopScoreRecordsByField[$fieldName];
 	}
 	
 	public function getNARecords($fieldName) {
-		if(!in_array($fieldName,ProjectData::getRowQuestionsParticipantPerception())) {
-			return false;
+		if(!array_key_exists($fieldName,$this->cachedNARecordsByField)) {
+			if(!$this->isNAField($fieldName)) {
+				return false;
+			}
+			$outcome_labels = $this->getFieldChoices($fieldName);
+			$topScoreMax = count($outcome_labels);
+			
+			if($topScoreMax != 5) {
+				return [];
+			}
+			
+			$this->cachedNARecordsByField[$fieldName] = $this->getRecordsByFieldValue($fieldName,5);
 		}
-		$outcome_labels = $this->getFieldChoices($fieldName);
-		$topScoreMax = count($outcome_labels);
-		
-		if($topScoreMax != 5) {
-			return [];
-		}
-		
-		return $this->getRecordsByFieldValue($fieldName,5);
+		return $this->cachedNARecordsByField[$fieldName];
+	}
+	
+	public function isNAField($fieldName) {
+		return in_array($fieldName,ProjectData::getRowQuestionsParticipantPerception());
 	}
 	
 	public function addTooltipCounts($study,$survey) {
+		$this->addArrayIndexes($study,$survey);
+		
+		$this->calculateStudyScores($study, $survey);
+		
+		$this->calculateInstitutionScores($study,$survey);
+		
+		$this->calculateTotalScores($study,$survey);
+	}
+	
+	public function addArrayIndexes($study,$survey) {
 		if(!array_key_exists($study,$this->tooltipCounts)) {
 			$this->tooltipTextArray[$study] = [];
 			$this->surveyPercentages[$study] = [];
@@ -217,7 +240,9 @@ class R4Report extends AbstractExternalModule
 			$this->tooltipCounts[$study][$survey] = [];
 			$this->surveyPercentagesInstitutions[$study][$survey] = [];
 		}
-		
+	}
+	
+	public function calculateStudyScores($study, $survey) {
 		$containsSurvey = $this->getRecordsContainField($survey);
 		$missingSurvey = $this->getRecordsMissingField($survey);
 		$naSurvey = $this->getNARecords($survey);
@@ -253,10 +278,16 @@ class R4Report extends AbstractExternalModule
 			$this->surveyPercentages[$study][$survey][$value] =
 				CronData::calcScorePercent($this->tooltipCounts[$study][$survey][$value]["topScore"], count($applicableRecords));
 		}
+	}
+	
+	public function calculateInstitutionScores($study, $survey) {
+		$containsSurvey = $this->getRecordsContainField($survey);
+		$naSurvey = $this->getNARecords($survey);
+		$topScoreSurvey = $this->getTopScoreRecords($survey);
 		
 		foreach($this->institutionList as $institutionId => $institutionRecords) {
 			$applicableRecords = array_intersect_key($institutionRecords,$containsSurvey);
-			if($naSurvey !== false) {
+			if($this->isNAField($survey)) {
 				$applicableRecords = REDCapCalculations::filterRecordsNotInArray($applicableRecords,$naSurvey);
 			}
 			
@@ -264,7 +295,9 @@ class R4Report extends AbstractExternalModule
 			$this->surveyPercentagesInstitutions[$study][$institutionId][$survey] =
 				CronData::calcScorePercent(count($instTopScoreRecords),count($applicableRecords));
 		}
-		
+	}
+	
+	public function calculateTotalScores($study,$survey) {
 		$responsesTotal = 0;
 		$missingTotal = 0;
 		$NATotal = 0;
@@ -280,7 +313,7 @@ class R4Report extends AbstractExternalModule
 		}
 		$tooltip = $responsesTotal." responses, ". $missingTotal ." missing";
 		
-		if($naSurvey !== false) {
+		if($this->isNAField($survey)) {
 			## Only done for question 1 list
 			$tooltip .= ", ".$NATotal." not applicable";
 		}
@@ -290,7 +323,7 @@ class R4Report extends AbstractExternalModule
 		
 		$this->surveyPercentages[$study][$survey][0] = $topScorePercent;
 	}
-
+	
 	public function createQuestion_1() {
 		$studyQuestions = ProjectData::getArrayStudyQuestion_1();
 		$surveyQuestions = ProjectData::getRowQuestionsParticipantPerception();
