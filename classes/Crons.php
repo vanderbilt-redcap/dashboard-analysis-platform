@@ -6,6 +6,7 @@ require_once (dirname(__FILE__)."/ProjectData.php");
 require_once (dirname(__FILE__)."/GraphData.php");
 require_once (dirname(__FILE__)."/CronData.php");
 require_once (dirname(__FILE__)."/REDCapCalculations.php");
+require_once (dirname(__FILE__)."/R4Report.php");
 include_once(__DIR__ . "/../functions.php");
 
 
@@ -69,7 +70,16 @@ class Crons
         # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
+		
+		$r4Report = new R4Report($project_id,$recordIds);
+		
+		$table_data = $r4Report->calculateCacheCronData($filename);
+		
+		echo "<br /><pre>";
+		var_dump($table_data);
+		echo "</pre><br />";
 
+		die();
 		REDCapCalculations::$recordIdField = $module->getRecordIdField($project_id);
         $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
         $institutions = ProjectData::getAllInstitutions($multipleRecords);
@@ -366,16 +376,13 @@ class Crons
 				$array_colors[$study][$indexQuestion][0] = $topScorePercent;
 			}
 		}
-		echo "<br /><pre>";
-		var_dump($tooltipTextArray);
-		echo "</pre><br />";
-		echo "<br /><pre>";
-		var_dump($array_colors);
-		echo "</pre><br />";
-		echo "<br /><pre>";
-		var_dump($array_colors_institutions);
-		echo "</pre><br />";
-		die();
+		
+		foreach($array_colors as $study => $studyDetails) {
+			foreach($row_questions_1 as $indexQuestion => $question_1) {
+				$allData_array[1][$study][$question_1] = $array_colors[$study][$indexQuestion];
+				$allDataTooltip_array[1][$study][$question_1] = $tooltipTextArray[$study][$indexQuestion];
+			}
+		}
 		$table_data['data'] = $allData_array;
 		$table_data['tooltip'] = $allDataTooltip_array;
 		$table_data['legend'] = $allLabel_array;

@@ -155,4 +155,19 @@ class REDCapCalculations
 			return array_key_exists($thisRow[self::$recordIdField],$filterRecords);
 		});
 	}
+	
+	public static function filterRecordsByArray($recordList, $filterRecords) {
+		return array_intersect_key($recordList,$filterRecords);
+	}
+	
+	public static function filterRecordsNotInArray($recordList, $filterRecords) {
+		$recordList = array_filter($recordList,function($value,$key) use ($filterRecords) {
+			if(array_key_exists($key,$filterRecords)) {
+				return false;
+			}
+			return true;
+		});
+		
+		return $recordList;
+	}
 }
