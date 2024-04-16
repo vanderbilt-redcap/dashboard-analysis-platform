@@ -50,8 +50,8 @@ class R4Report extends AbstractExternalModule
 	public function calculateCacheCronData($fileName) {
 		$this->institutionList = ProjectData::getAllInstitutions($this->getProjectData());
 		
-		$this->createQuestion_1();
-		
+//		$this->createQuestion_1();
+$this->createQuestion_3();
 		$this->createTableData();
 		
 		return $this->tableData;
@@ -350,6 +350,50 @@ class R4Report extends AbstractExternalModule
 		
 	}
 	
+	public function createQuestion_2() {
+		$studyQuestions = ProjectData::getArrayStudyQuestion_2();
+		$surveyQuestions = ProjectData::getRowQuestionsResponseRate();
+		$surveyQuestions2 = ProjectData::getRowQuestionsParticipantPerception();
+		
+	}
+	
+	public function createQuestion_3() {
+		$studyQuestions = ProjectData::getArrayStudyQuestion_3();
+		$surveyQuestions = $this->getQuestion3SurveyFields();
+		
+		$custom_filters = $this->getProjectSetting('custom-filter',$this->projectId);
+		$count = 1;
+		foreach($custom_filters as $sstudy) {
+			if($count < 11 && $sstudy != "") {
+				$studyQuestions[$sstudy] = "Custom site value " . $count;
+			}
+			else {
+				break;
+			}
+			$count++;
+		}
+		
+		foreach($studyQuestions as $study => $label) {
+			
+			foreach($surveyQuestions as $indexQuestion => $survey) {
+				$this->addTooltipCounts($study,$survey);
+			}
+		}
+	}
+	
+	public function getQuestion3SurveyFields() {
+		$surveyQuestions = ProjectData::getRowQuestions();
+		$surveyFields = [];
+		
+		for ($question = 2; $question < 5; $question++) {
+			$option = explode("-", $surveyQuestions[$question]);
+			for ($i = $option[0]; $i < $option[1]; $i++) {
+				$surveyFields[] = "rpps_s_q".$i;
+			}
+		}
+		
+		return $surveyFields;
+	}
 	public function createTableData() {
 		$this->tableData = [
 			$this->tooltipTextArray,

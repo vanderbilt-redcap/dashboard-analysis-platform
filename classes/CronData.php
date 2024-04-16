@@ -382,7 +382,7 @@ class CronData
 	
 	public static function calcScorePercent($scoreCount, $totalCount) {
 		$scorePercent = 0;
-		if($scoreCount > 0) {
+		if($totalCount > 0) {
 			$scorePercent = number_format($scoreCount / $totalCount * 100,0);
 		}
 		
