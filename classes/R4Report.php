@@ -33,6 +33,11 @@ class R4Report extends AbstractExternalModule
 	private $cachedNARecordsByField = [];
 	private $cachedTopScoreRecordsByField = [];
 	
+	private $cachedCompleteRecords = [];
+	private $cachedPartialRecords = [];
+	private $cachedBreakoffRecords = [];
+	private $cachedAnyRecords = [];
+	
 	public function __construct($projectId, $recordIds = []) {
 		## Since we're extended AbstractExternalModule, need a PREFIX and VERSION from the parent module
 		$parentModule = new DashboardAnalysisPlatformExternalModule();
@@ -47,14 +52,21 @@ class R4Report extends AbstractExternalModule
 		REDCapCalculations::$recordIdField = $this->recordIdField;
 	}
 	
-	public function calculateCacheCronData($fileName) {
-		$this->institutionList = ProjectData::getAllInstitutions($this->getProjectData());
+	public function calculateCacheCronData() {
 		
-//		$this->createQuestion_1();
-$this->createQuestion_3();
+		$this->createQuestion_1();
+		$this->createQuestion_3();
+		
 		$this->createTableData();
 		
 		return $this->tableData;
+	}
+	
+	public function getInstitutionData() {
+		if(!isset($this->institutionList)) {
+			$this->institutionList = ProjectData::getAllInstitutions($this->getProjectData());
+		}
+		return $this->institutionList;
 	}
 	
 	public function getProjectMetadata() {
@@ -216,6 +228,38 @@ $this->createQuestion_3();
 		return in_array($fieldName,ProjectData::getRowQuestionsParticipantPerception());
 	}
 	
+	public function calculateRecordCompletion() {
+		$completionFields = ProjectData::getRowQuestionsParticipantPerception();
+		
+		foreach($completionFields as $thisField) {
+			$this->getRecordsContainField($thisField);
+		}
+		
+		foreach($this->recordIdFlipped as $recordId => $value) {
+			$countInField = 0;
+			foreach($completionFields as $thisField) {
+				if(array_key_exists($recordId,$this->cachedRecordContainsField[$thisField])) {
+					$countInField++;
+				}
+			}
+			
+			$percentComplete = $countInField / count($completionFields);
+			if($percentComplete >= 0.8) {
+				$this->cachedCompleteRecords[$recordId] = 1;
+			}
+			else if($percentComplete >= 0.5) {
+				$this->cachedPartialRecords[$recordId] = 1;
+			}
+			else if($percentComplete > 0) {
+				$this->cachedBreakoffRecords[$recordId] = 1;
+			}
+			
+			if($percentComplete > 0) {
+				$this->cachedAnyRecords[$recordId] = 1;
+			}
+		}
+	}
+	
 	public function addTooltipCounts($study,$survey) {
 		$this->addArrayIndexes($study,$survey);
 		
@@ -285,7 +329,7 @@ $this->createQuestion_3();
 		$naSurvey = $this->getNARecords($survey);
 		$topScoreSurvey = $this->getTopScoreRecords($survey);
 		
-		foreach($this->institutionList as $institutionId => $institutionRecords) {
+		foreach($this->getInstitutionData() as $institutionId => $institutionRecords) {
 			$applicableRecords = array_intersect_key($institutionRecords,$containsSurvey);
 			if($this->isNAField($survey)) {
 				$applicableRecords = REDCapCalculations::filterRecordsNotInArray($applicableRecords,$naSurvey);
@@ -374,7 +418,6 @@ $this->createQuestion_3();
 		}
 		
 		foreach($studyQuestions as $study => $label) {
-			
 			foreach($surveyQuestions as $indexQuestion => $survey) {
 				$this->addTooltipCounts($study,$survey);
 			}

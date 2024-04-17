@@ -73,24 +73,17 @@ class Crons
 		
 		$r4Report = new R4Report($project_id,$recordIds);
 		
-		$table_data = $r4Report->calculateCacheCronData($filename);
+		$multipleRecords = $r4Report->getProjectData();
+		$institutions = $r4Report->getInstitutionData();
+		$table_data = $r4Report->calculateCacheCronData();
 		
-		echo "<br /><pre>";
-		var_dump($table_data);
-		echo "</pre><br />";
 
-		die();
-		REDCapCalculations::$recordIdField = $module->getRecordIdField($project_id);
-        $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
-        $institutions = ProjectData::getAllInstitutions($multipleRecords);
-        $table_data = array();
-
-        #QUESTION = 1 PARTICIPANT PERCEPTION
-        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+        #QUESTION = 1 PARTICIPANT PERCEPTION ## Covered by R4Report Class
+//        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 2 RESPONSE/COMPLETION RATES
         $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-        #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
-        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+        #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY ## Covered by R4Report Class
+//        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
 
         #CREATE & SAVE FILE
         $filereponame = "Dashboard Cache File";
