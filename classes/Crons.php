@@ -21,7 +21,7 @@ class Crons
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
         if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
-            self:self::runCacheCronData($module, $project_id, $filename, null);
+            self::runCacheCronData($module, $project_id, $filename, null);
         }
     }
 
@@ -75,9 +75,8 @@ class Crons
 		
 		$multipleRecords = $r4Report->getProjectData();
 		$institutions = $r4Report->getInstitutionData();
-		$table_data = $r4Report->calculateCacheCronData();
 		
-
+		$table_data = $r4Report->calculateCacheCronData();
         #QUESTION = 1 PARTICIPANT PERCEPTION ## Covered by R4Report Class
 //        $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 2 RESPONSE/COMPLETION RATES
@@ -409,7 +408,7 @@ class Crons
 		#INSTITUTIONS
 		$graph = CronData::getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
 		foreach ($row_questions_2 as $indexQuestion => $question_2) {
-			foreach ($institutions as $institution) {
+			foreach ($institutions as $institution => $institutionRecords) {
 				$totalInstitution = CronData::getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
 				$allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
 			}

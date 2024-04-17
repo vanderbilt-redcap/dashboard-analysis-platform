@@ -558,7 +558,7 @@ class CronData
         $array_institutions = array();
         $graph["institutions"] = array();
 
-        foreach($institutions as $institution) {
+        foreach($institutions as $institution => $institutionRecords) {
             $array_institutions[$institution]['any'] = 0;
             $array_institutions[$institution]['complete'] = 0;
             $array_institutions[$institution]['partial'] = 0;

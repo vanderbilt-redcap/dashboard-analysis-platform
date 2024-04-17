@@ -11,6 +11,7 @@ class R4Report extends AbstractExternalModule
 	private $projectId;
 	private $recordIds;
 	private $recordIdField;
+	private $eventId;
 	
 	
 	private $projectMetadata;
@@ -443,5 +444,29 @@ class R4Report extends AbstractExternalModule
 			$this->surveyPercentages,
 			$this->surveyPercentagesInstitutions
 		];
+	}
+	
+	public function getEventId() {
+		if(!isset($this->eventId)) {
+			$this->eventId = $this->getFirstEventId();
+		}
+		return $this->eventId;
+	}
+	
+	public function applyFilterToData($filterLogic) {
+		// Instantiate logic parse
+		$parser = new \LogicParser();
+		
+		list ($funcName, $argMap) = $parser->parse($filterLogic, [], true, false, false, true);
+		
+		$matchingData = [];
+		
+		foreach($this->getProjectData() as $projectRow) {
+			if(\LogicTester::applyLogic($funcName,$argMap,[$this->getEventId() => $projectRow])) {
+				$matchingData[] = $projectRow;
+			}
+		}
+		
+		return $matchingData;
 	}
 }
