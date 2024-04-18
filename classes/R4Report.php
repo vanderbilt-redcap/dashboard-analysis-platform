@@ -49,6 +49,9 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function __construct($projectId, $recordIds = []) {
+		## Replace the cached version of this project's report with this one
+		self::$r4ReportObjects[$projectId] = $this;
+		
 		## Since we're extended AbstractExternalModule, need a PREFIX and VERSION from the parent module
 		$parentModule = new DashboardAnalysisPlatformExternalModule();
 		
