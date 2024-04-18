@@ -80,18 +80,10 @@ class Crons
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 2 RESPONSE/COMPLETION RATES
-		echo "<br /><pre>";
-		var_dump($table_data);
-		echo "</pre><br />";
-		die();
         $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
         $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
 
-		echo "<br /><pre>";
-		var_dump($table_data);
-		echo "</pre><br />";
-		die();
         #CREATE & SAVE FILE
         $filereponame = "Dashboard Cache File";
         self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");

@@ -472,6 +472,8 @@ class R4Report extends AbstractExternalModule
 		if($filterLogic == "") {
 			return $this->getProjectData();
 		}
+		## Replace checkboxes search format from [field_name(6)] to [field_name___6] which is the format of json-array
+		$filterLogic = preg_replace("/\\(([0-9]+)\\)/","___\$1",$filterLogic);
 		// Instantiate logic parse
 		$parser = new \LogicParser();
 		
