@@ -1,14 +1,9 @@
 <?php
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
-use Vanderbilt\REDCapDataCore\REDCapCalculations;
-
 require_once (dirname(__FILE__)."/ProjectData.php");
-
-CronData::$module = $module;
 
 class CronData
 {
-	public static $module;
     /**
      * Function that calculates the percentages for the filter studies like age, ethnicity,... for PARTICIPANT PERCEPTION
      * @param $question
