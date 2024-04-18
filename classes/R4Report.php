@@ -39,6 +39,15 @@ class R4Report extends AbstractExternalModule
 	private $cachedBreakoffRecords = [];
 	private $cachedAnyRecords = [];
 	
+	private static $r4ReportObjects = [];
+	
+	public static function getR4Report($projectId) {
+		if(!array_key_exists($projectId,self::$r4ReportObjects)) {
+			self::$r4ReportObjects[$projectId] = new R4Report($projectId);
+		}
+		return self::$r4ReportObjects[$projectId];
+	}
+	
 	public function __construct($projectId, $recordIds = []) {
 		## Since we're extended AbstractExternalModule, need a PREFIX and VERSION from the parent module
 		$parentModule = new DashboardAnalysisPlatformExternalModule();
@@ -262,29 +271,11 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function addTooltipCounts($study,$survey) {
-		$this->addArrayIndexes($study,$survey);
-		
 		$this->calculateStudyScores($study, $survey);
 		
 		$this->calculateInstitutionScores($study,$survey);
 		
 		$this->calculateTotalScores($study,$survey);
-	}
-	
-	public function addArrayIndexes($study,$survey) {
-		if(!array_key_exists($study,$this->tooltipCounts)) {
-			$this->tooltipTextArray[$study] = [];
-			$this->surveyPercentages[$study] = [];
-			$this->tooltipCounts[$study] = [];
-			$this->surveyPercentagesInstitutions[$study] = [];
-		}
-		
-		if(!array_key_exists($survey,$this->tooltipCounts[$study])) {
-			$this->tooltipTextArray[$study][$survey] = [];
-			$this->surveyPercentages[$study][$survey] = [];
-			$this->tooltipCounts[$study][$survey] = [];
-			$this->surveyPercentagesInstitutions[$study][$survey] = [];
-		}
 	}
 	
 	public function calculateStudyScores($study, $survey) {
@@ -336,7 +327,7 @@ class R4Report extends AbstractExternalModule
 				$applicableRecords = REDCapCalculations::filterRecordsNotInArray($applicableRecords,$naSurvey);
 			}
 			
-			$instTopScoreRecords = array_intersect($topScoreSurvey,$institutionRecords);
+			$instTopScoreRecords = array_intersect_key($topScoreSurvey,$institutionRecords);
 			$this->surveyPercentagesInstitutions[$study][$institutionId][$survey] =
 				CronData::calcScorePercent(count($instTopScoreRecords),count($applicableRecords));
 		}
@@ -392,7 +383,6 @@ class R4Report extends AbstractExternalModule
 				$this->addTooltipCounts($study,$survey);
 			}
 		}
-		
 	}
 	
 	public function createQuestion_2() {
@@ -439,10 +429,35 @@ class R4Report extends AbstractExternalModule
 		return $surveyFields;
 	}
 	public function createTableData() {
+		$allData_array = [];
+		$allDataTooptip_array = [];
+		foreach($this->surveyPercentages as $study => $studyDetails) {
+			foreach($studyDetails as $survey => $surveyDetails) {
+				if(array_key_exists($study,ProjectData::getArrayStudyQuestion_1())) {
+					$alldata_array["nofilter"][$study][$survey] = $surveyDetails;
+					$allDataTooptip_array["nofilter"][$study][$survey] = $this->tooltipTextArray[$study][$survey];
+				}
+				else {
+					$alldata_array[$study][$survey] = $surveyDetails;
+					$allDataTooptip_array[$study][$survey] = $this->tooltipTextArray[$study][$survey];
+				}
+			}
+			
+			foreach($this->surveyPercentagesInstitutions[$study] as $institution => $institutionDetails) {
+				foreach($institutionDetails as $survey => $surveyDetails) {
+					$surveyIndex = array_search($survey, ProjectData::getRowQuestionsParticipantPerception());
+					if($surveyIndex === false) {
+						$surveyIndex = array_search($survey, ProjectData::getRowQuestionsResponseRate());
+					}
+					$allData_array[$study]["institutions"][$surveyIndex][$institution] = $surveyDetails;
+				}
+			}
+		}
+		
 		$this->tableData = [
-			$this->tooltipTextArray,
-			$this->surveyPercentages,
-			$this->surveyPercentagesInstitutions
+			"data" => $allData_array,
+			"tooltip" => $allDataTooptip_array,
+			"legend" => true
 		];
 	}
 	
@@ -454,6 +469,9 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function applyFilterToData($filterLogic) {
+		if($filterLogic == "") {
+			return $this->getProjectData();
+		}
 		// Instantiate logic parse
 		$parser = new \LogicParser();
 		
