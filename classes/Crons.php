@@ -165,6 +165,8 @@ class Crons
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
 
+        $r4Report = new R4Report($project_id,$recordIds);
+
         #Create Calculations
         $chartgraph = array();
         $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);

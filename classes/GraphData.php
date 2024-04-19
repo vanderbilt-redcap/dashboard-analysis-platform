@@ -44,7 +44,7 @@ class GraphData
             if($question == 2){
                 $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study,$index,$condition.$conditionDate,$graph,$recordIds);
             }else{
-                $records = \REDCap::getData($project_id, 'json-array', $recordIds, array($question_1,'survey_datetime','record_id'), null, null, false, false, false, $condition.$conditionDate);
+                $records = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
                 foreach ($records as $record){
                     if($question == 1) {
                         if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
@@ -87,7 +87,7 @@ class GraphData
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"no", "[" . $study."] = ''".$conditionDate, $graph,$recordIds);
         }else if($question == 1) {
-            $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array($study,$question_1,'survey_datetime'), null, null, false, false, false, "[" . $question_1 . "] != ''" . $conditionDate);
+            $missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] != ''" . $conditionDate);
             foreach ($missingRecords as $mrecord) {
                 if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && ProjectData::isMultiplesCheckbox($project_id, $mrecord[$study], $study, 'none'))) {
                     if ($question == 1) {
@@ -122,7 +122,7 @@ class GraphData
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"total", $conditionDate,  $graph,$recordIds);
         }else if($question == 1){
-            $recordsoverall = \REDCap::getData($project_id, 'json-array', $recordIds,  array($question_1,'survey_datetime'), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+            $recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] <> ''" . $conditionDate);
             foreach ($recordsoverall as $recordo){
                 if($question == 1){
                     if (isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
@@ -156,7 +156,7 @@ class GraphData
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, "multiple", $conditionDate, $graph,$recordIds);
         }else {
-            $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds,  array($study,$question_1,'survey_datetime'), null, null, false, false, false, $conditionDate);
+            $multipleRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
             foreach ($multipleRecords as $multirecord) {
                 if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
                     if ($question == 1) {
@@ -332,7 +332,7 @@ class GraphData
         array_push($data,$question_1);
         array_push($data,"survey_datetime");
 
-        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, $data, null, null, false, false, false, $condition);
+        $allRecords = R4Report::getR4Report($project_id)->applyFilterToData($condition);
         $graph[$question][$study][$question_1]["total_records"][$type] = count($allRecords);
 
         foreach ($allRecords as $record) {
