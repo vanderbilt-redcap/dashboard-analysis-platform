@@ -392,7 +392,7 @@ class Crons
                 $option = explode("-", $row_questions[$question]);
                 $indexQuestion = 0;
                 $showLegend = false;
-                for ($i = $option[0]; $i < $option[1]; $i++) {
+                for ($i = $option[0]; $i < $option[1]+1; $i++) {
                     $array_colors = array();
                     $tooltipTextArray = array();
                     $missingOverall = 0;
