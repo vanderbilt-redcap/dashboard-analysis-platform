@@ -218,23 +218,6 @@ class ProjectData
     {
         return "Yes - ALL Spanish/Hispanic/Latino";
     }
-
-	public static function getTopScoreValues($topScoreMax, $question) {
-		$val = [];
-		if ($topScoreMax == 4 || $topScoreMax == 5) {
-			if($question == 'rpps_s_q21' || $question == "rpps_s_q25"){
-				$val = ['1'];
-			}
-			else {
-				$val = ['4'];
-			}
-		}
-		else if($topScoreMax == 11){
-			$val = ['9','10'];
-		}
-		
-		return $val;
-	}
 	
     public static function getNumberQuestionsTopScore($project_id, $topScoreMax, $question, $condition, $recordIds)
     {
