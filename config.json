@@ -65,6 +65,11 @@
       "type": "textarea"
     },
     {
+      "key": "path",
+      "name": "Specify a S3 path to save the cache file",
+      "type": "text"
+    },
+    {
       "key": "registration",
       "name": "Specify the Project ID from the Project Registration.",
       "type": "text",
