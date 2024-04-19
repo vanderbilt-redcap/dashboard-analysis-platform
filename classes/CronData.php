@@ -124,8 +124,10 @@ class CronData
      public static function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds){
         $showLegendexMissing = false;
         $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
-
-        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
+	
+	
+		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] != ''".$conditionDate);
+//        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
 
         $missing = 0;
         $missingTop = 0;
@@ -195,7 +197,8 @@ class CronData
      * @return array
      */
      public static function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$institutions,$recordIds){
-        $recordsoverall = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
+		$recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] <> ''".$conditionDate);
+        //$recordsoverall = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
         $recordsoverallTotal = count($recordsoverall);
         $topScoreFoundO = 0;
         $showLegendexTotal = false;
@@ -203,7 +206,7 @@ class CronData
         #INSTITUTIONS
         $array_institutions = array();
         $array_institutions_percent = array();
-        foreach ($institutions as $institution){
+        foreach ($institutions as $institution => $institutionRecords){
             $array_institutions[$institution] = array();
             $array_institutions[$institution]['topScore'] = 0;
             $array_institutions[$institution]['missing'] = 0;
@@ -227,8 +230,9 @@ class CronData
             }
         }
         unset($recordsoverall);
-
-        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
+	
+		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] = '5'".$conditionDate);
+//        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
         $score_is_5O_overall_missing = 0;
         foreach($missingRecords as $misRecord){
             if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
@@ -240,7 +244,8 @@ class CronData
         unset($missingRecords);
 
         $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
-        $missingRecordsNoFilter = \REDCap::getData($project_id, 'json-array', $recordIds, $row_questions_1, null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
+		$missingRecordsNoFilter = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] = ''".$conditionDate);
+//        $missingRecordsNoFilter = \REDCap::getData($project_id, 'json-array', $recordIds, $row_questions_1, null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
         $missingOverall = 0;
         foreach($missingRecordsNoFilter as $misRecordNF) {
             foreach ($row_questions_1 as $questionNF){
@@ -350,26 +355,26 @@ class CronData
             return array(0=>$percent,1=>$tooltip,2=>$showLegendexMultiple,3=>$array_colors,4=>$tooltipTextArray);
         }
     }
-
-     public static function getPercent($recordsTotal, $missing, $overall, $showLegend, $option){
-        if($recordsTotal == 0 || ($recordsTotal == $missing && $option != "multiple")){
-            //No responses
-            $percent = "-";
-            $showLegend = true;
-        }else if(($recordsTotal - $missing) < 5){
-            //Fewer than 5 responses
-            $percent = "x";
-            $showLegend = true;
-        }else if(($recordsTotal - $missing) < 20){
-            //Fewer than 20 responses
-            $percent = $overall." *";
-            $showLegend = true;
-        }else{
-            $percent = $overall;
-        }
-        return array(0=>$percent,1=>$showLegend);
-    }
-
+	
+	public static function getPercent($recordsTotal, $missing, $overall, $showLegend, $option){
+		if($recordsTotal == 0 || ($recordsTotal == $missing && $option != "multiple")){
+			//No responses
+			$percent = "-";
+			$showLegend = true;
+		}else if(($recordsTotal - $missing) < 5){
+			//Fewer than 5 responses
+			$percent = "x";
+			$showLegend = true;
+		}else if(($recordsTotal - $missing) < 20){
+			//Fewer than 20 responses
+			$percent = $overall." *";
+			$showLegend = true;
+		}else{
+			$percent = $overall;
+		}
+		return array(0=>$percent,1=>$showLegend);
+	}
+	
      public static function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
         if ($percent >= 0.8) {
@@ -423,9 +428,10 @@ class CronData
                     }
                 }
             }
-
-
-            $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
+	
+	
+			$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
+//            $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
             $total_records = count($allRecords);
             $total_questions = count($row_questions_1);
             $graph["total_records"][$index] = $total_records;
@@ -486,7 +492,8 @@ class CronData
      */
      public static function getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $recordIds){
         $graph = self::addZeros($graph, "total");
-        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $conditionDate);
+		$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
+//        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $conditionDate);
         $total_records = count($allRecords);
         $total_questions = count($row_questions_1);
         $graph["total_records"]["total"] = $total_records;
@@ -516,14 +523,15 @@ class CronData
         $graph = self::addZeros($graph, "total");
         $data = $row_questions_1;
         array_push($data, "record_id");
-        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, $data, null, null, false, false, false, $conditionDate);
+		$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
+//        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, $data, null, null, false, false, false, $conditionDate);
         $total_records = count($allRecords);
         $total_questions = count($row_questions_1);
         $graph["total_records"]["total"] = $total_records;
         $array_institutions = array();
         $graph["institutions"] = array();
 
-        foreach($institutions as $institution) {
+        foreach($institutions as $institution => $institutionRecords) {
             $array_institutions[$institution]['any'] = 0;
             $array_institutions[$institution]['complete'] = 0;
             $array_institutions[$institution]['partial'] = 0;

@@ -1,8 +1,12 @@
 <?php
 namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
+use Vanderbilt\REDCapDataCore\REDCapCalculations;
+
 require_once (dirname(__FILE__)."/ProjectData.php");
 require_once (dirname(__FILE__)."/GraphData.php");
 require_once (dirname(__FILE__)."/CronData.php");
+require_once (dirname(__FILE__)."/REDCapCalculations.php");
+require_once (dirname(__FILE__)."/R4Report.php");
 include_once(__DIR__ . "/../functions.php");
 
 
@@ -17,7 +21,7 @@ class Crons
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
         if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
-            self:self::runCacheCronData($module, $project_id, $filename, null);
+            self::runCacheCronData($module, $project_id, $filename, null);
         }
     }
 
@@ -66,11 +70,13 @@ class Crons
         # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
-
-        $multipleRecords = \REDCap::getData($project_id, 'json-array', $recordIds);
-        $institutions = ProjectData::getAllInstitutions($multipleRecords);
-        $table_data = array();
-
+		
+		$r4Report = new R4Report($project_id,$recordIds);
+		
+		$multipleRecords = $r4Report->getProjectData();
+		$institutions = $r4Report->getInstitutionData();
+		
+		//$table_data = $r4Report->calculateCacheCronData();
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 2 RESPONSE/COMPLETION RATES
@@ -158,6 +164,8 @@ class Crons
         # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
+
+        $r4Report = new R4Report($project_id,$recordIds);
 
         #Create Calculations
         $chartgraph = array();
@@ -262,6 +270,7 @@ class Crons
         $table_data['data'] = $allData_array;
         $table_data['tooltip'] = $allDataTooltip_array;
         $table_data['legend'] = $allLabel_array;
+		
         return $table_data;
     }
 
@@ -292,7 +301,7 @@ class Crons
         #INSTITUTIONS
         $graph = CronData::getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
-            foreach ($institutions as $institution) {
+            foreach ($institutions as $institution => $institutionRecords) {
                 $totalInstitution = CronData::getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
                 $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
             }
@@ -385,7 +394,7 @@ class Crons
                 $option = explode("-", $row_questions[$question]);
                 $indexQuestion = 0;
                 $showLegend = false;
-                for ($i = $option[0]; $i < $option[1]; $i++) {
+                for ($i = $option[0]; $i < $option[1]+1; $i++) {
                     $array_colors = array();
                     $tooltipTextArray = array();
                     $missingOverall = 0;

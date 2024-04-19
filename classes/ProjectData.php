@@ -103,7 +103,7 @@ class ProjectData
 
     public static function getRowQuestions()
     {
-        $row_questions = array(2 => "2-15", 3 => "26-39", 4 => "40-55");
+        $row_questions = array(3 => "2-15", 4 => "26-39", 5 => "40-55");
         return $row_questions;
     }
 
@@ -153,12 +153,13 @@ class ProjectData
     }
 
     public static function getAllInstitutions($multipleRecords){
-        $array_institutions = array();
+        $array_institutions = [];
         foreach ($multipleRecords as $record){
             $institution = trim(explode("-",$record['record_id'])[0]);
-            if(!in_array($institution,$array_institutions)){
-                array_push($array_institutions,$institution);
+            if(!array_key_exists($institution,$array_institutions)){
+				$array_institutions[$institution] = [];
             }
+			$array_institutions[$institution][$record['record_id']] = 1;
         }
         return $array_institutions;
     }
@@ -217,7 +218,7 @@ class ProjectData
     {
         return "Yes - ALL Spanish/Hispanic/Latino";
     }
-
+	
     public static function getNumberQuestionsTopScore($project_id, $topScoreMax, $question, $condition, $recordIds)
     {
         if ($topScoreMax == 4 || $topScoreMax == 5) {
@@ -226,11 +227,13 @@ class ProjectData
             }if($question != 'rpps_s_q21' && $question != "rpps_s_q25"){
                 $val = '4';
             }
-            $records = \REDCap::getData($project_id, 'json-array', $recordIds, null, 'record_id', null, false, false, false,
-                $condition." AND [".$question."] = ".$val);
+			$records = R4Report::getR4Report($project_id)->applyFilterToData($condition." AND [".$question."] = ".$val);
+//            $records = \REDCap::getData($project_id, 'json-array', $recordIds, null, 'record_id', null, false, false, false,
+//                $condition." AND [".$question."] = ".$val);
         }else if($topScoreMax == 11){
-            $records = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false,
-                $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
+			$records = R4Report::getR4Report($project_id)->applyFilterToData($condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
+//            $records = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false,
+//                $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
         }
 
         $numberQuestions = 0;
@@ -256,7 +259,7 @@ class ProjectData
     public static function getS3Path($module, $project_id){
         $path = $module->getProjectSetting('path',$project_id);
 
-        if (stripos($path, "s3://") === 0) {
+        if (str_contains($path, "s3.amazonaws.com")) {
             //It matches
         }else{
             $path = null;
@@ -299,7 +302,8 @@ class ProjectData
     }
 
     public static function getDataTotalCount($project_id, $recordIds, $condition, $params="record_id"){
-        $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, array($params), null, null, false, false, false, $condition);
+		$RecordSet = R4Report::getR4Report($project_id)->applyFilterToData($condition);
+//        $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, array($params), null, null, false, false, false, $condition);
         $total_count = count($RecordSet);
         unset($RecordSet);
         return $total_count;
