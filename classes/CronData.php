@@ -390,40 +390,6 @@ class CronData
 		return $doesNotApplyCount;
 	}
 	
-	public static function getTopScoreRecords($filteredData,$fieldName,$project_id) {
-		$outcome_labels = self::$module->getChoiceLabels($fieldName, $project_id);
-		$topScoreMax = count($outcome_labels);
-		
-		$topScoreValues = ProjectData::getTopScoreValues($topScoreMax,$fieldName);
-		
-		return REDCapCalculations::mapFieldByRecord($filteredData,$fieldName,$topScoreValues,false);
-	}
-	
-	public static function calcScorePercent($scoreCount, $totalCount) {
-		$scorePercent = 0;
-		if($totalCount > 0) {
-			$scorePercent = number_format($scoreCount / $totalCount * 100,0);
-		}
-		
-		if($totalCount == 0) {
-			//No responses
-			$scorePercent = "-";
-		}
-		else if(($totalCount) < 5){
-			//Fewer than 5 responses
-			$scorePercent = "x";
-		}
-		else if(($totalCount) < 20){
-			//Fewer than 20 responses
-			$scorePercent = $scorePercent." *";
-		}
-		return $scorePercent;
-	}
-	
-	public static function getShowLegend($recordsTotal, $showLegend) {
-		return $showLegend || ($recordsTotal < 20);
-	}
-
      public static function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
         if ($percent >= 0.8) {
