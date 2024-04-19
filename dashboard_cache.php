@@ -252,7 +252,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $table .= '<th class="dal_task ' . $class . '" ' . $attribute . '><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
             }
         }else if ($study == "bysite") {
-            foreach ($institutions as $institution){
+            foreach ($institutions as $institution => $institutionRecords){
                 $table .=  '<th class="dal_task"><div style="width: 197.719px;"><span>'.$institution.'</span></div></th>';
             }
         } else {
@@ -346,7 +346,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
                         if($study == "bysite") {
                             #INSTITUTIONS
-                            foreach ($institutions as $institution) {
+                            foreach ($institutions as $institution => $institutionRecords) {
                                 if (($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] != "0") {
                                     $color = "#c4c4c4";
                                     $showLegendNoFilter = true;
@@ -425,7 +425,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
                     if($study == "bysite") {
                         #INSTITUTIONS
-                        foreach ($institutions as $institution) {
+                        foreach ($institutions as $institution => $institutionRecords) {
                             if ($dash_array['data'][$question]['institutions'][$question_2][$institution][0] == "100 *") {
                                 $extraSpace100 = " extraSpace100";
                             }
@@ -482,7 +482,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question]['institutions']["rpps_s_q" . $i][$index][0] . '">' . $dash_array['data'][$question]['nofilter']["rpps_s_q" . $i][$index][0] . '</div></td>';
 
                         #INSTITUTIONS
-                        foreach ($institutions as $institution) {
+                        foreach ($institutions as $institution => $institutionRecords) {
                             if($dash_array['data'][$question]['institutions']["rpps_s_q" . $i][$index][0][0][$institution] == "100 *"){
                                 $extraSpace100 = " extraSpace100";
                             }

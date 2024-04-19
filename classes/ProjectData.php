@@ -103,7 +103,7 @@ class ProjectData
 
     public static function getRowQuestions()
     {
-        $row_questions = array(2 => "2-15", 3 => "26-39", 4 => "40-55");
+        $row_questions = array(3 => "2-15", 4 => "26-39", 5 => "40-55");
         return $row_questions;
     }
 
