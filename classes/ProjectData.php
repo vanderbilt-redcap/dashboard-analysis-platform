@@ -257,13 +257,13 @@ class ProjectData
     }
 
     public static function getS3Path($module, $project_id){
-//        $path = $module->getProjectSetting('path',$project_id);
-//
-//        if (stripos($path, "s3://") === 0) {
-//            //It matches
-//        }else{
+        $path = $module->getProjectSetting('path',$project_id);
+
+        if (str_contains($path, "s3.amazonaws.com")) {
+            //It matches
+        }else{
             $path = null;
-//        }
+        }
 
         return $path;
     }
