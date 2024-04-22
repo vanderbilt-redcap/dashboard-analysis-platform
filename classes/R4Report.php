@@ -466,7 +466,7 @@ class R4Report extends AbstractExternalModule
 	
 	public function getEventId() {
 		if(!isset($this->eventId)) {
-			$this->eventId = $this->getFirstEventId();
+			$this->eventId = $this->getFirstEventId($this->projectId);
 		}
 		return $this->eventId;
 	}
