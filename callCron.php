@@ -16,20 +16,20 @@ if($cronAttributes['cron_name'] == ""){
         Crons::runCacheReportCron($module, $project_id, $report);
         Crons::runGraphReportCron($module, $project_id, $report);
     }else {
-        Crons::runCacheCron($module, $project_id);
-        Crons::runCacheReportCron($module, $project_id, null);
-        Crons::runGraphCron($module, $project_id);
-        Crons::runGraphReportCron($module, $project_id, null);
+        Crons::runCacheCron($module, $project_id,true);
+        Crons::runCacheReportCron($module, $project_id, null,true);
+        Crons::runGraphCron($module, $project_id,true);
+        Crons::runGraphReportCron($module, $project_id, null,true);
     }
 }else{
     #CRONS
     if ($cronAttributes['cron_name'] == 'dashboard_cache_file'){
-        Crons::runCacheCron($module, $project_id);
+        Crons::runCacheCron($module, $project_id,true);
     }else if ($cronAttributes['cron_name'] == 'dashboard_cache_file_report'){
-        Crons::runCacheReportCron($module, $project_id, null);
+        Crons::runCacheReportCron($module, $project_id, null,true);
     }else if ($cronAttributes['cron_name'] == 'dashboard_cache_file_graph'){
-        Crons::runGraphCron($module, $project_id);
+        Crons::runGraphCron($module, $project_id,true);
     }else if ($cronAttributes['cron_name'] == 'dashboard_cache_file_graph_report'){
-        Crons::runGraphReportCron($module, $project_id, null);
+        Crons::runGraphReportCron($module, $project_id, null,true);
     }
 }
