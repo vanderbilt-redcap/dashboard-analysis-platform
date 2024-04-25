@@ -485,7 +485,7 @@ class R4Report extends AbstractExternalModule
 		$matchingData = [];
 		
 		foreach($this->getProjectData() as $projectRow) {
-			if(\LogicTester::applyLogic($funcName,$argMap,[$this->getEventId() => $projectRow])) {
+			if(\LogicTester::applyLogic($funcName,$argMap,[$this->getEventId() => $projectRow],$this->getEventId(),false,$this->projectId)) {
 				$matchingData[] = $projectRow;
 			}
 		}
