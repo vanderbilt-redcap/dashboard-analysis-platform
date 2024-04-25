@@ -17,10 +17,10 @@ class Crons
      * @param $module
      * @param $project_id
      */
-    public static function runCacheCron($module,$project_id)
+    public static function runCacheCron($module,$project_id,$forceRun = false)
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
-        if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
             self::runCacheCronData($module, $project_id, $filename, null);
         }
     }
@@ -31,7 +31,7 @@ class Crons
      * @param $project_id
      * @param $report, the report id saved in the EM configuration page
      */
-    public static function runCacheReportCron($module, $project_id, $report)
+    public static function runCacheReportCron($module, $project_id, $report,$forceRun = false)
     {
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
         if(!empty($custom_report_id)) {
@@ -41,7 +41,7 @@ class Crons
             foreach ($custom_report_id as $rid) {
                 $recordIds = array();
                 $filename = "dashboard_cache_file_" . $project_id . "_report_" . $rid . ".txt";
-                if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+                if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
                     $q = $module->query("SELECT report_id FROM redcap_reports 
                                     WHERE project_id = ? AND unique_report_name=?",
                         [$project_id, $rid]);
@@ -51,7 +51,7 @@ class Crons
                         foreach ($reports as $record => $data) {
                             array_push($recordIds, $record);
                         }
-                        self:self::runCacheCronData($module, $project_id, $filename, $recordIds);
+                        self::runCacheCronData($module, $project_id, $filename, $recordIds);
                     }
                 }
             }
@@ -94,10 +94,10 @@ class Crons
      * @param $module
      * @param $project_id
      */
-    public static function runGraphCron($module,$project_id)
+    public static function runGraphCron($module,$project_id,$forceRun = false)
     {
         $filename = "dashboard_cache_graph_file_" . $project_id . ".txt";
-        if(!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
             $array_study_1 = ProjectData::getArrayStudyQuestion_1();
             $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
             $array_study_2 = ProjectData::getArrayStudyQuestion_2();
@@ -114,7 +114,7 @@ class Crons
      * @param $project_id
      * @param $report, the report id saved in the EM configuration page
      */
-    public static function runGraphReportCron($module, $project_id, $report)
+    public static function runGraphReportCron($module, $project_id, $report,$forceRun = false)
     {
         $custom_report_id = $module->getProjectSetting('custom-report-id',$project_id);
         if(!empty($custom_report_id)) {
@@ -131,7 +131,7 @@ class Crons
             foreach ($custom_report_id as $rid) {
                 $recordIds = array();
                 $filename = "dashboard_cache_graph_file_" . $project_id . "_report_" . $rid . ".txt";
-                if (!self::doesFileAlreadyExist($module, $project_id, $filename)) {
+                if (!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
                     $q = $module->query("SELECT report_id FROM redcap_reports 
                                     WHERE project_id = ? AND unique_report_name=?",
                         [$project_id, $rid]);
