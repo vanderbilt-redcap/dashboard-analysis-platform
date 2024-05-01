@@ -259,13 +259,25 @@ class ProjectData
     public static function getS3Path($module, $project_id){
         $path = $module->getProjectSetting('path',$project_id);
 
-        if (str_contains($path, "s3.amazonaws.com")) {
-            //It matches
-        }else{
+        if(empty($path)){
             $path = null;
+        }else {
+            $path = self::validateS3Url($path);
         }
 
         return $path;
+    }
+
+    public static function validateS3Url($url){
+        $parts = parse_url($url);
+        #TODO match the URLs prefixes in the array with the framework function once available
+        foreach([".s3.amazonaws.com"] as $suffix){
+            if(ends_with($parts['host'], $suffix)){
+                return $url;
+            }
+        }
+
+        throw new \Exception('Only certain domains are allowed');
     }
 
     public static function getFileData($module, $project_id, $filenametext, $report){
