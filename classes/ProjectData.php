@@ -262,13 +262,13 @@ class ProjectData
         if(empty($path)){
             $path = null;
         }else {
-            $path = self::validateDomainSuffix([".s3.amazonaws.com"], $path);
+            $path = self::validateS3Url([".s3.amazonaws.com"], $path);
         }
 
         return $path;
     }
 
-    public static function validateDomainSuffix($domainSuffixes, $url){
+    public static function validateS3Url($domainSuffixes, $url){
         $parts = parse_url($url);
         foreach($domainSuffixes as $suffix){
             if(ends_with($parts['host'], $suffix)){
