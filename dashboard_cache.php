@@ -437,7 +437,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     }
                     $table .= '</tr>';
                 }else{
+                    if(!empty($dash_array['data'][$question][$study][$question_2][$indexQuestion]))
                     ksort($dash_array['data'][$question][$study][$question_2]);
+                    if(!empty($dash_array['tooltip'][$question][$study][$question_2][$indexQuestion]))
                     ksort($dash_array['tooltip'][$question][$study][$question_2]);
                     $array = $dash_array['data'][$question][$study][$question_2];
                     end($array);         // move the internal pointer to the end of the array
@@ -496,7 +498,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $table .= '</tr>';
                     } else {
                         foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i] as $singleDataIndex => $singleData) {
+                            if(!empty($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]))
                             ksort($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]);
+                            if(!empty($dash_array['tooltip'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]))
                             ksort($dash_array['tooltip'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]);
                             foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex] as $arrayIndex => $value) {
                                 $class = "";
