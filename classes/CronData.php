@@ -49,7 +49,7 @@ class CronData
                     #Get number of questions: Top Score, Very Or SomewhatImportant
                     $topScoreFound = ProjectData::getDataTotalCount($project_id, $recordIds, $condition." AND ([".$question_1."] = '1' OR [".$question_1."] = '2')");
                 }
-                $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);;
+                $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
                 if ($topScore > $max) {
                     $max = $topScore;
                 }
@@ -96,10 +96,11 @@ class CronData
                 }
             }
         }
+        $max_index = max(array_keys($study_options));
         if ($question == 1) {
-            $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $index, 5 => $showLegend);
+            $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $max_index, 5 => $showLegend);
         } else {
-            $aux = array(0 => $table_b, 1 => $index, 2 => $missingOverall, 5 => $showLegend, 6 => $array_colors, 7 => $tooltipTextArray);
+            $aux = array(0 => $table_b, 1 => $max_index, 2 => $missingOverall, 5 => $showLegend, 6 => $array_colors, 7 => $tooltipTextArray);
         }
         return $aux;
     }
@@ -168,7 +169,6 @@ class CronData
         $percent = $percent_array[0];
         $showLegendexMissing = $percent_array[1];
         $tooltip = $missing." responses, ".$missing_col." missing";
-
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][intval($index)+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
             $array_colors[$indexQuestion][intval($index)+1] = $percent;
