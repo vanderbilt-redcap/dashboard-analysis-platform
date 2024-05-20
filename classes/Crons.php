@@ -219,6 +219,7 @@ class Crons
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $array_colors = array();
                 $tooltipTextArray = array();
+                $tooltipTextArray[$indexQuestion] = array();
                 $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                 $topScoreMax = count($outcome_labels);
                 $missingOverall = 0;
@@ -397,6 +398,7 @@ class Crons
                 for ($i = $option[0]; $i < $option[1]+1; $i++) {
                     $array_colors = array();
                     $tooltipTextArray = array();
+                    $tooltipTextArray[$indexQuestion] = array();
                     $missingOverall = 0;
                     #NORMAL STUDY
                     $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds);
