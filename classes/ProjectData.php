@@ -321,17 +321,14 @@ class ProjectData
         return $total_count;
     }
 
-    public static function isMultiplesCheckbox($project_id, $data, $study, $option=''){
+    public static function isMultiplesCheckbox($project_id, $data, $study, $study_options_total, $option=''){
         if(getFieldType($study, $project_id) == "checkbox") {
             $count = 0;
-            foreach ($data as $index => $value) {
+            for($index = 1; $index < $study_options_total + 1; $index++){
                 if ($data[$study . '___' . $index] == '1') {
                     $count++;
-                    if($option != 'none'){
-                        return false;
-                    }
                 }
-                if($count >= 2)
+                if($count >= 2 && $option != "none")
                     return true;
             }
             if($option == 'none' && $count ==  "0"){
@@ -339,6 +336,22 @@ class ProjectData
             }
         }
         return false;
+    }
+
+    public static function getREDCapLogicForMissingCheckboxes($project_id, $question_1, $study, $study_options_total){
+        $filterLogic = "[".$question_1."] = '5' AND ";
+        if(getFieldType($study, $project_id) == "checkbox"){
+            for($index = 1; $index < $study_options_total + 1; $index++){
+
+                if($index == $study_options_total)
+                    $filterLogic .="[" . $study . "(" . $index . ")] = ''";
+                else
+                    $filterLogic .="[" . $study . "(" . $index . ")] = '' AND ";
+            }
+        }else{
+            $filterLogic .= "AND [".$study."] = ''";
+        }
+        return $filterLogic;
     }
 }
 ?>

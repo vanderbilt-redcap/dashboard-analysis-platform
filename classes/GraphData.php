@@ -17,7 +17,7 @@ class GraphData
      * @param $recordIds
      * @return mixed
      */
-    public static function getNormalStudyColGraph($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds){
+    public static function getNormalStudyColGraph($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds, $study_options_total){
         if ($study == "rpps_s_q62" || $study == "ethnicity") {
             $index_ethnicity = count($study_options);
             $graph[$question][$study][$question_1][$index_ethnicity] = array();
@@ -42,7 +42,7 @@ class GraphData
             }
             $condition = getParamOnType($study,$index,$project_id);
             if($question == 2){
-                $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study,$index,$condition.$conditionDate,$graph,$recordIds);
+                $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study,$index,$condition.$conditionDate,$graph,$recordIds, $study_options_total);
             }else{
                 $records = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
                 foreach ($records as $record){
@@ -83,13 +83,13 @@ class GraphData
      * @param $recordIds
      * @return mixed
      */
-    public static function getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds){
+    public static function getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$study_options_total){
         if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"no", "[" . $study."] = ''".$conditionDate, $graph,$recordIds);
+            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"no", "[" . $study."] = ''".$conditionDate, $graph,$recordIds, $study_options_total);
         }else if($question == 1) {
             $missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] != ''" . $conditionDate);
             foreach ($missingRecords as $mrecord) {
-                if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && ProjectData::isMultiplesCheckbox($project_id, $mrecord[$study], $study, 'none'))) {
+                if (($mrecord[$study] == '' && getFieldType($study, $project_id) != "checkbox") || (is_array($mrecord[$study]) && ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total,'none'))) {
                     if ($question == 1) {
                         if (isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
@@ -118,9 +118,9 @@ class GraphData
      * @param $recordIds
      * @return mixed
      */
-    public static function getTotalColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds){
+    public static function getTotalColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$study_options_total){
         if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"total", $conditionDate,  $graph,$recordIds);
+            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"total", $conditionDate,  $graph, $recordIds, $study_options_total);
         }else if($question == 1){
             $recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] <> ''" . $conditionDate);
             foreach ($recordsoverall as $recordo){
@@ -152,13 +152,13 @@ class GraphData
      * @param $recordIds
      * @return mixed
      */
-    public static function getMultipleColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds){
+    public static function getMultipleColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$study_options_total){
         if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, "multiple", $conditionDate, $graph,$recordIds);
+            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, "multiple", $conditionDate, $graph,$recordIds, $study_options_total);
         }else {
             $multipleRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
             foreach ($multipleRecords as $multirecord) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
+                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
                     if ($question == 1) {
                         if (isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
@@ -324,7 +324,7 @@ class GraphData
         return $graph;
     }
 
-    public static function generateResponseRateGraph($project_id, $question, $question_1, $study, $type, $condition, $graph, $recordIds){
+    public static function generateResponseRateGraph($project_id, $question, $question_1, $study, $type, $condition, $graph, $recordIds, $study_options_total){
         $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
         $total_questions = count($row_questions_1);
         $data = $row_questions_1;
@@ -336,7 +336,7 @@ class GraphData
         $graph[$question][$study][$question_1]["total_records"][$type] = count($allRecords);
 
         foreach ($allRecords as $record) {
-            if ($type != "multiple" || ($type == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record[$study], $study))) {
+            if ($type != "multiple" || ($type == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))) {
                 $num_questions_answered = 0;
                 foreach ($row_questions_1 as $indexQuestion => $question_2) {
                     if ($record[$question_2] != "") {

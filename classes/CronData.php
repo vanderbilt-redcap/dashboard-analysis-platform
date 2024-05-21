@@ -122,18 +122,18 @@ class CronData
      * @param $recordIds
      * @return array
      */
-     public static function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds){
+     public static function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds, $study_options_total){
         $showLegendexMissing = false;
-        $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
-	
-	
+        $filterLogic = ProjectData::getREDCapLogicForMissingCheckboxes($project_id, $question_1, $study, $study_options_total);
+        $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, $filterLogic);
+
 		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] != ''".$conditionDate);
 //        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
 
         $missing = 0;
         $missingTop = 0;
-        foreach ($missingRecords as $mrecord){
-            if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && (ProjectData::isMultiplesCheckbox($project_id, $mrecord[$study], $study, 'none')))) {
+        foreach ($missingRecords as $key => $mrecord){
+            if (($mrecord[$study] == '' && getFieldType($study, $project_id) != "checkbox") || ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total, 'none')) {
                 $missing += 1;
                 if($question == 1){
                     if (isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
@@ -153,7 +153,7 @@ class CronData
 
         foreach ($multipleRecords as $mmrecord){
             if($mmrecord['survey_datetime'] != ""){
-                if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (is_array($mmrecord[$study]) && $type == "checkbox" && !ProjectData::isMultiplesCheckbox($project_id, $mmrecord[$study], $study, 'none')))){
+                if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && (($mmrecord[$study] == '' && $type != "checkbox") || !array_key_exists($study,$mmrecord) || (is_array($mmrecord[$study]) && $type == "checkbox" && !ProjectData::isMultiplesCheckbox($project_id, $mmrecord, $study, $study_options_total, 'none')))){
                     $missing_col += 1;
                 }
             }
@@ -304,7 +304,7 @@ class CronData
      * @param $array_colors
      * @return array
      */
-     public static function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray,$array_colors){
+     public static function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray,$array_colors,$study_options_total){
         $multiple = 0;
         $multipleTop = 0;
         $multiple_not_applicable = 0;
@@ -312,7 +312,7 @@ class CronData
         $showLegendexMultiple = false;
         foreach ($multipleRecords as $multirecord){
             if(!empty($multirecord[$study])) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
+                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
                     $multiple += 1;
                     if ($question == 1) {
                         if (isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
@@ -581,13 +581,13 @@ class CronData
      * @param $multipleRecords
      * @return mixed
      */
-     public static function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords){
+     public static function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $study_options_total){
         $graph = self::addZeros($graph, "multiple");
         $graph["total_records"]["multiple"] = 0;
         $total_questions = count($row_questions_1);
         foreach ($multipleRecords as $multirecord){
             if(!empty($multirecord[$study])) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
+                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
                     $graph["total_records"]["multiple"] += 1;
                 }
             }
@@ -596,7 +596,7 @@ class CronData
         foreach ($multipleRecords as $multirecord){
             $num_questions_answered = 0;
             if(!empty($multirecord[$study])) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
+                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
                     foreach ($row_questions_1 as $indexQuestion => $question_1) {
                         if ($multirecord[$question_1] != "") {
                             $num_questions_answered++;
