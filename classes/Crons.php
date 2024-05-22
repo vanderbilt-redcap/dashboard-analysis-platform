@@ -70,13 +70,17 @@ class Crons
         # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
-		
+
 		$r4Report = new R4Report($project_id,$recordIds);
 		
 		$multipleRecords = $r4Report->getProjectData();
 		$institutions = $r4Report->getInstitutionData();
-		
 		//$table_data = $r4Report->calculateCacheCronData();
+        $table_data = array();
+        $table_data['data'] = array();
+        $table_data['tooltip'] = array();
+        $table_data['legend'] = array();
+
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 2 RESPONSE/COMPLETION RATES
@@ -390,6 +394,7 @@ class Crons
         }
         foreach ($array_study_3 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options_total = count($study_options);
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -411,7 +416,7 @@ class Crons
                     $tooltipTextArray = $normalStudyCol[7];
 
                     #MISSING
-                    $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds);
+                    $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds, $study_options_total);
                     $missing_col = $missingCol[2];
                     $showLegendMissing = $missingCol[3];
                     $array_colors = $missingCol[4];
@@ -429,7 +434,7 @@ class Crons
 
                     #MULTIPLE
                     if ($study == "rpps_s_q61") {
-                        $multiple = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $index, $tooltipTextArray, $array_colors);
+                        $multiple = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $index, $tooltipTextArray, $array_colors, $study_options_total);
                         $showLegendMultiple = $multiple[2];
                         $array_colors = $multiple[3];
                         $tooltipTextArray = $multiple[4];

@@ -341,17 +341,50 @@ class ProjectData
     public static function getREDCapLogicForMissingCheckboxes($project_id, $question_1, $study, $study_options_total){
         $filterLogic = "[".$question_1."] = '5' AND ";
         if(getFieldType($study, $project_id) == "checkbox"){
-            for($index = 1; $index < $study_options_total + 1; $index++){
-
+            for($index = 1; $index < ($study_options_total + 1); $index++){
                 if($index == $study_options_total)
                     $filterLogic .="[" . $study . "(" . $index . ")] = ''";
                 else
                     $filterLogic .="[" . $study . "(" . $index . ")] = '' AND ";
             }
         }else{
-            $filterLogic .= "AND [".$study."] = ''";
+            $filterLogic .= "[".$study."] = ''";
         }
         return $filterLogic;
+    }
+
+    public static function getCriticalQuestions1LogicForMissing($question_1){
+        $row_questions_1 = self::getRowQuestionsParticipantPerception();
+        $key = array_search($question_1, $row_questions_1);
+        unset($row_questions_1[$key]);
+
+        $logic = "AND (";
+
+        $last_question = count($row_questions_1);
+        $count = 1;
+        foreach ($row_questions_1 as $question){
+            if($count == $last_question){
+                $logic .= "[" . $question . "] != '')";
+            }else{
+                $logic .= "[" . $question . "] != '' OR ";
+            }
+            $count++;
+        }
+        return $logic;
+    }
+
+    public static function isMultiplesCheckboxBlankLogic($study, $study_options_total){
+        $logic = "";
+        $count = 1;
+        for($index = 1; $index < $study_options_total + 1; $index++){
+            if($count == $study_options_total){
+                $logic .= "[" . $study . "(".$index.")] != '1'";
+            }else{
+                $logic .= "[" . $study . "(".$index.")] != '1' AND ";
+            }
+            $count++;
+        }
+        return $logic;
     }
 }
 ?>
