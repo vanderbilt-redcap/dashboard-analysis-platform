@@ -152,6 +152,12 @@ class ProjectData
         return $row_questions_2;
     }
 
+    public static function getRowQuestionsParticipantPerceptionIs5()
+    {
+        $row_questions_1_is_5 = array(0 => "rpps_s_q68", 1 => "rpps_s_q23", 2 => "rpps_s_q25", 3 => "rpps_s_q69");
+        return $row_questions_1_is_5;
+    }
+
     public static function getAllInstitutions($multipleRecords){
         $array_institutions = [];
         foreach ($multipleRecords as $record){

@@ -125,15 +125,18 @@ class CronData
      */
      public static function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds, $study_options_total){
         $showLegendexMissing = false;
-         if(getFieldType($study, $project_id) == "checkbox"){
-             $filterLogic = ProjectData::getREDCapLogicForMissingCheckboxes($study, $study_options_total, "= ''");
-         }else{
-             $filterLogic = "[".$study."] = ''";
-         }
-
-        $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] = '5' AND ".$filterLogic);
+        #Only calculate is 5 for certain questions
+        if(!in_array($question_1,ProjectData::getRowQuestionsParticipantPerceptionIs5())){
+            $score_is_5O_overall = 0;
+        }else {
+            if (getFieldType($study, $project_id) == "checkbox") {
+                $filterLogic = ProjectData::getREDCapLogicForMissingCheckboxes($study, $study_options_total, "= ''");
+            } else {
+                $filterLogic = "[" . $study . "] = ''";
+            }
+            $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '5' AND " . $filterLogic);
+        }
 		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] != ''".$conditionDate);
-//        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
 
         $missing = 0;
         $missingTop = 0;
