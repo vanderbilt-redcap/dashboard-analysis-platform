@@ -216,7 +216,7 @@ class Crons
         $isnofiltercalculated = false;
         foreach ($array_study_1 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
-            $study_options_total = count($study_options);
+            $study_options_total = $study_options;
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -315,7 +315,7 @@ class Crons
 
         foreach ($array_study_2 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
-            $study_options_total = count($study_options);
+            $study_options_total = $study_options;
             if ($study == "ethnicity") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -394,7 +394,7 @@ class Crons
         }
         foreach ($array_study_3 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
-            $study_options_total = count($study_options);
+            $study_options_total = $study_options;
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -487,7 +487,7 @@ class Crons
             }
             foreach ($array_study_number as $study => $label) {
                 $study_options = $module->getChoiceLabels($study, $project_id);
-                $study_options_total = count($study_options);
+                $study_options_total = $study_options;
                 if ($study == "ethnicity") {
                     array_push($study_options, ProjectData::getExtraColumTitle());
                 }

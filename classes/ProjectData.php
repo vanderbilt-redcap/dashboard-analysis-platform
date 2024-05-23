@@ -324,7 +324,7 @@ class ProjectData
     public static function isMultiplesCheckbox($project_id, $data, $study, $study_options_total, $option=''){
         if(getFieldType($study, $project_id) == "checkbox") {
             $count = 0;
-            for($index = 1; $index < $study_options_total + 1; $index++){
+            foreach ($study_options_total as $index => $value){
                 if ($data[$study . '___' . $index] == '1') {
                     $count++;
                 }
@@ -338,17 +338,16 @@ class ProjectData
         return false;
     }
 
-    public static function getREDCapLogicForMissingCheckboxes($project_id, $question_1, $study, $study_options_total){
-        $filterLogic = "[".$question_1."] = '5' AND ";
-        if(getFieldType($study, $project_id) == "checkbox"){
-            for($index = 1; $index < ($study_options_total + 1); $index++){
-                if($index == $study_options_total)
-                    $filterLogic .="[" . $study . "(" . $index . ")] = ''";
+    public static function getREDCapLogicForMissingCheckboxes($study, $study_options_total, $operatorValue){
+        $filterLogic = "";
+        if(!empty($study_options_total) && is_array($study_options_total)) {
+            $last_index = array_key_last($study_options_total);
+            foreach ($study_options_total as $index => $value) {
+                if ($index == $last_index)
+                    $filterLogic .= "[" . $study . "(" . $index . ")] ".$operatorValue;
                 else
-                    $filterLogic .="[" . $study . "(" . $index . ")] = '' AND ";
+                    $filterLogic .= "[" . $study . "(" . $index . ")] ".$operatorValue." AND ";
             }
-        }else{
-            $filterLogic .= "[".$study."] = ''";
         }
         return $filterLogic;
     }
@@ -367,20 +366,6 @@ class ProjectData
                 $logic .= "[" . $question . "] != '')";
             }else{
                 $logic .= "[" . $question . "] != '' OR ";
-            }
-            $count++;
-        }
-        return $logic;
-    }
-
-    public static function isMultiplesCheckboxBlankLogic($study, $study_options_total){
-        $logic = "";
-        $count = 1;
-        for($index = 1; $index < $study_options_total + 1; $index++){
-            if($count == $study_options_total){
-                $logic .= "[" . $study . "(".$index.")] != '1'";
-            }else{
-                $logic .= "[" . $study . "(".$index.")] != '1' AND ";
             }
             $count++;
         }
