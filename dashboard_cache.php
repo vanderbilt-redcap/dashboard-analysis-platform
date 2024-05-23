@@ -108,6 +108,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
     $study_options = $module->getChoiceLabels($study, $project_id);
+    if(!empty($study_options))
+        ksort($study_options);
 
     $multipleRecords = \REDCap::getData($project_id, 'json-array');
     $institutions = ProjectData::getAllInstitutions($multipleRecords);
@@ -437,11 +439,16 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     }
                     $table .= '</tr>';
                 }else{
+                    if(!empty($dash_array['data'][$question][$study][$question_2][$indexQuestion]))
                     ksort($dash_array['data'][$question][$study][$question_2]);
+                    if(!empty($dash_array['tooltip'][$question][$study][$question_2][$indexQuestion]))
                     ksort($dash_array['tooltip'][$question][$study][$question_2]);
                     $array = $dash_array['data'][$question][$study][$question_2];
-                    end($array);         // move the internal pointer to the end of the array
-                    $last_index = key($array);
+                    if(!empty($array))
+                        end($array);         // move the internal pointer to the end of the array
+                    $last_index = "";
+                    if(!empty($array))
+                        $last_index = key($array);
                     foreach ($dash_array['data'][$question][$study][$question_2] as $i => $value){
                         $class = "";
                         $attribute = "";
@@ -496,7 +503,9 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         $table .= '</tr>';
                     } else {
                         foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i] as $singleDataIndex => $singleData) {
+                            if(!empty($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]))
                             ksort($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]);
+                            if(!empty($dash_array['tooltip'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]))
                             ksort($dash_array['tooltip'][$question][$study]["rpps_s_q" . $i][$singleDataIndex]);
                             foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex] as $arrayIndex => $value) {
                                 $class = "";

@@ -36,8 +36,8 @@ class CronData
             if ($study != "" && $index != "") {
                 $condition = getParamOnType($study, $index, $project_id);
 
-                $total_records = ProjectData::getDataTotalCount($project_id, $recordIds, $condition.$conditionDate);
-                $missing_InfoLabel = ProjectData::getDataTotalCount($project_id, $recordIds, $condition . " AND [" . $question_1 . "] = ''" . $conditionDate);
+                $total_records = ProjectData::getDataTotalCount($project_id, $recordIds, $condition." ".ProjectData::getCriticalQuestions1LogicForMissing($question_1));
+                $missing_InfoLabel = ProjectData::getDataTotalCount($project_id, $recordIds, $condition." AND [" . $question_1 . "] = '' ".ProjectData::getCriticalQuestions1LogicForMissing($question_1));
 
                 $score_is_5 = 0;
                 if ($question == 1) {
@@ -49,7 +49,7 @@ class CronData
                     #Get number of questions: Top Score, Very Or SomewhatImportant
                     $topScoreFound = ProjectData::getDataTotalCount($project_id, $recordIds, $condition." AND ([".$question_1."] = '1' OR [".$question_1."] = '2')");
                 }
-                $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);;
+                $topScore = ProjectData::getTopScorePercent($topScoreFound, $total_records, $score_is_5, $missing_InfoLabel);
                 if ($topScore > $max) {
                     $max = $topScore;
                 }
@@ -78,6 +78,7 @@ class CronData
                 $percent = $percent_array[0];
                 $showLegend = $percent_array[1];
                 $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
+
                 if ($question == 1) {
                     $tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
                     $array_colors[$indexQuestion][$index] = $percent;
@@ -96,10 +97,11 @@ class CronData
                 }
             }
         }
+        $max_index = max(array_keys($study_options));
         if ($question == 1) {
-            $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $index, 5 => $showLegend);
+            $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $max_index, 5 => $showLegend);
         } else {
-            $aux = array(0 => $table_b, 1 => $index, 2 => $missingOverall, 5 => $showLegend, 6 => $array_colors, 7 => $tooltipTextArray);
+            $aux = array(0 => $table_b, 1 => $max_index, 2 => $missingOverall, 5 => $showLegend, 6 => $array_colors, 7 => $tooltipTextArray);
         }
         return $aux;
     }
@@ -121,18 +123,25 @@ class CronData
      * @param $recordIds
      * @return array
      */
-     public static function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds){
+     public static function getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds, $study_options_total){
         $showLegendexMissing = false;
-        $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] = '5' AND [".$study."] = ''".$conditionDate);
-	
-	
+        #Only calculate is 5 for certain questions
+        if(!in_array($question_1,ProjectData::getRowQuestionsParticipantPerceptionIs5())){
+            $score_is_5O_overall = 0;
+        }else {
+            if (getFieldType($study, $project_id) == "checkbox") {
+                $filterLogic = ProjectData::getREDCapLogicForMissingCheckboxes($study, $study_options_total, "= ''");
+            } else {
+                $filterLogic = "[" . $study . "] = ''";
+            }
+            $score_is_5O_overall = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '5' AND " . $filterLogic);
+        }
 		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] != ''".$conditionDate);
-//        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$study,$question_1), null, null, false, false, false, "[".$question_1."] != ''".$conditionDate);
 
         $missing = 0;
         $missingTop = 0;
-        foreach ($missingRecords as $mrecord){
-            if (($mrecord[$study] == '') || (is_array($mrecord[$study]) && (ProjectData::isMultiplesCheckbox($project_id, $mrecord[$study], $study, 'none')))) {
+        foreach ($missingRecords as $key => $mrecord){
+            if (($mrecord[$study] == '' && getFieldType($study, $project_id) != "checkbox") || ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total, 'none')) {
                 $missing += 1;
                 if($question == 1){
                     if (isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
@@ -147,23 +156,17 @@ class CronData
         }
         unset($missingRecords);
 
-        $missing_col = 0;
         $type = getFieldType($study,$project_id);
-
-        foreach ($multipleRecords as $mmrecord){
-            if($mmrecord['survey_datetime'] != ""){
-                if(($mmrecord[$question_1] == '' || !array_key_exists($question_1,$mmrecord)) && ($mmrecord[$study] == '' || !array_key_exists($study,$mmrecord) || (is_array($mmrecord[$study]) && $type == "checkbox" && !ProjectData::isMultiplesCheckbox($project_id, $mmrecord[$study], $study, 'none')))){
-                    $missing_col += 1;
-                }
-            }
+        if($type != "checkbox"){
+            $missing_col = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$study."] = '' AND [" . $question_1 . "] = '' ".ProjectData::getCriticalQuestions1LogicForMissing($question_1));
+        }else{
+            $missing_col = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '' AND ".ProjectData::getREDCapLogicForMissingCheckboxes($study, $study_options_total, " != '1'")." ".ProjectData::getCriticalQuestions1LogicForMissing($question_1));
         }
 
         $missingPercent = ProjectData::getTopScorePercent($missingTop, $missing, $score_is_5O_overall, 0);
-
         if($missingPercent > $max){
             $max = $missingPercent;
         }
-
         $percent_array = self::getPercent($missing, $score_is_5O_overall, $missingPercent, $showLegendexMissing, "missing");
         $percent = $percent_array[0];
         $showLegendexMissing = $percent_array[1];
@@ -304,33 +307,30 @@ class CronData
      * @param $array_colors
      * @return array
      */
-     public static function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray,$array_colors){
+     public static function getMultipleCol($question,$project_id,$multipleRecords,$study,$question_1,$topScoreMax,$indexQuestion,$index,$tooltipTextArray,$array_colors,$study_options_total){
         $multiple = 0;
         $multipleTop = 0;
         $multiple_not_applicable = 0;
         $multiple_missing = 0;
         $showLegendexMultiple = false;
         foreach ($multipleRecords as $multirecord){
-            if(!empty($multirecord[$study])) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
-                    $multiple += 1;
-                    if ($question == 1) {
-                        if (isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
-                            $multipleTop += 1;
-                        }
-                        if ($multirecord[$question_1] == "5" && $topScoreMax == 5) {
-                            $multiple_not_applicable += 1;
-                        }
-                    } else {
-                        if (isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
-                            $multipleTop += 1;
-                        }
+            if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
+                $multiple += 1;
+                if ($question == 1) {
+                    if (isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
+                        $multipleTop += 1;
                     }
-
-                    if ($multirecord[$question_1] == '' || !array_key_exists($question_1, $multirecord)) {
-                        $multiple_missing += 1;
+                    if ($multirecord[$question_1] == "5" && $topScoreMax == 5) {
+                        $multiple_not_applicable += 1;
                     }
+                } else {
+                    if (isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
+                        $multipleTop += 1;
+                    }
+                }
 
+                if ($multirecord[$question_1] == '' || !array_key_exists($question_1, $multirecord)) {
+                    $multiple_missing += 1;
                 }
             }
         }
@@ -581,29 +581,25 @@ class CronData
      * @param $multipleRecords
      * @return mixed
      */
-     public static function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords){
+     public static function getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $study_options_total){
         $graph = self::addZeros($graph, "multiple");
         $graph["total_records"]["multiple"] = 0;
         $total_questions = count($row_questions_1);
         foreach ($multipleRecords as $multirecord){
-            if(!empty($multirecord[$study])) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
-                    $graph["total_records"]["multiple"] += 1;
-                }
+            if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
+                $graph["total_records"]["multiple"] += 1;
             }
         }
 
         foreach ($multipleRecords as $multirecord){
             $num_questions_answered = 0;
-            if(!empty($multirecord[$study])) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord[$study], $study)) {
-                    foreach ($row_questions_1 as $indexQuestion => $question_1) {
-                        if ($multirecord[$question_1] != "") {
-                            $num_questions_answered++;
-                        }
+            if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
+                foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                    if ($multirecord[$question_1] != "") {
+                        $num_questions_answered++;
                     }
-                    $graph = self::calculateResponseRate($num_questions_answered, $total_questions, "multiple", $graph);
                 }
+                $graph = self::calculateResponseRate($num_questions_answered, $total_questions, "multiple", $graph);
             }
         }
 

@@ -70,13 +70,17 @@ class Crons
         # Increase time to run 3h to avoid the Maximum execution time of 7200 seconds exceeded error
         # !! ONLY do this if the cron is running at night
         $module->increaseProcessingMax(3);
-		
+
 		$r4Report = new R4Report($project_id,$recordIds);
 		
 		$multipleRecords = $r4Report->getProjectData();
 		$institutions = $r4Report->getInstitutionData();
-		
 		//$table_data = $r4Report->calculateCacheCronData();
+        $table_data = array();
+        $table_data['data'] = array();
+        $table_data['tooltip'] = array();
+        $table_data['legend'] = array();
+
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
         #QUESTION = 2 RESPONSE/COMPLETION RATES
@@ -212,6 +216,7 @@ class Crons
         $isnofiltercalculated = false;
         foreach ($array_study_1 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options_total = $study_options;
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -219,6 +224,7 @@ class Crons
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $array_colors = array();
                 $tooltipTextArray = array();
+                $tooltipTextArray[$indexQuestion] = array();
                 $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                 $topScoreMax = count($outcome_labels);
                 $missingOverall = 0;
@@ -232,7 +238,7 @@ class Crons
                 $showLegendNormal = $normalStudyCol[5];
 
                 #MISSING
-                $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds);
+                $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds, $study_options_total);
                 $tooltipTextArray = $missingCol[0];
                 $array_colors = $missingCol[1];
                 $missing_col = $missingCol[2];
@@ -252,7 +258,7 @@ class Crons
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
                 #MULTIPLE
                 if ($study == "rpps_s_q61") {
-                    $multipleCol = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors);
+                    $multipleCol = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors, $study_options_total);
                     $tooltipTextArray = $multipleCol[0];
                     $array_colors = $multipleCol[1];
                     $showLegendMultiple = $multipleCol[2];
@@ -309,6 +315,7 @@ class Crons
 
         foreach ($array_study_2 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options_total = $study_options;
             if ($study == "ethnicity") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -316,7 +323,7 @@ class Crons
             $graph = CronData::getMissingStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords);
             $graph = CronData::getTotalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $recordIds);
             if($study == "race"){
-                $graph = CronData::getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $recordIds);
+                $graph = CronData::getMultipleStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $multipleRecords, $recordIds, $study_options_total);
             }
             foreach ($row_questions_2 as $indexQuestion => $question_2) {
                 $array_colors = array();
@@ -387,6 +394,7 @@ class Crons
         }
         foreach ($array_study_3 as $study => $label) {
             $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options_total = $study_options;
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
@@ -397,6 +405,7 @@ class Crons
                 for ($i = $option[0]; $i < $option[1]+1; $i++) {
                     $array_colors = array();
                     $tooltipTextArray = array();
+                    $tooltipTextArray[$indexQuestion] = array();
                     $missingOverall = 0;
                     #NORMAL STUDY
                     $normalStudyCol = CronData::getNormalStudyCol($question, $project_id, $study_options, $study, "rpps_s_q" . $i, $conditionDate, "", $indexQuestion, $tooltipTextArray, $array_colors, "", $recordIds);
@@ -407,7 +416,7 @@ class Crons
                     $tooltipTextArray = $normalStudyCol[7];
 
                     #MISSING
-                    $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds);
+                    $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $tooltipTextArray, $array_colors, $index, "", $recordIds, $study_options_total);
                     $missing_col = $missingCol[2];
                     $showLegendMissing = $missingCol[3];
                     $array_colors = $missingCol[4];
@@ -425,7 +434,7 @@ class Crons
 
                     #MULTIPLE
                     if ($study == "rpps_s_q61") {
-                        $multiple = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $index, $tooltipTextArray, $array_colors);
+                        $multiple = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, "rpps_s_q" . $i, "", $indexQuestion, $index, $tooltipTextArray, $array_colors, $study_options_total);
                         $showLegendMultiple = $multiple[2];
                         $array_colors = $multiple[3];
                         $tooltipTextArray = $multiple[4];
@@ -478,6 +487,7 @@ class Crons
             }
             foreach ($array_study_number as $study => $label) {
                 $study_options = $module->getChoiceLabels($study, $project_id);
+                $study_options_total = $study_options;
                 if ($study == "ethnicity") {
                     array_push($study_options, ProjectData::getExtraColumTitle());
                 }
@@ -496,12 +506,12 @@ class Crons
 
                     $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
-                    $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    $graph = GraphData::getNormalStudyColGraph($question, $project_id, $study_options, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $study_options_total);
                     $topScoreMax = count($outcome_labels);
-                    $graph = GraphData::getMissingColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
-                    $graph = GraphData::getTotalColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                    $graph = GraphData::getMissingColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $study_options_total);
+                    $graph = GraphData::getTotalColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $study_options_total);
                     if ($study == "rpps_s_q61") {
-                        $graph = GraphData::getMultipleColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds);
+                        $graph = GraphData::getMultipleColGraph($question, $project_id, $study, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $study_options_total);
                     }
                 }
                 $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);

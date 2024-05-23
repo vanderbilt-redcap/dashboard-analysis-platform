@@ -152,6 +152,12 @@ class ProjectData
         return $row_questions_2;
     }
 
+    public static function getRowQuestionsParticipantPerceptionIs5()
+    {
+        $row_questions_1_is_5 = array(0 => "rpps_s_q68", 1 => "rpps_s_q23", 2 => "rpps_s_q25", 3 => "rpps_s_q69");
+        return $row_questions_1_is_5;
+    }
+
     public static function getAllInstitutions($multipleRecords){
         $array_institutions = [];
         foreach ($multipleRecords as $record){
@@ -321,17 +327,14 @@ class ProjectData
         return $total_count;
     }
 
-    public static function isMultiplesCheckbox($project_id, $data, $study, $option=''){
+    public static function isMultiplesCheckbox($project_id, $data, $study, $study_options_total, $option=''){
         if(getFieldType($study, $project_id) == "checkbox") {
             $count = 0;
-            foreach ($data as $index => $value) {
+            foreach ($study_options_total as $index => $value){
                 if ($data[$study . '___' . $index] == '1') {
                     $count++;
-                    if($option != 'none'){
-                        return false;
-                    }
                 }
-                if($count >= 2)
+                if($count >= 2 && $option != "none")
                     return true;
             }
             if($option == 'none' && $count ==  "0"){
@@ -339,6 +342,40 @@ class ProjectData
             }
         }
         return false;
+    }
+
+    public static function getREDCapLogicForMissingCheckboxes($study, $study_options_total, $operatorValue){
+        $filterLogic = "";
+        if(!empty($study_options_total) && is_array($study_options_total)) {
+            $last_index = array_key_last($study_options_total);
+            foreach ($study_options_total as $index => $value) {
+                if ($index == $last_index)
+                    $filterLogic .= "[" . $study . "(" . $index . ")] ".$operatorValue;
+                else
+                    $filterLogic .= "[" . $study . "(" . $index . ")] ".$operatorValue." AND ";
+            }
+        }
+        return $filterLogic;
+    }
+
+    public static function getCriticalQuestions1LogicForMissing($question_1){
+        $row_questions_1 = self::getRowQuestionsParticipantPerception();
+        $key = array_search($question_1, $row_questions_1);
+        unset($row_questions_1[$key]);
+
+        $logic = "AND (";
+
+        $last_question = count($row_questions_1);
+        $count = 1;
+        foreach ($row_questions_1 as $question){
+            if($count == $last_question){
+                $logic .= "[" . $question . "] != '')";
+            }else{
+                $logic .= "[" . $question . "] != '' OR ";
+            }
+            $count++;
+        }
+        return $logic;
     }
 }
 ?>
