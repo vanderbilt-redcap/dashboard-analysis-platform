@@ -25,14 +25,28 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
             // Only perform actions between 12am and 6am.
             return;
         }
+		$thisCron = $cronAttributes['cron_name'];
+		
+		## Old way of checking cron status, check to prevent re-sending on upgrade
         $lastRunSettingName = 'last-cron-run-time';
-        $lastRun = empty($this->getSystemSetting($lastRunSettingName)) ? $this->getSystemSetting($lastRunSettingName) : 0;
-        $hoursSinceLastRun = (time()-$lastRun)/60/60;
-        if($hoursSinceLastRun < $hourRange){
-            // We're already run recently
-            return;
-        }
-        // Perform cron actions here
+		$lastRun = (int)$this->getSystemSetting($lastRunSettingName);
+		$hoursSinceLastRun = (time()-$lastRun)/60/60;
+		if($hoursSinceLastRun < $hourRange){
+			// We're already run recently
+			return;
+		}
+		
+		$lastRunCronSettingName = 'last-cron-run-time-'.$thisCron;
+		$lastRunThisCron = (int)$this->getSystemSetting($lastRunCronSettingName);
+		$hoursSinceLastRun = (time()-$lastRunThisCron)/60/60;
+		if($hoursSinceLastRun < $hourRange){
+			// We're already run this cron recently
+			return;
+		}
+		
+		## Immediately log starting in case a second process spawns for this cron
+		$this->setSystemSetting($lastRunCronSettingName, time());
+		// Perform cron actions here
         foreach ($this->getProjectsWithModuleEnabled() as $project_id){
             try {
                 $stop_cron = $this->getProjectSetting('stop-cron',$project_id);
@@ -66,7 +80,6 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
                 \REDCap::email('datacore@vumc.org', 'datacore@vumc.org',"Cron Error", $e->getMessage());
             }
         }
-        $this->setSystemSetting($lastRunSettingName, time());
     }
 
     public function redcap_module_link_check_display($project_id, $link) {
