@@ -313,7 +313,8 @@ class ProjectData
                 }
             }
         }else{
-            $strJsonFileContents = file_get_contents($path.$filename);
+			$filepath = $module->getSafePath($path.$filename, $path);
+            $strJsonFileContents = file_get_contents($filepath);
             $graph = json_decode($strJsonFileContents, true);
         }
         return $graph;
