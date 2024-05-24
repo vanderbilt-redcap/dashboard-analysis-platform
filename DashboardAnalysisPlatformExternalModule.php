@@ -38,7 +38,7 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
 		
 		$lastRunCronSettingName = 'last-cron-run-time-'.$thisCron;
 		$lastRunThisCron = (int)$this->getSystemSetting($lastRunCronSettingName);
-		$hoursSinceLastRun = (time()-$lastRun)/60/60;
+		$hoursSinceLastRun = (time()-$lastRunThisCron)/60/60;
 		if($hoursSinceLastRun < $hourRange){
 			// We're already run this cron recently
 			return;
