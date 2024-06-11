@@ -343,6 +343,7 @@ class CronData
         $showLegendexMultiple = $percent_array[1];
         $tooltip = $responses . " responses, " . $multiple_missing . " missing";
 
+        $index = (int)$index;
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][$index+2] = $tooltip.", ".$multiple_not_applicable . " not applicable";
             $array_colors[$indexQuestion][$index+2] = $percent;
