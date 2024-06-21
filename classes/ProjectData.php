@@ -313,7 +313,7 @@ class ProjectData
                 }
             }
         }else{
-            $strJsonFileContents = file_get_contents($path.$filename);
+            $strJsonFileContents = file_get_contents(self::validateS3Url($path).$filename);
             $graph = json_decode($strJsonFileContents, true);
         }
         return $graph;
