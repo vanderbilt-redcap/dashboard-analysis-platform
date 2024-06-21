@@ -268,22 +268,10 @@ class ProjectData
         if(empty($path)){
             $path = null;
         }else {
-            $path = self::validateS3Url($path);
+            $path = $module->validateS3Url($path);
         }
 
         return $path;
-    }
-
-    public static function validateS3Url($url){
-        $parts = parse_url($url);
-        #TODO match the URLs prefixes in the array with the framework function once available
-        foreach([".s3.amazonaws.com"] as $suffix){
-            if(ends_with($parts['host'], $suffix)){
-                return $url;
-            }
-        }
-
-        throw new \Exception('Only certain domains are allowed');
     }
 
     public static function getFileData($module, $project_id, $filenametext, $report){
@@ -313,7 +301,7 @@ class ProjectData
                 }
             }
         }else{
-            $strJsonFileContents = file_get_contents($path.$filename);
+            $strJsonFileContents = file_get_contents($module->validateS3Url($path . $filename));
             $graph = json_decode($strJsonFileContents, true);
         }
         return $graph;
