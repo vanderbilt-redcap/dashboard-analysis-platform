@@ -101,5 +101,17 @@ class DashboardAnalysisPlatformExternalModule extends AbstractExternalModule
 
         \System::increaseMaxExecTime($hours * 3600);
     }
+
+    public function validateS3Url($url){
+        $parts = parse_url($url);
+        #TODO match the URLs prefixes in the array with the framework function once available
+        foreach([".s3.amazonaws.com"] as $suffix){
+            if(ends_with($parts['host'], $suffix)){
+                return $url;
+            }
+        }
+
+        throw new \Exception('Only certain domains are allowed');
+    }
 }
 ?>
