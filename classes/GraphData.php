@@ -253,18 +253,23 @@ class GraphData
                 $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
             }
         }
+        $responses_na = 0;
         if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
             $percent = 0;
         }else {
             $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
+            if($TotalRecordsGraph > $score_is_5O_overall_missing)
+                $responses_na = ($TotalRecordsGraph - $score_is_5O_overall_missing);
         }
         if($study == "rpps_s_q62" && $colType == 6) {
             $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($graph[$question][$study][$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
+            if($graph[$question][$study][$question_1][6][$type]["totalrecords"] > $graph[$question_1][6][$type]["is5"])
+                $responses_na = ($graph[$question][$study][$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]);
         }
         if($percent == "nan"){
             $percent = 0;
         }
-        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent;
+        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent.",na=".$responses_na;
 
         return $graph;
     }
