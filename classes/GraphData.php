@@ -269,7 +269,7 @@ class GraphData
         if($percent == "nan"){
             $percent = 0;
         }
-        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent.",na=".$responses_na;
+        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent.",n=".$responses_na;
 
         return $graph;
     }
