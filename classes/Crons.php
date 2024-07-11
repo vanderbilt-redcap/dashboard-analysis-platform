@@ -488,7 +488,7 @@ class Crons
             foreach ($array_study_number as $study => $label) {
                 $study_options = $module->getChoiceLabels($study, $project_id);
                 $study_options_total = $study_options;
-                if ($study == "ethnicity") {
+                if ($study == "ethnicity" || $study == "rpps_s_q62") {
                     array_push($study_options, ProjectData::getExtraColumTitle());
                 }
                 foreach ($question_number as $indexQuestion => $question_1) {
