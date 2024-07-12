@@ -19,9 +19,29 @@ $graph = ProjectData::getFileData($module, $project_id, "dashboard_cache_graph_f
 
 $chartgraph = array();
 if($graph != "" && is_array($graph)){
-    $chartgraph["results"]['month'][$question_1] = $graph[$question][$study]["results"]["month"][$question_1];
-    $chartgraph["results"]['quarter'][$question_1] = $graph[$question][$study]["results"]["quarter"][$question_1];
-    $chartgraph["results"]['year'][$question_1] = $graph[$question][$study]["results"]["year"][$question_1];
+    $responses_percent = array();
+    $responses_na = array();
+    $date_array = ["month","quarter", "year"];
+    foreach ($date_array as $date) {
+        $responses_percent[$date] = array();
+        $responses_na[$date] = array();
+        foreach ($graph[$question][$study]["results"][$date][$question_1] as $question_data => $data) {
+            $aux[$question_data] = array();
+            $aux_n[$question_data] = array();
+            foreach ($data as $index => $value) {
+                $percent_values = explode(",", $value);
+
+                $aux[$question_data][$index] = $percent_values[0];
+                if(empty($percent_values[0]))
+                    $aux[$question_data][$index] = null;
+                $aux_n[$question_data][$index] = $percent_values[1];
+            }
+        }
+        $responses_percent[$date] = $aux;
+        $responses_na[$date] = $aux_n;
+        $chartgraph["results"][$date][$question_1] = $responses_percent[$date];
+        $chartgraph["responses_na"][$date][$question_1] = $responses_na[$date];
+    }
     $chartgraph["labels"]['month'][$question_1] = $graph[$question][$study]["labels"]["month"][$question_1];
     $chartgraph["labels"]['quarter'][$question_1] = $graph[$question][$study]["labels"]["quarter"][$question_1];
     $chartgraph["labels"]['year'][$question_1] = $graph[$question][$study]["labels"]["year"][$question_1];

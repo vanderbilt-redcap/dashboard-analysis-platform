@@ -661,6 +661,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     });
                 }
                 dash_chart_big.update();
+                updateTooltipLabels(dash_chart_big, datagraph, timeline, question_1, study);
             });
 
             $(".infoChart").click(function(){
@@ -715,6 +716,8 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             };
                             dash_chart_big.data.datasets.push(ds1);
                             dash_chart_big.update();
+                            updateTooltipLabels(dash_chart_big, datagraph, "month", question_1, "total");
+
                             $('#quarter').removeClass('selected');
                             $('#year').removeClass('selected');
                             $('#month').addClass('selected');
@@ -758,8 +761,47 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 $('#'+timeline).addClass('selected');
                 dash_chart_big.update();
+                updateTooltipLabels(dash_chart_big, datagraph, timeline, question_1, study);
             });
         });
+
+        function updateTooltipLabels(dash_chart_big, datagraph, type, question_1, study){
+            //Update labels adding ", n=value" on tooltip hover
+            var datasetIndex = (dash_chart_big.data.datasets.length-1);
+            var newTooltipConfig = {
+                intersect: false,
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        var datasetLabel = data.datasets[tooltipItem.datasetIndex].label;
+                        var text_label = datasetLabel.toLowerCase();
+                        for (var index = 0; index < dash_chart_big.data.datasets.length; index++) {
+                                if(data.datasets[index].label == datasetLabel){
+                                    if(text_label.startsWith('no') && text_label.endsWith('reported')){
+                                        responsesIndex = "no";
+                                    }else if(text_label != "total"){
+                                        responsesIndex = index;
+                                    }else{
+                                        responsesIndex = "total";
+                                    }
+                                    datasetIndex = index;
+                                    break;
+                                }
+                        }
+                        var responses_na_array = Array.from(datagraph["responses_na"][type][question_1][responsesIndex]);
+                        var responses_na = responses_na_array[tooltipItem.index];
+                        if(responses_na == null || responses_na == ""){
+                            responses_na = "n=0";
+                        }
+
+                        var label = tooltipItem.yLabel + ", " + responses_na;
+                        return datasetLabel + ': ' + label;
+                    }
+                }
+            }
+
+            dash_chart_big.options.tooltips = newTooltipConfig;
+            dash_chart_big.update();
+        }
     </script>
     <!-- MODAL GRAPH-->
     <div class="modal fade" id="modal-big-graph" tabindex="-1" role="dialog" aria-labelledby="Codes">
