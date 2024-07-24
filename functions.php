@@ -45,6 +45,24 @@ function getParamOnType($field_name,$index,$project_id)
     return "[" . $field_name . "] = '" . $index . "'";
 }
 
+function getEthnicityCondition($colTypeMax,$study,$project_id)
+{
+    $condition = "";
+    $type = getFieldType($study, $project_id);
+    for($i=2;$i<$colTypeMax;$i++){
+        if($type == "checkbox"){
+            $condition .= "[" . $study . "(".$i.")] = '1'";
+        }else{
+            $condition .= "[" . $study . "] = '".$i."'";
+        }
+
+        if($i != ($colTypeMax-1)){
+            $condition .= " OR ";
+        }
+    }
+    return $condition;
+}
+
 function getFieldType($field_name,$project_id)
 {
     $Proj = new \Project($project_id);

@@ -210,7 +210,7 @@ class GraphData
             $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::createQuartersForYear($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
             $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::setQuarter($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
             $graph[$question][$study][$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
-            if ($study == "rpps_s_q62" && $studyCol > 1 && $studyCol < 6) {
+            if (($study == "rpps_s_q62" || $study == "ethnicity") && $studyCol > 1 && $studyCol < 6) {
                 $graph[$question][$study][$question_1][6]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
                 $graph[$question][$study][$question_1][6]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
                 $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = self::createQuartersForYear($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
@@ -240,14 +240,19 @@ class GraphData
         $condition = "";
         if($colType != "total"){
             $condition = " AND ".getParamOnType($study, $colType, $project_id);
+
+            #Ethnicity Case
+            if(($study == "rpps_s_q62" || $study == "ethnicity") && $colType == 6) {
+                $condition = " AND (". getEthnicityCondition($colType,$study,$project_id).")";
+            }
         }
-        $TotalRecordsGraph = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] <>''" . $conditionDate.$condition);
+        $TotalRecordsGraph = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] <> ''" . $conditionDate.$condition);
 
         $score_is_5O_overall_missing = 0;
         if($topScoreMax == 5) {
             $score_is_5O_overall_missing = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
         }
-        if($study == "rpps_s_q62"){
+        if($study == "rpps_s_q62" || $study == "ethnicity"){
             if($colType >1 && $colType < 6) {
                 $graph[$question][$study][$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
                 $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
@@ -260,11 +265,6 @@ class GraphData
             $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
             if($TotalRecordsGraph > $score_is_5O_overall_missing)
                 $responses_na = ($TotalRecordsGraph - $score_is_5O_overall_missing);
-        }
-        if($study == "rpps_s_q62" && $colType == 6) {
-            $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($graph[$question][$study][$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]) * 100), 0);
-            if($graph[$question][$study][$question_1][6][$type]["totalrecords"] > $graph[$question_1][6][$type]["is5"])
-                $responses_na = ($graph[$question][$study][$question_1][6][$type]["totalrecords"] - $graph[$question_1][6][$type]["is5"]);
         }
         if($percent == "nan"){
             $percent = 0;
