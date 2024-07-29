@@ -779,7 +779,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                     if(text_label.startsWith('no') && text_label.endsWith('reported')){
                                         responsesIndex = "no";
                                     }else if(text_label != "total"){
-                                        responsesIndex = data.datasets[index].id;
+                                        responsesIndex = study;
                                     }else{
                                         responsesIndex = "total";
                                     }
