@@ -107,7 +107,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $row_questions = ProjectData::getRowQuestions();
     $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
     $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
-    $study_options = $module->getChoiceLabels($study, $project_id);
+    $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
     if(!empty($study_options))
         ksort($study_options);
 

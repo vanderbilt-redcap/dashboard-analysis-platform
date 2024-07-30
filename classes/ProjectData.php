@@ -365,5 +365,20 @@ class ProjectData
         }
         return $logic;
     }
+
+    public static function getChoiceLabelsArray($module, $study, $project_id){
+        $type = getFieldType($study, $project_id);
+        $choicesById = [];
+        if($type == 'truefalse') {
+            $choicesById[0] = "False";
+            $choicesById[1] = "True";
+        } else if ($type == 'yesno') {
+            $choicesById[0] = "No";
+            $choicesById[1] = "Yes";
+        }else{
+            $choicesById = $module->getChoiceLabels($study, $project_id);
+        }
+        return  $choicesById;
+    }
 }
 ?>
