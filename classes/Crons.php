@@ -215,7 +215,7 @@ class Crons
         }
         $isnofiltercalculated = false;
         foreach ($array_study_1 as $study => $label) {
-            $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
@@ -244,7 +244,9 @@ class Crons
                 $missing_col = $missingCol[2];
                 $showLegendMissing = $missingCol[5];
 
-                #OVERALL COL MISSING
+                #OVERALL COL MISSING (TOTAL)
+                #Rearrange index to start at 1 to make sure 0 is used only for TOTAL column
+                $array_colors[$indexQuestion] = array_combine(range(1, count($array_colors[$indexQuestion])), array_values($array_colors[$indexQuestion]));
                 $totalCol = CronData::getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
@@ -314,7 +316,7 @@ class Crons
         }
 
         foreach ($array_study_2 as $study => $label) {
-            $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
             if ($study == "ethnicity") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
@@ -393,7 +395,7 @@ class Crons
             $count++;
         }
         foreach ($array_study_3 as $study => $label) {
-            $study_options = $module->getChoiceLabels($study, $project_id);
+            $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
@@ -486,7 +488,7 @@ class Crons
                 $count++;
             }
             foreach ($array_study_number as $study => $label) {
-                $study_options = $module->getChoiceLabels($study, $project_id);
+                $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
                 $study_options_total = $study_options;
                 if ($study == "ethnicity" || $study == "rpps_s_q62") {
                     array_push($study_options, ProjectData::getExtraColumTitle());

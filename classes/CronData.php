@@ -415,22 +415,9 @@ class CronData
             $condition = getParamOnType($study, $index,$project_id);
             #Etnicity Case
             if ($study == "ethnicity" && $index == count($study_options)) {
-                $condition = "";
-                $type = getFieldType($study, $project_id);
-                for($i=2;$i<count($study_options);$i++){
-                    if($type == "checkbox"){
-                        $condition .= "[" . $study . "(".$i.")] = '1'";
-                    }else{
-                        $condition .= "[" . $study . "] = '".$i."'";
-                    }
-
-                    if($i != (count($study_options)-1)){
-                        $condition .= " OR ";
-                    }
-                }
+                $condition = getEthnicityCondition(count($study_options),$study,$project_id);
             }
-	
-	
+
 			$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
 //            $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
             $total_records = count($allRecords);
