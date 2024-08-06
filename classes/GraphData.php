@@ -328,7 +328,7 @@ class GraphData
         foreach ($graph[$question][$study][$question_1][$colType]['graph_top_score_month'] as $date => $value) {
             $month = date("Y-m",(int)$date);
             $conditionDate = " AND (contains([survey_datetime], \"" . $month . "\"))";
-//            $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate,$recordIds);
+            $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate,$recordIds);
         }
         $current_year = date('Y');
         foreach ($graph[$question][$study][$question_1][$colType]['years'] as $year => $count){
@@ -347,7 +347,7 @@ class GraphData
             }
 
             for($quarter = 1; $quarter < 5; $quarter++) {
-//                $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_quarter',"Q".$quarter." ".$year,${"conditionDate".$quarter},$recordIds);
+                $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_quarter',"Q".$quarter." ".$year,${"conditionDate".$quarter},$recordIds);
             }
 
             #YEAR
