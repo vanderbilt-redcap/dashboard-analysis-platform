@@ -49,10 +49,16 @@ class GraphData
                     if($question == 1) {
                         if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                             $graph = self::addGraph($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
+                        }else{
+                            //ADD to the graph as 0
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
                         }
                     }else {
                         if(isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
                             $graph = self::addGraph($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
+                        }else{
+                            //ADD to the graph as 0
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
                         }
                     }
                 }
@@ -93,10 +99,16 @@ class GraphData
                     if ($question == 1) {
                         if (isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
+                        }else{
+                            //ADD to the graph as 0
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
                         }
                     } else {
                         if (isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1, $mrecord))) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
+                        }else{
+                            //ADD to the graph as 0
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
                         }
                     }
                 }
@@ -162,10 +174,16 @@ class GraphData
                     if ($question == 1) {
                         if (isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
+                        }else{
+                            //ADD to the graph as 0
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
                         }
                     } else {
                         if (isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
+                        }else{
+                            //ADD to the graph as 0
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
                         }
                     }
                 }
@@ -221,6 +239,32 @@ class GraphData
         return $graph;
     }
 
+    public static function addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$survey_datetime){
+        if($survey_datetime!= "") {
+            if (!in_array(date("Y", strtotime($survey_datetime)), $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'])) {
+                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] = 0;
+                $graph[$question][$study][$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
+            }
+
+            if(!in_array(strtotime(date("Y-m", strtotime($survey_datetime))),$graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']))
+                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))]  = 0;
+
+            #QUARTERS
+            $month = date("m",strtotime($survey_datetime));
+            $year = date("Y",strtotime($survey_datetime));
+            if($month <= 3 && !in_array("Q1 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])){
+                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q1 ".$year] = 0;
+            }else if($month > 3 && $month <= 6 && !in_array("Q2 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
+                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q2 ".$year] = 0;
+            }else if($month > 6 && $month <= 9 && !in_array("Q3 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
+                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q3 ".$year] = 0;
+            }else if($month > 9 && !in_array("Q4 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
+                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q4 " . $year] = 0;
+            }
+        }
+            return $graph;
+    }
+
     public static function addGraphResponseRate($num_questions_answered,$question, $total_questions, $index, $graph, $study, $survey_datetime){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
         if ($percent >= 0.8) {
@@ -266,6 +310,7 @@ class GraphData
             if($TotalRecordsGraph > $score_is_5O_overall_missing)
                 $responses_na = ($TotalRecordsGraph - $score_is_5O_overall_missing);
         }
+
         if($percent == "nan"){
             $percent = 0;
         }
@@ -283,7 +328,7 @@ class GraphData
         foreach ($graph[$question][$study][$question_1][$colType]['graph_top_score_month'] as $date => $value) {
             $month = date("Y-m",(int)$date);
             $conditionDate = " AND (contains([survey_datetime], \"" . $month . "\"))";
-            $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate,$recordIds);
+//            $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_month',$date,$conditionDate,$recordIds);
         }
         $current_year = date('Y');
         foreach ($graph[$question][$study][$question_1][$colType]['years'] as $year => $count){
@@ -302,7 +347,7 @@ class GraphData
             }
 
             for($quarter = 1; $quarter < 5; $quarter++) {
-                $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_quarter',"Q".$quarter." ".$year,${"conditionDate".$quarter},$recordIds);
+//                $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_quarter',"Q".$quarter." ".$year,${"conditionDate".$quarter},$recordIds);
             }
 
             #YEAR
