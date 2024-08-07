@@ -41,15 +41,12 @@ class GraphData
                 $graph[$question][$study][$question_1][$index]['years']= array();
             }
             $condition = getParamOnType($study,$index,$project_id);
-            if($question == 2){
-                $graph = self::generateResponseRateGraph($project_id, $question,$question_1,$study,$index,$condition.$conditionDate,$graph,$recordIds, $study_options_total);
-            }else{
-                $records = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
-                foreach ($records as $record){
-                    $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $index);
-                }
-                $graph = self::calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,$index,$topScoreMax,$condition,$recordIds);
-            }
+            $condition_array = array(
+                "question_1" => $condition.$conditionDate,
+                "question_2" => $condition.$conditionDate,
+                "percent" => $condition
+            );
+            $graph = self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, $index);
         }
         if ($study == "rpps_s_q62" || $study == "ethnicity") {
             $index_ethnicity = count($study_options);
@@ -76,18 +73,12 @@ class GraphData
      * @return mixed
      */
     public static function getMissingColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$study_options_total){
-        if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"no", "[" . $study."] = ''".$conditionDate, $graph,$recordIds, $study_options_total);
-        }else if($question == 1) {
-            $missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] != ''" . $conditionDate);
-            foreach ($missingRecords as $mrecord) {
-                if (($mrecord[$study] == '' && getFieldType($study, $project_id) != "checkbox") || (is_array($mrecord[$study]) && ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total,'none'))) {
-                    $graph = self::getTopScoresArray($graph, $mrecord, $question, $question_1, $study, $topScoreMax, "no");
-                }
-            }
-            $graph = self::calculatePercentageGraph($project_id, $graph, $question, $question_1, $study, "no", $topScoreMax, "[" . $study . "] = ''",$recordIds);
-        }
-        return $graph;
+        $condition_array = array(
+            "question_1" =>"[" . $question_1 . "] != ''" . $conditionDate,
+            "question_2" => "[" . $study."] = ''".$conditionDate,
+            "percent" => "[" . $study . "] = ''"
+        );
+        return self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total,"no");
     }
 
     /**
@@ -103,17 +94,12 @@ class GraphData
      * @return mixed
      */
     public static function getTotalColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$study_options_total){
-        if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study,"total", $conditionDate,  $graph, $recordIds, $study_options_total);
-        }else if($question == 1){
-            $recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] <> ''" . $conditionDate);
-            foreach ($recordsoverall as $recordo){
-                $graph = self::getTopScoresArray($graph, $recordo, $question, $question_1, $study, $topScoreMax, "total");
-            }
-            $graph = self::calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,"total",$topScoreMax,"",$recordIds);
-        }
-
-        return $graph;
+        $condition_array = array(
+            "question_1" => "[" . $question_1 . "] <> ''" .$conditionDate,
+            "question_2" => $conditionDate,
+            "percent" => ""
+        );
+        return self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total,"total");
     }
 
     /**
@@ -129,16 +115,30 @@ class GraphData
      * @return mixed
      */
     public static function getMultipleColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$study_options_total){
+        $condition_array = array(
+            "question_1" => $conditionDate,
+            "question_2" => $conditionDate,
+            "percent" => ""
+        );
+        return self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, "multiple");
+    }
+
+    public static function getPercent($question, $project_id, $study,$question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, $studyCol){
         if($question == 2){
-            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, "multiple", $conditionDate, $graph,$recordIds, $study_options_total);
+            $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, $studyCol, $condition_array["question_2"], $graph,$recordIds, $study_options_total);
         }else {
-            $multipleRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
-            foreach ($multipleRecords as $multirecord) {
-                if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
-                    $graph = self::getTopScoresArray($graph, $multirecord, $question, $question_1, $study, $topScoreMax, "multiple");
+            $records = R4Report::getR4Report($project_id)->applyFilterToData($condition_array["question_1"]);
+            foreach ($records as $record) {
+                if (
+                    ($studyCol == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))
+                    || $studyCol == "total"
+                    || ($studyCol == "no" && $record[$study] == '' && (getFieldType($study, $project_id) != "checkbox") || (is_array($record[$study]) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
+                    || ($studyCol != "multiple" && $studyCol != "total" && $studyCol != "no")
+                ) {
+                    $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol);
                 }
             }
-            $graph = self::calculatePercentageGraph($project_id, $graph, $question, $question_1, $study, "multiple", $topScoreMax, "",$recordIds);
+            $graph = self::calculatePercentageGraph($project_id, $graph, $question, $question_1, $study, $studyCol, $topScoreMax, $condition_array["percent"],$recordIds);
         }
         return $graph;
     }
