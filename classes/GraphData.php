@@ -46,21 +46,7 @@ class GraphData
             }else{
                 $records = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
                 foreach ($records as $record){
-                    if($question == 1) {
-                        if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
-                            $graph = self::addGraph($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
-                        }else{
-                            //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
-                        }
-                    }else {
-                        if(isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1,$record))) {
-                            $graph = self::addGraph($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
-                        }else{
-                            //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
-                        }
-                    }
+                    $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $index);
                 }
                 $graph = self::calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,$index,$topScoreMax,$condition,$recordIds);
             }
@@ -96,21 +82,7 @@ class GraphData
             $missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] != ''" . $conditionDate);
             foreach ($missingRecords as $mrecord) {
                 if (($mrecord[$study] == '' && getFieldType($study, $project_id) != "checkbox") || (is_array($mrecord[$study]) && ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total,'none'))) {
-                    if ($question == 1) {
-                        if (isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
-                            $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
-                        }else{
-                            //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"no",$mrecord['survey_datetime']);
-                        }
-                    } else {
-                        if (isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1, $mrecord))) {
-                            $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
-                        }else{
-                            //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"no",$mrecord['survey_datetime']);
-                        }
-                    }
+                    $graph = self::getTopScoresArray($graph, $mrecord, $question, $question_1, $study, $topScoreMax, "no");
                 }
             }
             $graph = self::calculatePercentageGraph($project_id, $graph, $question, $question_1, $study, "no", $topScoreMax, "[" . $study . "] = ''",$recordIds);
@@ -136,21 +108,7 @@ class GraphData
         }else if($question == 1){
             $recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[" . $question_1 . "] <> ''" . $conditionDate);
             foreach ($recordsoverall as $recordo){
-                if($question == 1){
-                    if (isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
-                        $graph = self::addGraph($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
-                    }else{
-                        //ADD to the graph as 0
-                        $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
-                    }
-                }else{
-                    if(isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
-                        $graph = self::addGraph($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
-                    }else{
-                        //ADD to the graph as 0
-                        $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
-                    }
-                }
+                $graph = self::getTopScoresArray($graph, $recordo, $question, $question_1, $study, $topScoreMax, "total");
             }
             $graph = self::calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,"total",$topScoreMax,"",$recordIds);
         }
@@ -177,24 +135,29 @@ class GraphData
             $multipleRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
             foreach ($multipleRecords as $multirecord) {
                 if (ProjectData::isMultiplesCheckbox($project_id, $multirecord, $study, $study_options_total)) {
-                    if ($question == 1) {
-                        if (isTopScore($multirecord[$question_1], $topScoreMax, $question_1) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
-                            $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
-                        }else{
-                            //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"multiple",$multirecord['survey_datetime']);
-                        }
-                    } else {
-                        if (isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
-                            $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
-                        }else{
-                            //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"multiple",$multirecord['survey_datetime']);
-                        }
-                    }
+                    $graph = self::getTopScoresArray($graph, $multirecord, $question, $question_1, $study, $topScoreMax, "multiple");
                 }
             }
             $graph = self::calculatePercentageGraph($project_id, $graph, $question, $question_1, $study, "multiple", $topScoreMax, "",$recordIds);
+        }
+        return $graph;
+    }
+
+    public static function getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol){
+        if ($question == 1) {
+            if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
+                $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
+            }else{
+                //ADD to the graph as 0
+                $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$record['survey_datetime']);
+            }
+        } else {
+            if (isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1, $record))) {
+                $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
+            }else{
+                //ADD to the graph as 0
+                $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$record['survey_datetime']);
+            }
         }
         return $graph;
     }
@@ -247,25 +210,27 @@ class GraphData
 
     public static function addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$survey_datetime){
         if($survey_datetime!= "") {
-            if (!in_array(date("Y", strtotime($survey_datetime)), $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'])) {
+            if (is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_year']) && !in_array(date("Y", strtotime($survey_datetime)), $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'])) {
                 $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] = 0;
                 $graph[$question][$study][$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
             }
 
-            if(!in_array(strtotime(date("Y-m", strtotime($survey_datetime))),$graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']))
+            if(is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']) && !in_array(strtotime(date("Y-m", strtotime($survey_datetime))),$graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']))
                 $graph[$question][$study][$question_1][$studyCol]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))]  = 0;
 
             #QUARTERS
             $month = date("m",strtotime($survey_datetime));
             $year = date("Y",strtotime($survey_datetime));
-            if($month <= 3 && !in_array("Q1 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])){
-                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q1 ".$year] = 0;
-            }else if($month > 3 && $month <= 6 && !in_array("Q2 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
-                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q2 ".$year] = 0;
-            }else if($month > 6 && $month <= 9 && !in_array("Q3 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
-                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q3 ".$year] = 0;
-            }else if($month > 9 && !in_array("Q4 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
-                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q4 " . $year] = 0;
+            if(is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_year']) && !in_array("Q1 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
+                if ($month <= 3) {
+                    $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q1 " . $year] = 0;
+                } else if ($month > 3 && $month <= 6) {
+                    $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q2 " . $year] = 0;
+                } else if ($month > 6 && $month <= 9) {
+                    $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q3 " . $year] = 0;
+                } else if ($month > 9) {
+                    $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q4 " . $year] = 0;
+                }
             }
         }
             return $graph;
