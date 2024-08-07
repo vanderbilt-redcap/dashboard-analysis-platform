@@ -282,7 +282,6 @@ class GraphData
             if($TotalRecordsGraph > $score_is_5O_overall_missing)
                 $responses_na = ($TotalRecordsGraph - $score_is_5O_overall_missing);
         }
-
         if($percent == "nan"){
             $percent = 0;
         }
