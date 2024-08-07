@@ -32,9 +32,10 @@ if($graph != "" && is_array($graph)){
                 $percent_values = explode(",", $value);
                 $aux[$question_data][$index] = $percent_values[0];
                 #If % = 0 & n=0 we add as null to break the line
-                $responses_na = explode("n=", $percent_values[1]);
-                if(empty($percent_values[0]) && $responses_na == "0")
+                $n_value = explode("n=", $percent_values[1])[1];
+                if (empty($percent_values[0]) && ($n_value == "0" || empty($n_value))) {
                     $aux[$question_data][$index] = null;
+                }
                 $aux_n[$question_data][$index] = $percent_values[1];
             }
         }
