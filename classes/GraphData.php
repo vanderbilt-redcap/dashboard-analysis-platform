@@ -101,14 +101,14 @@ class GraphData
                             $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
                         }else{
                             //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"no",$mrecord['survey_datetime']);
                         }
                     } else {
                         if (isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1, $mrecord))) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "no", $mrecord['survey_datetime']);
                         }else{
                             //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"no",$mrecord['survey_datetime']);
                         }
                     }
                 }
@@ -139,10 +139,16 @@ class GraphData
                 if($question == 1){
                     if (isTopScore($recordo[$question_1], $topScoreMax, $question_1)) {
                         $graph = self::addGraph($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
+                    }else{
+                        //ADD to the graph as 0
+                        $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
                     }
                 }else{
                     if(isTopScoreVeryOrSomewhatImportant($recordo[$question_1]) && ($recordo[$question_1] != '' || array_key_exists($question_1,$recordo))) {
                         $graph = self::addGraph($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
+                    }else{
+                        //ADD to the graph as 0
+                        $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"total",$recordo['survey_datetime']);
                     }
                 }
             }
@@ -176,14 +182,14 @@ class GraphData
                             $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
                         }else{
                             //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"multiple",$multirecord['survey_datetime']);
                         }
                     } else {
                         if (isTopScoreVeryOrSomewhatImportant($multirecord[$question_1]) && ($multirecord[$question_1] != '' || array_key_exists($question_1, $multirecord))) {
                             $graph = self::addGraph($graph, $question, $question_1, $study, "multiple", $multirecord['survey_datetime']);
                         }else{
                             //ADD to the graph as 0
-                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$index,$record['survey_datetime']);
+                            $graph = self::addGraphNoTops($graph,$question,$question_1,$study,"multiple",$multirecord['survey_datetime']);
                         }
                     }
                 }
