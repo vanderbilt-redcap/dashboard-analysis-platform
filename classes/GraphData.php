@@ -211,18 +211,18 @@ class GraphData
     public static function addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$survey_datetime){
         if($survey_datetime!= "") {
             #YEAR
-            if (is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_year']) && !in_array(date("Y", strtotime($survey_datetime)), $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'])) {
+            if (is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_year']) && !array_key_exists(date("Y", strtotime($survey_datetime)), $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'])) {
                 $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] = 0;
                 $graph[$question][$study][$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
             }
             #MONTH
-            if(is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']) && !in_array(strtotime(date("Y-m", strtotime($survey_datetime))),$graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']))
+            if(is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']) && !array_key_exists(strtotime(date("Y-m", strtotime($survey_datetime))),$graph[$question][$study][$question_1][$studyCol]['graph_top_score_month']))
                 $graph[$question][$study][$question_1][$studyCol]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))]  = 0;
 
             #QUARTERS
             $month = date("m",strtotime($survey_datetime));
             $year = date("Y",strtotime($survey_datetime));
-            if(is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_year']) && !in_array("Q1 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
+            if(is_array($graph[$question][$study][$question_1][$studyCol]['graph_top_score_year']) && !array_key_exists("Q1 ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])) {
                 if ($month <= 3) {
                     $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q1 " . $year] = 0;
                 } else if ($month > 3 && $month <= 6) {
@@ -285,6 +285,7 @@ class GraphData
         if($percent == "nan"){
             $percent = 0;
         }
+
         $graph[$question][$study][$question_1][$colType][$type][$date] = $percent.",n=".$responses_na;
 
         return $graph;
