@@ -230,6 +230,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $table .= '<option value="' . $sstudy . '" ' . $selected . '>Custom site value ' . $customf_counter . '</option>';
             }
             $customf_counter++;
+            $array_study[$sstudy] = $sstudy;
         }
     }
     $table .='</optgroup>';
