@@ -20,9 +20,9 @@ class Crons
     public static function runCacheCron($module,$project_id,$forceRun = false)
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
-        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
+//        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
             self::runCacheCronData($module, $project_id, $filename, null);
-        }
+//        }
     }
 
     /**
@@ -83,14 +83,14 @@ class Crons
 
         #QUESTION = 1 PARTICIPANT PERCEPTION
         $table_data = self::createQuestion_1($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-        #QUESTION = 2 RESPONSE/COMPLETION RATES
-        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
-        #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
-        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+//        #QUESTION = 2 RESPONSE/COMPLETION RATES
+//        $table_data = self::createQuestion_2($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
+//        #QUESTION = 3,4,5 REASONS FOR JOINING/LEAVING/STAYING IN A STUDY
+//        $table_data = self::createQuestion_3($module, $project_id, $multipleRecords, $institutions, $table_data, $recordIds);
 
         #CREATE & SAVE FILE
         $filereponame = "Dashboard Cache File";
-        self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
+//        self::saveRepositoryFile($module, $project_id, $filename, $table_data, $filereponame, "");
     }
 
     /**
@@ -202,17 +202,19 @@ class Crons
         $conditionDate = "";
         $max = 100;
 
-        $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
-
-        $count = 1;
-        foreach ($custom_filters as $index => $sstudy) {
-            if ($count < 11 && $sstudy != "") {
-                $array_study_1[$sstudy] = "Custom site value " . $count;
-            } else {
-                break;
-            }
-            $count++;
-        }
+//        $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
+//
+//        $count = 1;
+//        foreach ($custom_filters as $index => $sstudy) {
+//            if ($count < 11 && $sstudy != "") {
+//                $array_study_1[$sstudy] = $sstudy;
+//            } else {
+//                break;
+//            }
+//            $count++;
+//        }
+        $array_study_1 = [];
+        $array_study_1["randomization"] = "randomization";
         $isnofiltercalculated = false;
         foreach ($array_study_1 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
@@ -220,8 +222,10 @@ class Crons
             if ($study == "rpps_s_q62") {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
+            print_array($label);
             $showLegend = false;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                print_array($question_1);
                 $array_colors = array();
                 $tooltipTextArray = array();
                 $tooltipTextArray[$indexQuestion] = array();
@@ -236,6 +240,7 @@ class Crons
                 $missingOverall = $normalStudyCol[2];
                 $index = $normalStudyCol[4];
                 $showLegendNormal = $normalStudyCol[5];
+                print_array($array_colors);
 
                 #MISSING
                 $missingCol = CronData::getMissingCol($question, $project_id, $conditionDate, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors, $index, $max, $recordIds, $study_options_total);
@@ -243,6 +248,7 @@ class Crons
                 $array_colors = $missingCol[1];
                 $missing_col = $missingCol[2];
                 $showLegendMissing = $missingCol[5];
+                print_array($array_colors);
 
                 #OVERALL COL MISSING (TOTAL)
                 #Rearrange index to start at 1 to make sure 0 is used only for TOTAL column
@@ -255,7 +261,7 @@ class Crons
                     $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
                     $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
                 }
-
+                print_array($array_colors);
                 #INSTITUTIONS
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
                 #MULTIPLE
@@ -267,7 +273,7 @@ class Crons
                 }
                 $allData_array[$question][$study][$question_1] = $array_colors;
                 $allDataTooltip_array[$question][$study][$question_1] = $tooltipTextArray;
-
+                print_array($array_colors);
                 if ($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal) {
                     $showLegend = true;
                 }
