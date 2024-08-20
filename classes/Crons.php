@@ -248,7 +248,6 @@ class Crons
                 $array_colors = $missingCol[1];
                 $missing_col = $missingCol[2];
                 $showLegendMissing = $missingCol[5];
-                print_array($array_colors);
 
                 #OVERALL COL MISSING (TOTAL)
                 #Rearrange index to start at 1 to make sure 0 is used only for TOTAL column
@@ -261,7 +260,7 @@ class Crons
                     $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
                     $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
                 }
-                print_array($array_colors);
+
                 #INSTITUTIONS
                 $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
                 #MULTIPLE
@@ -273,7 +272,7 @@ class Crons
                 }
                 $allData_array[$question][$study][$question_1] = $array_colors;
                 $allDataTooltip_array[$question][$study][$question_1] = $tooltipTextArray;
-                print_array($array_colors);
+
                 if ($showLegendNormal || $showLegendMissing || $showLegendMultiple || $showLegendTotal) {
                     $showLegend = true;
                 }
