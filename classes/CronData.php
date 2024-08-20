@@ -34,7 +34,8 @@ class CronData
         $showLegend = false;
         print_array($study_options);
         foreach ($study_options as $index => $col_title) {
-            if ($study != "" && $index != "") {
+            print_array("index: ".$index);
+            if ($study !== "" && $index !== "") {
                 $condition = getParamOnType($study, $index, $project_id);
 
                 $total_records = ProjectData::getDataTotalCount($project_id, $recordIds, $condition." ".ProjectData::getCriticalQuestions1LogicForMissing($question_1));
@@ -81,7 +82,6 @@ class CronData
                 $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
                 print_array("**Percent: ".$percent);
                 print_array("indexQuestion: ".$indexQuestion);
-                print_array("index: ".$index);
                 if ($question == 1) {
                     $tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
                     $array_colors[$indexQuestion][$index] = $percent;
