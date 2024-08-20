@@ -32,6 +32,7 @@ class CronData
             "score5" => 0,
         );
         $showLegend = false;
+        print_array($study_options);
         foreach ($study_options as $index => $col_title) {
             if ($study != "" && $index != "") {
                 $condition = getParamOnType($study, $index, $project_id);
