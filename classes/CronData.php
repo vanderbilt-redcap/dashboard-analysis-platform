@@ -32,9 +32,7 @@ class CronData
             "score5" => 0,
         );
         $showLegend = false;
-        print_array($study_options);
         foreach ($study_options as $index => $col_title) {
-            print_array("index: ".$index);
             if ($study !== "" && $index !== "") {
                 $condition = getParamOnType($study, $index, $project_id);
 
@@ -80,8 +78,6 @@ class CronData
                 $percent = $percent_array[0];
                 $showLegend = $percent_array[1];
                 $tooltip = $responses . " responses, " . $missing_InfoLabel . " missing";
-                print_array("**Percent: ".$percent);
-                print_array("indexQuestion: ".$indexQuestion);
                 if ($question == 1) {
                     $tooltipTextArray[$indexQuestion][$index] = $tooltip . ", " . $score_is_5 . " not applicable";
                     $array_colors[$indexQuestion][$index] = $percent;
@@ -100,7 +96,6 @@ class CronData
                 }
             }
         }
-        print_array("Return value");
         $max_index = max(array_keys($study_options));
         if ($question == 1) {
             $aux = array(0 => $tooltipTextArray, 1 => $array_colors, 2 => $missingOverall, 3 => $max, 4 => $max_index, 5 => $showLegend);
