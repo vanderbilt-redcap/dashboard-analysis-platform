@@ -207,7 +207,7 @@ class Crons
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
             if ($count < 11 && $sstudy != "") {
-                $array_study_1[$sstudy] = "Custom site value " . $count;
+                $array_study_1[$sstudy] = $sstudy;
             } else {
                 break;
             }

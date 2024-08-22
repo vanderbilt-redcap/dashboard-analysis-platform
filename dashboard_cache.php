@@ -227,9 +227,10 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $selected = "selected";
             }
             if($customf_counter < 11) {
-                $table .= '<option value="' . $sstudy . '" ' . $selected . '>Custom site value ' . $customf_counter . '</option>';
+                $table .= '<option value="' . $sstudy . '" ' . $selected . '>' . $sstudy . '</option>';
             }
             $customf_counter++;
+            $array_study[$sstudy] = $sstudy;
         }
     }
     $table .='</optgroup>';
