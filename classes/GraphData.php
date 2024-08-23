@@ -123,7 +123,16 @@ class GraphData
         return self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, "multiple");
     }
 
-    public static function getPercent($question, $project_id, $study,$question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, $studyCol){
+    public static function getInstitutionsColGraph($question,$project_id,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds,$institution){
+        $condition_array = array(
+            "question_1" => "[" . $question_1 . "] <> ''" .$conditionDate,
+            "question_2" => $conditionDate,
+            "percent" => ""
+        );
+        return self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, null, $institution);
+    }
+
+    public static function getPercent($question, $project_id, $study ,$question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, $studyCol = null){
         if($question == 2){
             $graph = self::generateResponseRateGraph($project_id, $question, $question_1, $study, $studyCol, $condition_array["question_2"], $graph,$recordIds, $study_options_total);
         }else {
@@ -132,6 +141,7 @@ class GraphData
                 if (
                     ($studyCol == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))
                     || $studyCol == "total"
+                    || ($study == "institutions")
                     || ($studyCol == "no" && $record[$study] == '' && (getFieldType($study, $project_id) != "checkbox") || (is_array($record[$study]) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
                     || ($studyCol != "multiple" && $studyCol != "total" && $studyCol != "no")
                 ) {
@@ -144,6 +154,9 @@ class GraphData
     }
 
     public static function getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol){
+        if($study == "institutions")
+            $studyCol = trim(explode("-",$record['record_id'])[0]);
+
         if ($question == 1) {
             if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                 $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
@@ -234,27 +247,54 @@ class GraphData
                 }
             }
         }
-            return $graph;
+        return $graph;
     }
 
-    public static function addGraphResponseRate($num_questions_answered,$question, $total_questions, $index, $graph, $study, $survey_datetime){
+    public static function addGraphNoTopsData($graphData,$survey_datetime){
+        #YEAR
+        if (is_array($graphData['graph_top_score_year']) && !array_key_exists(date("Y", strtotime($survey_datetime)), $graphData['graph_top_score_year'])) {
+            $graphData['graph_top_score_year'][date("Y", strtotime($survey_datetime))] = 0;
+            $graphData['years'][date("Y", strtotime($survey_datetime))] = 0;
+        }
+        #MONTH
+        if(is_array($graphData['graph_top_score_month']) && !array_key_exists(strtotime(date("Y-m", strtotime($survey_datetime))),$graphData['graph_top_score_month']))
+            $graphData['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))]  = 0;
+
+        #QUARTERS
+        $month = date("m",strtotime($survey_datetime));
+        $year = date("Y",strtotime($survey_datetime));
+        if(is_array($graphData['graph_top_score_year']) && !array_key_exists("Q1 ".$year,$graphData['graph_top_score_quarter'])) {
+            if ($month <= 3) {
+                $graphData['graph_top_score_quarter']["Q1 " . $year] = 0;
+            } else if ($month > 3 && $month <= 6) {
+                $graphData['graph_top_score_quarter']["Q2 " . $year] = 0;
+            } else if ($month > 6 && $month <= 9) {
+                $graphData['graph_top_score_quarter']["Q3 " . $year] = 0;
+            } else if ($month > 9) {
+                $graphData['graph_top_score_quarter']["Q4 " . $year] = 0;
+            }
+        }
+        return $graphData;
+    }
+
+    public static function addGraphResponseRate($num_questions_answered,$question, $total_questions, $studyCol, $graph, $study, $survey_datetime, $institution){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
         if ($percent >= 0.8) {
-            $graph = self::addGraph($graph,$question,"complete",$study,$index,$survey_datetime);
+            $graph = self::addGraph($graph,$question,"complete",$study,$studyCol,$survey_datetime,$institution);
         } else if ($percent < 0.8 && $percent >= 0.5) {
-            $graph = self::addGraph($graph,$question,"partial",$study,$index,$survey_datetime);
+            $graph = self::addGraph($graph,$question,"partial",$study,$studyCol,$survey_datetime,$institution);
         } else if ($percent < 0.5 && $percent > 0) {
-            $graph = self::addGraph($graph,$question,"breakoffs",$study,$index,$survey_datetime);
+            $graph = self::addGraph($graph,$question,"breakoffs",$study,$studyCol,$survey_datetime,$institution);
         }
         if($percent > 0){
-            $graph = self::addGraph($graph,$question,"any",$study,$index,$survey_datetime);
+            $graph = self::addGraph($graph,$question,"any",$study,$studyCol,$survey_datetime,$institution);
         }
         return $graph;
     }
 
     public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate,$recordIds){
         $condition = "";
-        if($colType != "total"){
+        if($colType != "total" && $study != "institutions"){
             $condition = " AND ".getParamOnType($study, $colType, $project_id);
 
             #Ethnicity Case
@@ -346,7 +386,7 @@ class GraphData
         return $graph;
     }
 
-    public static function generateResponseRateGraph($project_id, $question, $question_1, $study, $type, $condition, $graph, $recordIds, $study_options_total){
+    public static function generateResponseRateGraph($project_id, $question, $question_1, $study, $studyCol, $condition, $graph, $recordIds, $study_options_total){
         $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
         $total_questions = count($row_questions_1);
         $data = $row_questions_1;
@@ -355,28 +395,37 @@ class GraphData
         array_push($data,"survey_datetime");
 
         $allRecords = R4Report::getR4Report($project_id)->applyFilterToData($condition);
-        $graph[$question][$study][$question_1]["total_records"][$type] = count($allRecords);
+        $graph[$question][$study][$question_1]["total_records"][$studyCol] = count($allRecords);
 
         foreach ($allRecords as $record) {
-            if ($type != "multiple" || ($type == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))) {
+            if ($studyCol != "multiple" || ($studyCol == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))) {
                 $num_questions_answered = 0;
                 foreach ($row_questions_1 as $indexQuestion => $question_2) {
                     if ($record[$question_2] != "") {
                         $num_questions_answered++;
                     }
                 }
-                $graph = self::addGraphResponseRate($num_questions_answered, $question, $total_questions, $type, $graph, $study, $record['survey_datetime']);
+                if($studyCol == "total")
+                    $institution = trim(explode("-",$record['record_id'])[0]);
+                else
+                    $institution = null;
+
+                $graph = self::addGraphResponseRate($num_questions_answered, $question, $total_questions, $studyCol, $graph, $study, $record['survey_datetime'], $institution);
             }
         }
-        $graph = self::calculatePercentageResponseRate($graph,$question, $question_1, $study,count($allRecords), $type);
+        $graph = self::calculatePercentageResponseRate($graph,$question, $question_1, $study,count($allRecords), $studyCol);
         return $graph;
     }
 
     public static function graphArrays($graph,$question,$study,$study_options){
-        if($study_options != null) {
+        if($study == "institutions"){
             $study_options_total = $study_options;
-            $study_options_total["no"] = "no";
-            $study_options_total["multiple"] = "multiple";
+        }else{
+            if($study_options != null) {
+                $study_options_total = $study_options;
+                $study_options_total["no"] = "no";
+                $study_options_total["multiple"] = "multiple";
+            }
         }
         $study_options_total["total"] = "total";
         foreach ($graph[$question][$study] as $question_1=>$single_graph){
@@ -446,6 +495,34 @@ class GraphData
         $labels = array("month" => $labels_month,"quarter" => $labels_quarter,"year" => $labels_year);
         $results = array("month" => $graph_top_score_month_values,"quarter" => $graph_top_score_quarter_values,"year" => $graph_top_score_year_values);
         return array("labels" => $labels,"results" => $results);
+    }
+
+    public static function createChartArray($graph, $question, $question_1, $study, $date, $aux, $aux_n){
+        foreach ($graph[$question][$study]["results"][$date][$question_1] as $question_data => $data) {
+            $aux[$question_data] = array();
+            $aux_n[$question_data] = array();
+            foreach ($data as $index => $value) {
+                $percent_values = explode(",", $value);
+                $aux[$question_data][$index] = $percent_values[0];
+                #If % = 0 & n=0 we add as null to break the line
+                $n_value = explode("n=", $percent_values[1])[1];
+                if (empty($percent_values[0]) && ($n_value == "0" || empty($n_value))) {
+                    $aux[$question_data][$index] = null;
+                }
+                $aux_n[$question_data][$index] = $percent_values[1];
+            }
+        }
+        if($study == "institutions"){
+            [$aux,$aux_n] = self::createChartArray($graph, $question, $question_1, "nofilter", $date, $aux, $aux_n);
+        }
+        return [$aux,$aux_n];
+    }
+
+    public static function createChartArrayLabels($graph, $question, $question_1, $study, $date_array, $chartgraph){
+        foreach ($date_array as $date) {
+            $chartgraph["labels"][$date][$question_1] = $graph[$question][$study]["labels"][$date][$question_1];
+        }
+        return $chartgraph;
     }
 }
 ?>

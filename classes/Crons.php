@@ -170,10 +170,11 @@ class Crons
         $module->increaseProcessingMax(3);
 
         $r4Report = new R4Report($project_id,$recordIds);
+        $institutions = $r4Report->getInstitutionData();
 
         #Create Calculations
         $chartgraph = array();
-        $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds);
+        $chartgraph = self::createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds,$institutions);
 
         #CREATE & SAVE FILE
         $filereponame = "Dashboard Cache Graph File";
@@ -206,7 +207,7 @@ class Crons
 
         $count = 1;
         foreach ($custom_filters as $index => $sstudy) {
-            if ($count < 11 && $sstudy != "") {
+            if ($count < ProjectData::MAX_CUSTOM_FILTERS && $sstudy != "") {
                 $array_study_1[$sstudy] = $sstudy;
             } else {
                 break;
@@ -471,7 +472,7 @@ class Crons
      * @param $recordIds
      * @return mixed
      */
-    public static function createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds){
+    public static function createGraphData($module,$project_id,$chartgraph,$custom_filters,$array_study_1,$row_questions_1,$array_study_2,$row_questions_2,$recordIds,$institutions){
         $conditionDate = "";
         $graph = array();
         for ($question = 1; $question < 3; $question++) {
@@ -480,7 +481,7 @@ class Crons
 
             $count = 1;
             foreach ($custom_filters as $index => $sstudy) {
-                if ($count < 11 && $sstudy != "") {
+                if ($count < ProjectData::MAX_CUSTOM_FILTERS && $sstudy != "") {
                     $array_study_number[$sstudy] = "Custom site value " . $count;
                 } else {
                     break;
@@ -519,6 +520,25 @@ class Crons
                 $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);
                 $chartgraph[$question]["nofilter"] = GraphData::graphArrays($graph, $question, $study, null);
             }
+            #INSTITUTIONS
+            $study_options_institutions = [];
+            foreach ($question_number as $indexQuestion => $question_1) {
+                foreach ($institutions as $institution => $institutionRecords) {
+                    $graph[$question]["institutions"][$question_1][$institution] = array();
+                    $graph[$question]["institutions"][$question_1][$institution]['graph_top_score_year'] = array();
+                    $graph[$question]["institutions"][$question_1][$institution]['graph_top_score_month'] = array();
+                    $graph[$question]["institutions"][$question_1][$institution]['graph_top_score_quarter'] = array();
+                    $graph[$question]["institutions"][$question_1][$institution]['years'] = array();
+                    $study_options_institutions[$institution] = $institution;
+
+                    $r4Report = new R4Report($project_id, array_keys($institutionRecords));
+//                    $r4Report = new R4Report($project_id, array_keys($institutionRecords), $r4Report, $institution);
+                    $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
+                    $topScoreMax = count($outcome_labels);
+                    $graph = GraphData::getInstitutionsColGraph($question, $project_id, "institutions", $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $institution);
+                }
+            }
+            $chartgraph[$question]["institutions"] = GraphData::graphArrays($graph, $question, "institutions", $study_options_institutions);
         }
         return $chartgraph;
     }

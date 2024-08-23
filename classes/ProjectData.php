@@ -4,6 +4,8 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
 class ProjectData
 {
+    const MAX_CUSTOM_FILTERS = 11;
+
     public static function getRandomIdentifier($length = 6) {
         $output = "";
         $startNum = pow(32,5) + 1;

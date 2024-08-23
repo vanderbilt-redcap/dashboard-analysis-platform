@@ -49,6 +49,11 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function __construct($projectId, $recordIds = []) {
+	    #TODO
+//	public function __construct($projectId, $recordIds = [], $r4Report = "", $institution = "") {
+//        if($institution !== "" && $r4Report !== "")
+//          $this->projectData = $r4Report->getInstitutionData($institution);
+
 		## Replace the cached version of this project's report with this one
 		self::$r4ReportObjects[$projectId] = $this;
 		

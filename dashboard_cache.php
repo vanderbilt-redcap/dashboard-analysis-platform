@@ -226,7 +226,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
             if ($sstudy === $_SESSION[$project_id . "_study"]) {
                 $selected = "selected";
             }
-            if($customf_counter < 11) {
+            if($customf_counter < ProjectData::MAX_CUSTOM_FILTERS) {
                 $table .= '<option value="' . $sstudy . '" ' . $selected . '>' . $sstudy . '</option>';
             }
             $customf_counter++;
@@ -674,7 +674,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $('#modal-big-graph-title').text(question_text);
                 $('#modal-spinner').modal('show');
 
-                if((studyOption == "nofilter" || studyOption == "bysite") && datagraph != "" && datagraph != undefined){
+                if((studyOption == "nofilter") && datagraph != "" && datagraph != undefined){
                     dash_chart_big.data.datasets.find((dataset, index) => {
                         if (dataset.id === "total") {
                             dash_chart_big.data.datasets.splice(index, 1);
@@ -845,6 +845,15 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 }
                                 ?>
                             </div>
+                        <?php } else if($study == "bysite"){
+                                echo "<div><input type='checkbox' value='no' class='category' text='Total' color='".$array_colors_graphs[0]."' checked> Total</div>";
+                                #INSTITUTIONS
+                                $i = 1;
+                                foreach ($institutions as $institution => $institutionRecords) {
+                                    echo "<div><input type='checkbox' value='".$institution."' class='category' text='".$institution."' color='".$array_colors_graphs[$i]."'> ".$institution."</div>";
+                                    $i++;
+                                }
+                         ?>
                         <?php } ?>
                     </div>
                 </div>
