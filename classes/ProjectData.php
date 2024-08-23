@@ -172,6 +172,17 @@ class ProjectData
         return $array_institutions;
     }
 
+    public static function getInstitutionProjectData($multipleRecords, $institutionName = ""){
+        $project_data_institutions = [];
+        foreach ($multipleRecords as $record){
+            $institution = trim(explode("-",$record['record_id'])[0]);
+            if($institutionName !== "" && $institutionName == $institution){
+                array_push($project_data_institutions, $record);
+            }
+        }
+        return $project_data_institutions;
+    }
+
     public static function getArrayStudyQuestion_1()
     {
         $array_study_1 = array(

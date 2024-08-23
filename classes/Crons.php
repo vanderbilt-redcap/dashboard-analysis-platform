@@ -531,8 +531,7 @@ class Crons
                     $graph[$question]["institutions"][$question_1][$institution]['years'] = array();
                     $study_options_institutions[$institution] = $institution;
 
-                    $r4Report = new R4Report($project_id, array_keys($institutionRecords));
-//                    $r4Report = new R4Report($project_id, array_keys($institutionRecords), $r4Report, $institution);
+                    R4Report::getR4Report($project_id)->setProjectDataInstitution($institution);
                     $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
                     $graph = GraphData::getInstitutionsColGraph($question, $project_id, "institutions", $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $institution);

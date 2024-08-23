@@ -16,6 +16,7 @@ class R4Report extends AbstractExternalModule
 	
 	private $projectMetadata;
 	private $projectData;
+	private $projectDataAll;
 	private $recordIdFlipped;
 	private $institutionList;
 	
@@ -49,11 +50,6 @@ class R4Report extends AbstractExternalModule
 	}
 	
 	public function __construct($projectId, $recordIds = []) {
-	    #TODO
-//	public function __construct($projectId, $recordIds = [], $r4Report = "", $institution = "") {
-//        if($institution !== "" && $r4Report !== "")
-//          $this->projectData = $r4Report->getInstitutionData($institution);
-
 		## Replace the cached version of this project's report with this one
 		self::$r4ReportObjects[$projectId] = $this;
 		
@@ -86,6 +82,15 @@ class R4Report extends AbstractExternalModule
 		}
 		return $this->institutionList;
 	}
+
+	public function setProjectDataInstitution($institution){
+        if(!isset($this->projectDataAll)){
+            $this->projectDataAll = $this->getProjectData();
+        }
+	    if($institution !== ""){
+            $this->projectData = ProjectData::getInstitutionProjectData($this->projectDataAll, $institution);
+        }
+    }
 	
 	public function getProjectMetadata() {
 		if(!isset($this->projectMetadata)) {
