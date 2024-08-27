@@ -846,7 +846,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 ?>
                             </div>
                         <?php } else if($study == "bysite"){
-                                echo "<div><input type='checkbox' value='no' class='category' text='Total' color='".$array_colors_graphs[0]."' checked> Total</div>";
+                                echo "<div><input type='checkbox' value='total' class='category' text='Total' color='".$array_colors_graphs[0]."' checked> Total</div>";
                                 #INSTITUTIONS
                                 $i = 1;
                                 foreach ($institutions as $institution => $institutionRecords) {
