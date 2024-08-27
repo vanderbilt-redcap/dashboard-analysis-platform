@@ -87,7 +87,7 @@ class R4Report extends AbstractExternalModule
         if(!isset($this->projectDataAll)){
             $this->projectDataAll = $this->getProjectData();
         }
-	    if($institution !== ""){
+        if($institution !== ""){
             $this->projectData = ProjectData::getInstitutionProjectData($this->projectDataAll, $institution);
         }else{
             $this->projectData = $this->projectDataAll;
