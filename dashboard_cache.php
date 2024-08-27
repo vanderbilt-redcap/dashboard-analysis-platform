@@ -21,6 +21,12 @@ $array_study = ProjectData::getStudyArray();
 
 $custom_filters = $module->getProjectSetting('custom-filter',$project_id);
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
+
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+//Crons::runGraphCron($module, $project_id,false);
 ?>
 <script>
     $( document ).ready(function() {

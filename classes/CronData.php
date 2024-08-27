@@ -170,6 +170,7 @@ class CronData
         $percent = $percent_array[0];
         $showLegendexMissing = $percent_array[1];
         $tooltip = $missing." responses, ".$missing_col." missing";
+
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][intval($index)+1] = $tooltip.", ".$score_is_5O_overall . " not applicable";
             $array_colors[$indexQuestion][intval($index)+1] = $percent;
@@ -275,6 +276,7 @@ class CronData
         $percent = $percent_array[0];
         $showLegendexTotal = $percent_array[1];
         $tooltip = $recordsoverallTotal . " responses, " . $missingOverall . " missing";
+
         if($question == 1) {
             $tooltipTextArray[$indexQuestion][0] = $tooltip.", ".$score_is_5O_overall_missing . " not applicable";
             $array_colors[$indexQuestion][0] = $percent;
