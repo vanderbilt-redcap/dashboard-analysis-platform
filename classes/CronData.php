@@ -371,6 +371,7 @@ class CronData
 			$showLegend = true;
 		}else{
 			$percent = $overall;
+			$showLegend = true;
 		}
 		return array(0=>$percent,1=>$showLegend);
 	}
@@ -626,6 +627,12 @@ class CronData
         }
         $tooltipTextArray = $questions . " out of " . $total_records . " records";
         return array(0=>$percent,1=>$tooltipTextArray);
+    }
+
+    public static function arrangeArrayIndexToStartBy1($array, $indexQuestion){
+        #Rearrange index to start at 1 to make sure 0 it's used only for TOTAL column
+        $array[$indexQuestion] = array_combine(range(1, count($array[$indexQuestion])), array_values($array[$indexQuestion]));
+        return $array;
     }
 }
 ?>

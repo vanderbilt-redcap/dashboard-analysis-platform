@@ -4,6 +4,8 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
 class ProjectData
 {
+    const MAX_CUSTOM_FILTERS = 11;
+
     public static function getRandomIdentifier($length = 6) {
         $output = "";
         $startNum = pow(32,5) + 1;
@@ -168,6 +170,17 @@ class ProjectData
 			$array_institutions[$institution][$record['record_id']] = 1;
         }
         return $array_institutions;
+    }
+
+    public static function getInstitutionProjectData($multipleRecords, $institutionName = ""){
+        $project_data_institutions = [];
+        foreach ($multipleRecords as $record){
+            $institution = trim(explode("-",$record['record_id'])[0]);
+            if($institutionName !== "" && $institutionName == $institution){
+                array_push($project_data_institutions, $record);
+            }
+        }
+        return $project_data_institutions;
     }
 
     public static function getArrayStudyQuestion_1()
@@ -351,17 +364,19 @@ class ProjectData
         $key = array_search($question_1, $row_questions_1);
         unset($row_questions_1[$key]);
 
-        $logic = "AND (";
-
-        $last_question = count($row_questions_1);
-        $count = 1;
-        foreach ($row_questions_1 as $question){
-            if($count == $last_question){
-                $logic .= "[" . $question . "] != '')";
-            }else{
-                $logic .= "[" . $question . "] != '' OR ";
+        $logic = "";
+        if(!empty($row_questions_1)) {
+            $logic = "AND (";
+            $last_question = count($row_questions_1);
+            $count = 1;
+            foreach ($row_questions_1 as $question) {
+                if ($count == $last_question) {
+                    $logic .= "[" . $question . "] != '')";
+                } else {
+                    $logic .= "[" . $question . "] != '' OR ";
+                }
+                $count++;
             }
-            $count++;
         }
         return $logic;
     }

@@ -16,6 +16,7 @@ class R4Report extends AbstractExternalModule
 	
 	private $projectMetadata;
 	private $projectData;
+	private $projectDataAll;
 	private $recordIdFlipped;
 	private $institutionList;
 	
@@ -81,6 +82,17 @@ class R4Report extends AbstractExternalModule
 		}
 		return $this->institutionList;
 	}
+
+	public function setProjectDataInstitution($institution = ""){
+        if(!isset($this->projectDataAll)){
+            $this->projectDataAll = $this->getProjectData();
+        }
+        if($institution !== ""){
+            $this->projectData = ProjectData::getInstitutionProjectData($this->projectDataAll, $institution);
+        }else{
+            $this->projectData = $this->projectDataAll;
+        }
+    }
 	
 	public function getProjectMetadata() {
 		if(!isset($this->projectMetadata)) {
