@@ -513,7 +513,7 @@ class GraphData
             }
         }
         if($study == ProjectData::INSTITUTIONS_ARRAY_KEY){
-            [$aux,$aux_n] = self::createChartArray($graph, $question, $question_1, "nofilter", $date, $aux, $aux_n);
+            [$aux,$aux_n] = self::createChartArray($graph, $question, $question_1, ProjectData::NOFILTER_ARRAY_KEY, $date, $aux, $aux_n);
         }
         return [$aux,$aux_n];
     }

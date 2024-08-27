@@ -4,6 +4,8 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 use ExternalModules\AbstractExternalModule;
 use ExternalModules\ExternalModules;
 
+require_once (dirname(__FILE__)."/classes/ProjectData.php");
+
 $project_id = $_GET['pid'];
 $selector = $_REQUEST['selector'];
 
@@ -35,7 +37,7 @@ if($selector == 2){
     );
 }
 
-$selector = '<option value="nofilter" selected>No filter</option>';
+$selector = '<option value="'.ProjectData::NOFILTER_ARRAY_KEY.'" selected>No filter</option>';
 $selector .= '<option value="bysite">By site</option>';
 foreach ($array_study as $index => $sstudy){
     if(strpos($index, 'header') !== false){

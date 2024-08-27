@@ -20,9 +20,9 @@ class Crons
     public static function runCacheCron($module,$project_id,$forceRun = false)
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
-        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
+//        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
             self::runCacheCronData($module, $project_id, $filename, null);
-        }
+//        }
     }
 
     /**
@@ -101,7 +101,7 @@ class Crons
     public static function runGraphCron($module,$project_id,$forceRun = false)
     {
         $filename = "dashboard_cache_graph_file_" . $project_id . ".txt";
-//        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
+        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
             $array_study_1 = ProjectData::getArrayStudyQuestion_1();
             $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
             $array_study_2 = ProjectData::getArrayStudyQuestion_2();
@@ -109,7 +109,7 @@ class Crons
             $custom_filters = $module->getProjectSetting('custom-filter', $project_id);
 
             self::runGraphCronData($module, $project_id, $filename, null, $custom_filters, $array_study_1, $row_questions_1, $array_study_2, $row_questions_2);
-//        }
+        }
     }
 
     /**
@@ -254,8 +254,8 @@ class Crons
                 $array_colors = $totalCol[1];
                 $showLegendTotal = $totalCol[2];
                 if(!$isnofiltercalculated) {
-                    $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
-                    $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
+                    $allData_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1] = $totalCol[1];
+                    $allDataTooltip_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1] = $totalCol[0];
                 }
 
                 #INSTITUTIONS
@@ -333,8 +333,8 @@ class Crons
                 $array_colors = array();
                 $tooltipTextArray = array();
                 $total = CronData::getResponseRate($graph[$question_2]["total"], $graph["total_records"]["total"]);
-                $allData_array[$question]["nofilter"][$question_2][0] = $total[0];
-                $allDataTooltip_array[$question]["nofilter"][$question_2][0] = $total[1];
+                $allData_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] = $total[0];
+                $allDataTooltip_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] = $total[1];
                 array_push($array_colors, $total[0]);
                 array_push($tooltipTextArray, $total[1]);
 
@@ -432,8 +432,8 @@ class Crons
                     $showLegendTotal = $totalCol[2];
                     $array_colors = $totalCol[3];
                     $tooltipTextArray = $totalCol[4];
-                    $allData_array[$question]["nofilter"]["rpps_s_q" . $i] = $totalCol[3];
-                    $allDataTooltip_array[$question]["nofilter"]["rpps_s_q" . $i] = $totalCol[4];
+                    $allData_array[$question][ProjectData::NOFILTER_ARRAY_KEY]["rpps_s_q" . $i] = $totalCol[3];
+                    $allDataTooltip_array[$question][ProjectData::NOFILTER_ARRAY_KEY]["rpps_s_q" . $i] = $totalCol[4];
                     $allData_array[$question][ProjectData::INSTITUTIONS_ARRAY_KEY]["rpps_s_q" . $i] = $totalCol[5];
 
                     #MULTIPLE
@@ -519,7 +519,7 @@ class Crons
                     }
                 }
                 $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);
-                $chartgraph[$question]["nofilter"] = GraphData::graphArrays($graph, $question, $study, null);
+                $chartgraph[$question][ProjectData::NOFILTER_ARRAY_KEY] = GraphData::graphArrays($graph, $question, $study, null);
             }
             #INSTITUTIONS
             $study_options_institutions = [];

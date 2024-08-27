@@ -6,6 +6,7 @@ class ProjectData
 {
     const MAX_CUSTOM_FILTERS = 11;
     const INSTITUTIONS_ARRAY_KEY = "institutions";
+    const NOFILTER_ARRAY_KEY = "nofilter";
 
     public static function getRandomIdentifier($length = 6) {
         $output = "";

@@ -34,7 +34,7 @@ if($graph != "" && is_array($graph)){
         $chartgraph["responses_na"][$date][$question_1] = $responses_na[$date];
     }
     if($study == ProjectData::INSTITUTIONS_ARRAY_KEY){
-        $study = "nofilter";
+        $study = ProjectData::NOFILTER_ARRAY_KEY;
     }
     $chartgraph = GraphData::createChartArrayLabels($graph, $question, $question_1, $study, $date_array, $chartgraph);
 }

@@ -449,8 +449,8 @@ class R4Report extends AbstractExternalModule
 		foreach($this->surveyPercentages as $study => $studyDetails) {
 			foreach($studyDetails as $survey => $surveyDetails) {
 				if(array_key_exists($study,ProjectData::getArrayStudyQuestion_1())) {
-					$alldata_array["nofilter"][$study][$survey] = $surveyDetails;
-					$allDataTooptip_array["nofilter"][$study][$survey] = $this->tooltipTextArray[$study][$survey];
+					$alldata_array[ProjectData::NOFILTER_ARRAY_KEY][$study][$survey] = $surveyDetails;
+					$allDataTooptip_array[ProjectData::NOFILTER_ARRAY_KEY][$study][$survey] = $this->tooltipTextArray[$study][$survey];
 				}
 				else {
 					$alldata_array[$study][$survey] = $surveyDetails;
