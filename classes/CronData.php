@@ -371,7 +371,7 @@ class CronData
 			$showLegend = true;
 		}else{
 			$percent = $overall;
-            $showLegend = true;
+			$showLegend = true;
 		}
 		return array(0=>$percent,1=>$showLegend);
 	}
