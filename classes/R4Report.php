@@ -464,7 +464,7 @@ class R4Report extends AbstractExternalModule
 					if($surveyIndex === false) {
 						$surveyIndex = array_search($survey, ProjectData::getRowQuestionsResponseRate());
 					}
-					$allData_array[$study]["institutions"][$surveyIndex][$institution] = $surveyDetails;
+					$allData_array[$study][ProjectData::INSTITUTIONS_ARRAY_KEY][$surveyIndex][$institution] = $surveyDetails;
 				}
 			}
 		}

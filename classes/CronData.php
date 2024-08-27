@@ -517,7 +517,7 @@ class CronData
         $total_questions = count($row_questions_1);
         $graph["total_records"]["total"] = $total_records;
         $array_institutions = array();
-        $graph["institutions"] = array();
+        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY] = array();
 
         foreach($institutions as $institution => $institutionRecords) {
             $array_institutions[$institution]['any'] = 0;
@@ -525,17 +525,17 @@ class CronData
             $array_institutions[$institution]['partial'] = 0;
             $array_institutions[$institution]['breakoffs'] = 0;
             $array_institutions[$institution]['total_records'] = 0;
-            $graph["institutions"][$institution] = array();
-            $graph["institutions"][$institution]['any'] = 0;
-            $graph["institutions"][$institution]['complete'] = 0;
-            $graph["institutions"][$institution]['partial'] = 0;
-            $graph["institutions"][$institution]['breakoffs'] = 0;
-            $graph["institutions"][$institution]['total_records'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution] = array();
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['any'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['complete'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['partial'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['breakoffs'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['total_records'] = 0;
             foreach ($allRecords as $record) {
                 $institution_record = trim(explode("-",$record['record_id'])[0]);
                 if($institution_record == $institution){
                     $array_institutions[$institution]['total_records'] += 1;
-                    $graph["institutions"][$institution]['total_records'] += 1;
+                    $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['total_records'] += 1;
                     $num_questions_answered = 0;
                     foreach ($row_questions_1 as $indexQuestion => $question_1) {
                         if ($record[$question_1] !== "") {
@@ -544,14 +544,14 @@ class CronData
                     }
                     $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
                     if ($percent >= 0.8) {
-                        $graph["institutions"][$institution]["complete"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["complete"]++;
                     } else if ($percent < 0.8 && $percent >= 0.5) {
-                        $graph["institutions"][$institution]["partial"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["partial"]++;
                     } else if ($percent < 0.5 && $percent > 0) {
-                        $graph["institutions"][$institution]["breakoffs"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["breakoffs"]++;
                     }
                     if($percent > 0){
-                        $graph["institutions"][$institution]["any"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["any"]++;
                     }
                 }
             }

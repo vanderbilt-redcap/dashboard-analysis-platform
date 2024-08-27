@@ -5,6 +5,7 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 class ProjectData
 {
     const MAX_CUSTOM_FILTERS = 11;
+    const INSTITUTIONS_ARRAY_KEY = "institutions";
 
     public static function getRandomIdentifier($length = 6) {
         $output = "";
@@ -247,12 +248,8 @@ class ProjectData
                 $val = '4';
             }
 			$records = R4Report::getR4Report($project_id)->applyFilterToData($condition." AND [".$question."] = ".$val);
-//            $records = \REDCap::getData($project_id, 'json-array', $recordIds, null, 'record_id', null, false, false, false,
-//                $condition." AND [".$question."] = ".$val);
         }else if($topScoreMax == 11){
 			$records = R4Report::getR4Report($project_id)->applyFilterToData($condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
-//            $records = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false,
-//                $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
         }
 
         $numberQuestions = 0;
@@ -322,7 +319,6 @@ class ProjectData
 
     public static function getDataTotalCount($project_id, $recordIds, $condition, $params="record_id"){
 		$RecordSet = R4Report::getR4Report($project_id)->applyFilterToData($condition);
-//        $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, array($params), null, null, false, false, false, $condition);
         $total_count = count($RecordSet);
         unset($RecordSet);
         return $total_count;

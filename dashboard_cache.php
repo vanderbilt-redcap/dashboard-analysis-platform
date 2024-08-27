@@ -21,6 +21,7 @@ $array_study = ProjectData::getStudyArray();
 
 $custom_filters = $module->getProjectSetting('custom-filter',$project_id);
 $array_colors_graphs = array(0=>"337ab7",1=>"F8BD7F",2=>"EF3054",3=>"43AA8B",4=>"BD93D8",5=>"3F386B",6=>"A23F47",7=>"DE7CBC",8=>"CA3C25",9=>"B3DEE2");
+//Crons::runGraphCron($module, $project_id,false);
 ?>
 <script>
     $( document ).ready(function() {
@@ -349,21 +350,21 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         if($study == "bysite") {
                             #INSTITUTIONS
                             foreach ($institutions as $institution => $institutionRecords) {
-                                if (($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] != "0") {
+                                if (($dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] != "0") {
                                     $color = "#c4c4c4";
                                     $showLegendNoFilter = true;
                                 } else {
-                                    if (strpos($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution], '*')) {
+                                    if (strpos($dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution], '*')) {
                                         $showLegendNoFilter = true;
                                     }
-                                    $percent = ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] / ($max)) * 100;
+                                    $percent = ($dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] / ($max)) * 100;
                                     $color = GetColorFromRedYellowGreenGradient($percent);
                                 }
                                 $extraSpace100 = '';
-                                if ($dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] == "100 *") {
+                                if ($dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] == "100 *") {
                                     $extraSpace100 = " extraSpace100";
                                 }
-                                $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel' . $extraSpace100 . '" style="cursor:default !important">' . $dash_array['data'][$question]["institutions"][$question_1][$indexQuestion][0][$institution] . '</div></td>';
+                                $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="extraInfoLabel' . $extraSpace100 . '" style="cursor:default !important">' . $dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] . '</div></td>';
                             }
                         }
                         $table .= '</tr>';

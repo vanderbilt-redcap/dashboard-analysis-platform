@@ -141,7 +141,7 @@ class GraphData
                 if (
                     ($studyCol == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))
                     || $studyCol == "total"
-                    || ($study == "institutions")
+                    || ($study == ProjectData::INSTITUTIONS_ARRAY_KEY)
                     || ($studyCol == "no" && $record[$study] == '' && (getFieldType($study, $project_id) != "checkbox") || (is_array($record[$study]) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
                     || ($studyCol != "multiple" && $studyCol != "total" && $studyCol != "no")
                 ) {
@@ -154,7 +154,7 @@ class GraphData
     }
 
     public static function getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol){
-        if($study == "institutions")
+        if($study == ProjectData::INSTITUTIONS_ARRAY_KEY)
             $studyCol = trim(explode("-",$record['record_id'])[0]);
 
         if ($question == 1) {
@@ -294,7 +294,7 @@ class GraphData
 
     public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate,$recordIds){
         $condition = "";
-        if($colType != "total" && $study != "institutions"){
+        if($colType != "total" && $study != ProjectData::INSTITUTIONS_ARRAY_KEY){
             $condition = " AND ".getParamOnType($study, $colType, $project_id);
 
             #Ethnicity Case
@@ -418,7 +418,7 @@ class GraphData
     }
 
     public static function graphArrays($graph,$question,$study,$study_options){
-        if($study == "institutions"){
+        if($study == ProjectData::INSTITUTIONS_ARRAY_KEY){
             $study_options_total = $study_options;
         }else{
             if($study_options != null) {
@@ -512,7 +512,7 @@ class GraphData
                 $aux_n[$question_data][$index] = $percent_values[1];
             }
         }
-        if($study == "institutions"){
+        if($study == ProjectData::INSTITUTIONS_ARRAY_KEY){
             [$aux,$aux_n] = self::createChartArray($graph, $question, $question_1, "nofilter", $date, $aux, $aux_n);
         }
         return [$aux,$aux_n];
