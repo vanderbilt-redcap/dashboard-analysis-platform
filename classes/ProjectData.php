@@ -364,17 +364,19 @@ class ProjectData
         $key = array_search($question_1, $row_questions_1);
         unset($row_questions_1[$key]);
 
-        $logic = "AND (";
-
-        $last_question = count($row_questions_1);
-        $count = 1;
-        foreach ($row_questions_1 as $question){
-            if($count == $last_question){
-                $logic .= "[" . $question . "] != '')";
-            }else{
-                $logic .= "[" . $question . "] != '' OR ";
+        $logic = "";
+        if(!empty($row_questions_1)) {
+            $logic = "AND (";
+            $last_question = count($row_questions_1);
+            $count = 1;
+            foreach ($row_questions_1 as $question) {
+                if ($count == $last_question) {
+                    $logic .= "[" . $question . "] != '')";
+                } else {
+                    $logic .= "[" . $question . "] != '' OR ";
+                }
+                $count++;
             }
-            $count++;
         }
         return $logic;
     }

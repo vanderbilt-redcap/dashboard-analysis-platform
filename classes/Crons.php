@@ -246,8 +246,9 @@ class Crons
                 $showLegendMissing = $missingCol[5];
 
                 #OVERALL COL MISSING (TOTAL)
-                #Rearrange index to start at 1 to make sure 0 is used only for TOTAL column
-                $array_colors[$indexQuestion] = array_combine(range(1, count($array_colors[$indexQuestion])), array_values($array_colors[$indexQuestion]));
+                $array_colors = CronData::arrangeArrayIndexToStartBy1($array_colors, $indexQuestion);
+                $tooltipTextArray = CronData::arrangeArrayIndexToStartBy1($tooltipTextArray, $indexQuestion);
+                $array_colors = CronData::arrangeArrayIndexToStartBy1($array_colors, $indexQuestion);
                 $totalCol = CronData::getTotalCol($question, $project_id, $question_1, $conditionDate, $topScoreMax, $indexQuestion, $tooltipTextArray, $array_colors,$institutions, $recordIds);
                 $tooltipTextArray = $totalCol[0];
                 $array_colors = $totalCol[1];
@@ -538,6 +539,7 @@ class Crons
                 }
             }
             $chartgraph[$question]["institutions"] = GraphData::graphArrays($graph, $question, "institutions", $study_options_institutions);
+            R4Report::getR4Report($project_id)->setProjectDataInstitution();
         }
         return $chartgraph;
     }

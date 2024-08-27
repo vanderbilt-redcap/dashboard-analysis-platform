@@ -83,12 +83,14 @@ class R4Report extends AbstractExternalModule
 		return $this->institutionList;
 	}
 
-	public function setProjectDataInstitution($institution){
+	public function setProjectDataInstitution($institution = ""){
         if(!isset($this->projectDataAll)){
             $this->projectDataAll = $this->getProjectData();
         }
 	    if($institution !== ""){
             $this->projectData = ProjectData::getInstitutionProjectData($this->projectDataAll, $institution);
+        }else{
+            $this->projectData = $this->projectDataAll;
         }
     }
 	
