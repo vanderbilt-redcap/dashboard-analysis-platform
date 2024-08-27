@@ -305,7 +305,6 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
 
     #LOAD THE FILE
     $dash_array = ProjectData::getFileData($module, $project_id, "dashboard_cache_file_", $report);
-//    print_array($dash_array['tooltip'][1]['randomization']['rpps_s_q57']);
     $showLegendNoFilter = false;
     if($dash_array != "" && is_array($dash_array)){
         $max = 100;
