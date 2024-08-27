@@ -20,9 +20,9 @@ class Crons
     public static function runCacheCron($module,$project_id,$forceRun = false)
     {
         $filename = "dashboard_cache_file_" . $project_id . ".txt";
-//        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
+        if(!self::doesFileAlreadyExist($module, $project_id, $filename) || $forceRun) {
             self::runCacheCronData($module, $project_id, $filename, null);
-//        }
+        }
     }
 
     /**
