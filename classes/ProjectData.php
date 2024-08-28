@@ -7,6 +7,7 @@ class ProjectData
     const MAX_CUSTOM_FILTERS = 11;
     const INSTITUTIONS_ARRAY_KEY = "institutions";
     const NOFILTER_ARRAY_KEY = "nofilter";
+    const BYSITE_ARRAY_KEY = "bysite";
     const ETHNICITY_VAR1 = "rpps_s_q62";
     const ETHNICITY_VAR2 = "ethnicity";
 

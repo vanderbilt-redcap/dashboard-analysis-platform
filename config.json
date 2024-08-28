@@ -60,6 +60,11 @@
       "type": "checkbox"
     },
     {
+      "key": "display-graph-by-site",
+      "name": "Display graphs for sites.<br><em>Sites are designed by any values before a hyphen \"-\" in the record_id</em>",
+      "type": "checkbox"
+    },
+    {
       "key": "banner",
       "name": "Add text that will diplay at the top of the page as a banner.",
       "type": "textarea"

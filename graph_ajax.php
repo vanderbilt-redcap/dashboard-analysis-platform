@@ -6,9 +6,10 @@ use ExternalModules\ExternalModules;
 
 include_once ("functions.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
+require_once (dirname(__FILE__)."/classes/ProjectData.php");
 
 $question_1 = $_REQUEST['question_1'];
-$study = ($_REQUEST['study'] != "bysite") ? $_REQUEST['study'] : ProjectData::INSTITUTIONS_ARRAY_KEY;
+$study = ($_REQUEST['study'] != ProjectData::BYSITE_ARRAY_KEY) ? $_REQUEST['study'] : ProjectData::INSTITUTIONS_ARRAY_KEY;
 $studyOption = $_REQUEST['studyOption'];
 $report = $_REQUEST['report'];
 $question = $_REQUEST['question'];

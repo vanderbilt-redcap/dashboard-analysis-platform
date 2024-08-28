@@ -7,6 +7,7 @@ require_once (dirname(__FILE__)."/classes/Crons.php");
 $project_id = (int)$_GET['pid'];
 $report = htmlentities($_GET['report'],ENT_QUOTES);
 $banner = $module->getProjectSetting('banner',$project_id);
+$display_graph_by_site = $module->getProjectSetting('display-graph-by-site',$project_id);
 include_once "reports.php";
 
 if(($_SESSION[$project_id . "_startDate"] == "" || $_SESSION[$project_id . "_startDate"] == "") || (empty($_GET['dash']) || !empty($_GET['dash'])) && !ProjectData::startTest($_GET['dash'], '', '', $_SESSION[$project_id."_dash_timestamp"])){
@@ -190,13 +191,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         <select class="form-control" id="study">';
         if($study == ProjectData::NOFILTER_ARRAY_KEY) {
             $table .= '<option value="'.ProjectData::NOFILTER_ARRAY_KEY.'" selected>No filter</option>
-                       <option value="bysite">By site</option>';
-        }else if($study == "bysite") {
+                       <option value="'.ProjectData::BYSITE_ARRAY_KEY.'">By site</option>';
+        }else if($study == ProjectData::BYSITE_ARRAY_KEY) {
             $table .= '<option value="'.ProjectData::NOFILTER_ARRAY_KEY.'">No filter</option>
-                       <option value="bysite" selected>By site</option>';
+                       <option value="'.ProjectData::BYSITE_ARRAY_KEY.'" selected>By site</option>';
         }else{
             $table .= '<option value="'.ProjectData::NOFILTER_ARRAY_KEY.'">No filter</option>
-                       <option value="bysite">By site</option>';
+                       <option value="'.ProjectData::BYSITE_ARRAY_KEY.'">By site</option>';
         }
 
     foreach ($array_study as $index => $sstudy){
@@ -254,7 +255,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 }
                 $table .= '<th class="dal_task ' . $class . '" ' . $attribute . '><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
             }
-        }else if ($study == "bysite") {
+        }else if ($study == ProjectData::BYSITE_ARRAY_KEY) {
             foreach ($institutions as $institution => $institutionRecords){
                 $table .=  '<th class="dal_task"><div style="width: 197.719px;"><span>'.$institution.'</span></div></th>';
             }
@@ -263,7 +264,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>' . $col_title . '</span></div></th>';
             }
         }
-        if($study != "bysite") {
+        if($study != ProjectData::BYSITE_ARRAY_KEY) {
             $table .= '<th class="dal_task"><div style="width: 197.719px;"><span>NO ' . strtoupper($array_study[$study]) . ' REPORTED</span></div></th>';
         }
         if ($study == "rpps_s_q61" || $study == "race") {
@@ -309,18 +310,22 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     if($dash_array != "" && is_array($dash_array)){
         $max = 100;
         if ($question == 1) {
-            if($dash_array['data'][$question][$study] != "" || $study == "bysite"){
+            if($dash_array['data'][$question][$study] != "" || $study == ProjectData::BYSITE_ARRAY_KEY){
                 if($study == "rpps_s_q61") {
                     $extras = 3;
                 }
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                    if(($study == ProjectData::BYSITE_ARRAY_KEY && $display_graph_by_site) || $study != ProjectData::BYSITE_ARRAY_KEY){
+                        $show_graph = ' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i>';
+                    }
+
                     #PRINT RESULTS
                     $question_popover_content = returnTopScoresLabels($question_1,$module->getChoiceLabels($question_1, $project_id));
                     $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" title="Field: ['.$question_1.']" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
-                    $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i></td>';
+                    $table .= '<tr><td class="question">'.$module->getFieldLabel($question_1).$question_popover_info.$show_graph.'</td>';
 
                     $study_aux = $study;
-                    if($study == "bysite") {
+                    if($study == ProjectData::BYSITE_ARRAY_KEY) {
                         $study_aux = ProjectData::NOFILTER_ARRAY_KEY;
                     }
 
@@ -329,7 +334,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     if(!empty($dash_array['tooltip'][$question][$study_aux][$question_1][$indexQuestion]))
                     ksort($dash_array['tooltip'][$question][$study_aux][$question_1][$indexQuestion]);
 
-                    if($study == ProjectData::NOFILTER_ARRAY_KEY || $study == "bysite"){
+                    if($study == ProjectData::NOFILTER_ARRAY_KEY || $study == ProjectData::BYSITE_ARRAY_KEY){
                         if (($dash_array['data'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1][$indexQuestion][0] == "-" || $dash_array['data'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1][$indexQuestion][0] == "x") && $dash_array['data'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1][$indexQuestion][0] != "0") {
                             $color = "#c4c4c4";
                             $showLegendNoFilter = true;
@@ -346,7 +351,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                         }
                         $table .= '<td style="background-color:' . $color . '" class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel' . $extraSpace100 . '" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1][$indexQuestion][0] . '">' . $dash_array['data'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1][$indexQuestion][0] . '</div></td>';
 
-                        if($study == "bysite") {
+                        if($study == ProjectData::BYSITE_ARRAY_KEY) {
                             #INSTITUTIONS
                             foreach ($institutions as $institution => $institutionRecords) {
                                 if (($dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] == "-" || $dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] == "x") && $dash_array['data'][$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$indexQuestion][0][$institution] != "0") {
@@ -416,7 +421,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                 $question_popover_info = ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="right" title="'.ucfirst($question_2).' Response" data-content="'.$question_popover_content.'"><i class="fas fa-info-circle fa-fw infoIcon" aria-hidden="true"></i></a>';
                 $table .= '<tr><td class="question">'.ucfirst($question_2)." response ".$question_popover_info.' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_2.'" indexQuestion="'.$indexQuestion.'"></i></td>';
 
-                if($study == ProjectData::NOFILTER_ARRAY_KEY || $study == "bysite"){
+                if($study == ProjectData::NOFILTER_ARRAY_KEY || $study == ProjectData::BYSITE_ARRAY_KEY){
                     if($dash_array['data'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] == "100 *"){
                         $extraSpace100 = " extraSpace100";
                     }
@@ -425,7 +430,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     }
                     $table .= '<td class="' . $class . '" ' . $attribute . '><div class="red-tooltip extraInfoLabel'.$extraSpace100.'" data-toggle="tooltip" data-html="true" title="' . $dash_array['tooltip'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] . '">' . $dash_array['data'][$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] . '</div></td>';
 
-                    if($study == "bysite") {
+                    if($study == ProjectData::BYSITE_ARRAY_KEY) {
                         #INSTITUTIONS
                         foreach ($institutions as $institution => $institutionRecords) {
                             if ($dash_array['data'][$question]['institutions'][$question_2][$institution][0] == "100 *") {
@@ -827,7 +832,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 <td id='year'>Year</td>
                             </tr>
                         </table>
-                        <?php if(!empty($study_options) && $study != ProjectData::NOFILTER_ARRAY_KEY && $study != "bysite"){ ?>
+                        <?php if(!empty($study_options) && $study != ProjectData::NOFILTER_ARRAY_KEY && $study != ProjectData::BYSITE_ARRAY_KEY){ ?>
                             <div class='table table-bordered'>
                                 <div><input type="checkbox" value="total" class="category" text="Total" color="<?=$array_colors_graphs[0]?>" checked> Total</div>
                                 <?php
@@ -845,7 +850,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                                 }
                                 ?>
                             </div>
-                        <?php } else if($study == "bysite"){
+                        <?php } else if($study == ProjectData::BYSITE_ARRAY_KEY){
                                 echo "<div><input type='checkbox' value='total' class='category' text='Total' color='".$array_colors_graphs[0]."' checked> Total</div>";
                                 #INSTITUTIONS
                                 $i = 1;
