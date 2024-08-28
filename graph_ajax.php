@@ -8,7 +8,7 @@ include_once ("functions.php");
 require_once (dirname(__FILE__)."/classes/GraphData.php");
 
 $question_1 = $_REQUEST['question_1'];
-$study = ($_REQUEST['study'] != "bysite") ? $_REQUEST['study'] : "institutions";
+$study = ($_REQUEST['study'] != "bysite") ? $_REQUEST['study'] : ProjectData::INSTITUTIONS_ARRAY_KEY;
 $studyOption = $_REQUEST['studyOption'];
 $report = $_REQUEST['report'];
 $question = $_REQUEST['question'];
@@ -33,8 +33,8 @@ if($graph != "" && is_array($graph)){
         $chartgraph["results"][$date][$question_1] = $responses_percent[$date];
         $chartgraph["responses_na"][$date][$question_1] = $responses_na[$date];
     }
-    if($study == "institutions"){
-        $study = "nofilter";
+    if($study == ProjectData::INSTITUTIONS_ARRAY_KEY){
+        $study = ProjectData::NOFILTER_ARRAY_KEY;
     }
     $chartgraph = GraphData::createChartArrayLabels($graph, $question, $question_1, $study, $date_array, $chartgraph);
 }

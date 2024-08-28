@@ -5,6 +5,10 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 class ProjectData
 {
     const MAX_CUSTOM_FILTERS = 11;
+    const INSTITUTIONS_ARRAY_KEY = "institutions";
+    const NOFILTER_ARRAY_KEY = "nofilter";
+    const ETHNICITY_VAR1 = "rpps_s_q62";
+    const ETHNICITY_VAR2 = "ethnicity";
 
     public static function getRandomIdentifier($length = 6) {
         $output = "";
@@ -133,8 +137,20 @@ class ProjectData
 
     public static function getRowQuestionsParticipantPerception()
     {
-        $row_questions_1 = array(13 => "rpps_s_q57", 0 => "rpps_s_q1", 1 => "rpps_s_q17", 2 => "rpps_s_q18", 3 => "rpps_s_q19", 4 => "rpps_s_q20", 5 => "rpps_s_q21",
-            6 => "rpps_s_q68", 7 => "rpps_s_q22", 8 => "rpps_s_q23", 9 => "rpps_s_q24", 10 => "rpps_s_q25", 11 => "rpps_s_q69",
+        $row_questions_1 = array(
+            13 => "rpps_s_q57",
+            0 => "rpps_s_q1",
+            1 => "rpps_s_q17",
+            2 => "rpps_s_q18",
+            3 => "rpps_s_q19",
+            4 => "rpps_s_q20",
+            5 => "rpps_s_q21",
+            6 => "rpps_s_q68",
+            7 => "rpps_s_q22",
+            8 => "rpps_s_q23",
+            9 => "rpps_s_q24",
+            10 => "rpps_s_q25",
+            11 => "rpps_s_q69",
             12 => "rpps_s_q67");
         return $row_questions_1;
     }
@@ -247,12 +263,8 @@ class ProjectData
                 $val = '4';
             }
 			$records = R4Report::getR4Report($project_id)->applyFilterToData($condition." AND [".$question."] = ".$val);
-//            $records = \REDCap::getData($project_id, 'json-array', $recordIds, null, 'record_id', null, false, false, false,
-//                $condition." AND [".$question."] = ".$val);
         }else if($topScoreMax == 11){
 			$records = R4Report::getR4Report($project_id)->applyFilterToData($condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
-//            $records = \REDCap::getData($project_id, 'json-array', $recordIds, 'record_id', null, null, false, false, false,
-//                $condition." AND ([".$question."] = '9' OR [".$question."] = '10')");
         }
 
         $numberQuestions = 0;
@@ -322,7 +334,6 @@ class ProjectData
 
     public static function getDataTotalCount($project_id, $recordIds, $condition, $params="record_id"){
 		$RecordSet = R4Report::getR4Report($project_id)->applyFilterToData($condition);
-//        $RecordSet = \REDCap::getData($project_id, 'json-array', $recordIds, array($params), null, null, false, false, false, $condition);
         $total_count = count($RecordSet);
         unset($RecordSet);
         return $total_count;
@@ -394,6 +405,13 @@ class ProjectData
             $choicesById = $module->getChoiceLabels($study, $project_id);
         }
         return  $choicesById;
+    }
+
+    public static function isEthnicityVar($study){
+        if($study == self::ETHNICITY_VAR1 || $study == self::ETHNICITY_VAR2){
+            return true;
+        }
+        return false;
     }
 }
 ?>

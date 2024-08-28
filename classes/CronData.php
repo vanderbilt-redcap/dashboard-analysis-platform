@@ -57,7 +57,7 @@ class CronData
                 $responses = $total_records - $missing_InfoLabel;
 
                 #Etnicity Case
-                if ($study == "rpps_s_q62") {
+                if (ProjectData::isEthnicityVar($study)) {
                     if ($index > 1 && $index < 6) {
                         $study_62_array['topscore'] += $topScoreFound;
                         $study_62_array['totalcount'] += $total_records;
@@ -88,7 +88,7 @@ class CronData
                     }
                     $attibute = "";
                     $class = "";
-                    if ($study == "rpps_s_q62" && $index > 1 && $index < 6) {
+                    if (ProjectData::isEthnicityVar($study) && $index > 1 && $index < 6) {
                         $class = "hide";
                         $attibute = "etnicity = '1'";
                     }
@@ -200,7 +200,6 @@ class CronData
      */
      public static function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$institutions,$recordIds){
 		$recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] <> ''".$conditionDate);
-        //$recordsoverall = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
         $recordsoverallTotal = count($recordsoverall);
         $topScoreFoundO = 0;
         $showLegendexTotal = false;
@@ -234,7 +233,6 @@ class CronData
         unset($recordsoverall);
 	
 		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] = '5'".$conditionDate);
-//        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
         $score_is_5O_overall_missing = 0;
         foreach($missingRecords as $misRecord){
             if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
@@ -247,7 +245,6 @@ class CronData
 
         $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
 		$missingRecordsNoFilter = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] = ''".$conditionDate);
-//        $missingRecordsNoFilter = \REDCap::getData($project_id, 'json-array', $recordIds, $row_questions_1, null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
         $missingOverall = 0;
         foreach($missingRecordsNoFilter as $misRecordNF) {
             foreach ($row_questions_1 as $questionNF){
@@ -414,12 +411,11 @@ class CronData
         foreach ($study_options as $index => $col_title) {
             $condition = getParamOnType($study, $index,$project_id);
             #Etnicity Case
-            if ($study == "ethnicity" && $index == count($study_options)) {
+            if (ProjectData::isEthnicityVar($study) && $index == count($study_options)) {
                 $condition = getEthnicityCondition(count($study_options),$study,$project_id);
             }
 
 			$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
-//            $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
             $total_records = count($allRecords);
             $total_questions = count($row_questions_1);
             $graph["total_records"][$index] = $total_records;
@@ -512,12 +508,11 @@ class CronData
         $data = $row_questions_1;
         array_push($data, "record_id");
 		$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
-//        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, $data, null, null, false, false, false, $conditionDate);
         $total_records = count($allRecords);
         $total_questions = count($row_questions_1);
         $graph["total_records"]["total"] = $total_records;
         $array_institutions = array();
-        $graph["institutions"] = array();
+        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY] = array();
 
         foreach($institutions as $institution => $institutionRecords) {
             $array_institutions[$institution]['any'] = 0;
@@ -525,17 +520,17 @@ class CronData
             $array_institutions[$institution]['partial'] = 0;
             $array_institutions[$institution]['breakoffs'] = 0;
             $array_institutions[$institution]['total_records'] = 0;
-            $graph["institutions"][$institution] = array();
-            $graph["institutions"][$institution]['any'] = 0;
-            $graph["institutions"][$institution]['complete'] = 0;
-            $graph["institutions"][$institution]['partial'] = 0;
-            $graph["institutions"][$institution]['breakoffs'] = 0;
-            $graph["institutions"][$institution]['total_records'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution] = array();
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['any'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['complete'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['partial'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['breakoffs'] = 0;
+            $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['total_records'] = 0;
             foreach ($allRecords as $record) {
                 $institution_record = trim(explode("-",$record['record_id'])[0]);
                 if($institution_record == $institution){
                     $array_institutions[$institution]['total_records'] += 1;
-                    $graph["institutions"][$institution]['total_records'] += 1;
+                    $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['total_records'] += 1;
                     $num_questions_answered = 0;
                     foreach ($row_questions_1 as $indexQuestion => $question_1) {
                         if ($record[$question_1] !== "") {
@@ -544,14 +539,14 @@ class CronData
                     }
                     $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
                     if ($percent >= 0.8) {
-                        $graph["institutions"][$institution]["complete"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["complete"]++;
                     } else if ($percent < 0.8 && $percent >= 0.5) {
-                        $graph["institutions"][$institution]["partial"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["partial"]++;
                     } else if ($percent < 0.5 && $percent > 0) {
-                        $graph["institutions"][$institution]["breakoffs"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["breakoffs"]++;
                     }
                     if($percent > 0){
-                        $graph["institutions"][$institution]["any"]++;
+                        $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["any"]++;
                     }
                 }
             }

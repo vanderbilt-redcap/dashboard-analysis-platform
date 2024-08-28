@@ -127,7 +127,7 @@ class R4Report extends AbstractExternalModule
 	public function getFieldChoices($fieldName) {
 		if(!array_key_exists($fieldName,$this->cachedFieldOptions)) {
 			$study_options = $this->getChoiceLabels($fieldName, $this->projectId);
-			if ($fieldName == "rpps_s_q62") {
+			if (ProjectData::isEthnicityVar($fieldName)) {
 				array_push($study_options, ProjectData::getExtraColumTitle());
 			}
 			
@@ -449,8 +449,8 @@ class R4Report extends AbstractExternalModule
 		foreach($this->surveyPercentages as $study => $studyDetails) {
 			foreach($studyDetails as $survey => $surveyDetails) {
 				if(array_key_exists($study,ProjectData::getArrayStudyQuestion_1())) {
-					$alldata_array["nofilter"][$study][$survey] = $surveyDetails;
-					$allDataTooptip_array["nofilter"][$study][$survey] = $this->tooltipTextArray[$study][$survey];
+					$alldata_array[ProjectData::NOFILTER_ARRAY_KEY][$study][$survey] = $surveyDetails;
+					$allDataTooptip_array[ProjectData::NOFILTER_ARRAY_KEY][$study][$survey] = $this->tooltipTextArray[$study][$survey];
 				}
 				else {
 					$alldata_array[$study][$survey] = $surveyDetails;
@@ -464,7 +464,7 @@ class R4Report extends AbstractExternalModule
 					if($surveyIndex === false) {
 						$surveyIndex = array_search($survey, ProjectData::getRowQuestionsResponseRate());
 					}
-					$allData_array[$study]["institutions"][$surveyIndex][$institution] = $surveyDetails;
+					$allData_array[$study][ProjectData::INSTITUTIONS_ARRAY_KEY][$surveyIndex][$institution] = $surveyDetails;
 				}
 			}
 		}

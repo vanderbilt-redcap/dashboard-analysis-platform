@@ -218,7 +218,7 @@ class Crons
         foreach ($array_study_1 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
-            if ($study == "rpps_s_q62") {
+            if (ProjectData::isEthnicityVar($study)) {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             $showLegend = false;
@@ -254,12 +254,12 @@ class Crons
                 $array_colors = $totalCol[1];
                 $showLegendTotal = $totalCol[2];
                 if(!$isnofiltercalculated) {
-                    $allData_array[$question]["nofilter"][$question_1] = $totalCol[1];
-                    $allDataTooltip_array[$question]["nofilter"][$question_1] = $totalCol[0];
+                    $allData_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1] = $totalCol[1];
+                    $allDataTooltip_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_1] = $totalCol[0];
                 }
 
                 #INSTITUTIONS
-                $allData_array[$question]["institutions"][$question_1] = $totalCol[3];
+                $allData_array[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1] = $totalCol[3];
                 #MULTIPLE
                 if ($study == "rpps_s_q61") {
                     $multipleCol = CronData::getMultipleCol($question, $project_id, $multipleRecords, $study, $question_1, $topScoreMax, $indexQuestion, $index, $tooltipTextArray, $array_colors, $study_options_total);
@@ -312,15 +312,15 @@ class Crons
         $graph = CronData::getTotalStudyInstitutionColRate($project_id, $conditionDate, $row_questions_1, $institutions, $graph, $recordIds);
         foreach ($row_questions_2 as $indexQuestion => $question_2) {
             foreach ($institutions as $institution => $institutionRecords) {
-                $totalInstitution = CronData::getResponseRate($graph["institutions"][$institution][$question_2], $graph["institutions"][$institution]["total_records"]);
-                $allData_array[$question]["institutions"][$question_2][$institution][0] = $totalInstitution[0];
+                $totalInstitution = CronData::getResponseRate($graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution][$question_2], $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]["total_records"]);
+                $allData_array[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_2][$institution][0] = $totalInstitution[0];
             }
         }
 
         foreach ($array_study_2 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
-            if ($study == "ethnicity") {
+            if (ProjectData::isEthnicityVar($study)) {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             $graph = CronData::getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options, $recordIds);
@@ -333,8 +333,8 @@ class Crons
                 $array_colors = array();
                 $tooltipTextArray = array();
                 $total = CronData::getResponseRate($graph[$question_2]["total"], $graph["total_records"]["total"]);
-                $allData_array[$question]["nofilter"][$question_2][0] = $total[0];
-                $allDataTooltip_array[$question]["nofilter"][$question_2][0] = $total[1];
+                $allData_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] = $total[0];
+                $allDataTooltip_array[$question][ProjectData::NOFILTER_ARRAY_KEY][$question_2][0] = $total[1];
                 array_push($array_colors, $total[0]);
                 array_push($tooltipTextArray, $total[1]);
 
@@ -399,7 +399,7 @@ class Crons
         foreach ($array_study_3 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
-            if ($study == "rpps_s_q62") {
+            if (ProjectData::isEthnicityVar($study)) {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             for ($question = 3; $question < 6; $question++) {
@@ -432,9 +432,9 @@ class Crons
                     $showLegendTotal = $totalCol[2];
                     $array_colors = $totalCol[3];
                     $tooltipTextArray = $totalCol[4];
-                    $allData_array[$question]["nofilter"]["rpps_s_q" . $i] = $totalCol[3];
-                    $allDataTooltip_array[$question]["nofilter"]["rpps_s_q" . $i] = $totalCol[4];
-                    $allData_array[$question]["institutions"]["rpps_s_q" . $i] = $totalCol[5];
+                    $allData_array[$question][ProjectData::NOFILTER_ARRAY_KEY]["rpps_s_q" . $i] = $totalCol[3];
+                    $allDataTooltip_array[$question][ProjectData::NOFILTER_ARRAY_KEY]["rpps_s_q" . $i] = $totalCol[4];
+                    $allData_array[$question][ProjectData::INSTITUTIONS_ARRAY_KEY]["rpps_s_q" . $i] = $totalCol[5];
 
                     #MULTIPLE
                     if ($study == "rpps_s_q61") {
@@ -492,7 +492,7 @@ class Crons
             foreach ($array_study_number as $study => $label) {
                 $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
                 $study_options_total = $study_options;
-                if ($study == "ethnicity" || $study == "rpps_s_q62") {
+                if (ProjectData::isEthnicityVar($study)) {
                     array_push($study_options, ProjectData::getExtraColumTitle());
                 }
                 foreach ($question_number as $indexQuestion => $question_1) {
@@ -519,26 +519,26 @@ class Crons
                     }
                 }
                 $chartgraph[$question][$study] = GraphData::graphArrays($graph, $question, $study, $study_options);
-                $chartgraph[$question]["nofilter"] = GraphData::graphArrays($graph, $question, $study, null);
+                $chartgraph[$question][ProjectData::NOFILTER_ARRAY_KEY] = GraphData::graphArrays($graph, $question, $study, null);
             }
             #INSTITUTIONS
             $study_options_institutions = [];
             foreach ($question_number as $indexQuestion => $question_1) {
                 foreach ($institutions as $institution => $institutionRecords) {
-                    $graph[$question]["institutions"][$question_1][$institution] = array();
-                    $graph[$question]["institutions"][$question_1][$institution]['graph_top_score_year'] = array();
-                    $graph[$question]["institutions"][$question_1][$institution]['graph_top_score_month'] = array();
-                    $graph[$question]["institutions"][$question_1][$institution]['graph_top_score_quarter'] = array();
-                    $graph[$question]["institutions"][$question_1][$institution]['years'] = array();
+                    $graph[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$institution] = array();
+                    $graph[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$institution]['graph_top_score_year'] = array();
+                    $graph[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$institution]['graph_top_score_month'] = array();
+                    $graph[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$institution]['graph_top_score_quarter'] = array();
+                    $graph[$question][ProjectData::INSTITUTIONS_ARRAY_KEY][$question_1][$institution]['years'] = array();
                     $study_options_institutions[$institution] = $institution;
 
                     R4Report::getR4Report($project_id)->setProjectDataInstitution($institution);
                     $outcome_labels = $module->getChoiceLabels($question_1, $project_id);
                     $topScoreMax = count($outcome_labels);
-                    $graph = GraphData::getInstitutionsColGraph($question, $project_id, "institutions", $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $institution);
+                    $graph = GraphData::getInstitutionsColGraph($question, $project_id, ProjectData::INSTITUTIONS_ARRAY_KEY, $question_1, $conditionDate, $topScoreMax, $graph, $recordIds, $institution);
                 }
             }
-            $chartgraph[$question]["institutions"] = GraphData::graphArrays($graph, $question, "institutions", $study_options_institutions);
+            $chartgraph[$question][ProjectData::INSTITUTIONS_ARRAY_KEY] = GraphData::graphArrays($graph, $question, ProjectData::INSTITUTIONS_ARRAY_KEY, $study_options_institutions);
             R4Report::getR4Report($project_id)->setProjectDataInstitution();
         }
         return $chartgraph;
