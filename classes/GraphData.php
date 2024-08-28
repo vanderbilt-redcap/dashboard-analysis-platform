@@ -18,7 +18,7 @@ class GraphData
      * @return mixed
      */
     public static function getNormalStudyColGraph($question,$project_id, $study_options,$study,$question_1,$conditionDate,$topScoreMax,$graph,$recordIds, $study_options_total){
-        if ($study == "rpps_s_q62" || $study == "ethnicity") {
+        if (ProjectData::isEthnicityVar($study)) {
             $index_ethnicity = count($study_options);
             $graph[$question][$study][$question_1][$index_ethnicity] = array();
             $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_year'] = array();
@@ -33,7 +33,7 @@ class GraphData
             $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_quarter']["is5"] = 0;
         }
         foreach ($study_options as $index => $col_title) {
-            if((($study == "rpps_s_q62" || $study == "ethnicity") && $index != count($study_options)) || $study != "rpps_s_q62" && $study != "ethnicity"){
+            if((ProjectData::isEthnicityVar($study) && $index != count($study_options)) || $study != "rpps_s_q62" && $study != "ethnicity"){
                 $graph[$question][$study][$question_1][$index] = array();
                 $graph[$question][$study][$question_1][$index]['graph_top_score_year'] = array();
                 $graph[$question][$study][$question_1][$index]['graph_top_score_month'] = array();
@@ -48,7 +48,7 @@ class GraphData
             );
             $graph = self::getPercent($question, $project_id, $study, $question_1, $condition_array, $topScoreMax, $graph, $recordIds, $study_options_total, $index);
         }
-        if ($study == "rpps_s_q62" || $study == "ethnicity") {
+        if (ProjectData::isEthnicityVar($study)) {
             $index_ethnicity = count($study_options);
             unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_year"]["totalrecords"]);
             unset($graph[$question][$study][$question_1][$index_ethnicity]["graph_top_score_year"]["is5"]);
@@ -210,7 +210,7 @@ class GraphData
             $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::createQuartersForYear($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
             $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::setQuarter($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
             $graph[$question][$study][$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
-            if (($study == "rpps_s_q62" || $study == "ethnicity") && $studyCol > 1 && $studyCol < 6) {
+            if (ProjectData::isEthnicityVar($study) && $studyCol > 1 && $studyCol < 6) {
                 $graph[$question][$study][$question_1][6]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
                 $graph[$question][$study][$question_1][6]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
                 $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = self::createQuartersForYear($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
@@ -298,7 +298,7 @@ class GraphData
             $condition = " AND ".getParamOnType($study, $colType, $project_id);
 
             #Ethnicity Case
-            if(($study == "rpps_s_q62" || $study == "ethnicity") && $colType == 6) {
+            if(ProjectData::isEthnicityVar($study) && $colType == 6) {
                 $condition = " AND (". getEthnicityCondition($colType,$study,$project_id).")";
             }
         }
@@ -308,7 +308,7 @@ class GraphData
         if($topScoreMax == 5) {
             $score_is_5O_overall_missing = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
         }
-        if($study == "rpps_s_q62" || $study == "ethnicity"){
+        if(ProjectData::isEthnicityVar($study)){
             if($colType >1 && $colType < 6) {
                 $graph[$question][$study][$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
                 $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;

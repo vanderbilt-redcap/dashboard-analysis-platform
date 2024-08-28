@@ -218,7 +218,7 @@ class Crons
         foreach ($array_study_1 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
-            if ($study == "rpps_s_q62") {
+            if (ProjectData::isEthnicityVar($study)) {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             $showLegend = false;
@@ -399,7 +399,7 @@ class Crons
         foreach ($array_study_3 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
-            if ($study == "rpps_s_q62") {
+            if (ProjectData::isEthnicityVar($study)) {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             for ($question = 3; $question < 6; $question++) {
@@ -492,7 +492,7 @@ class Crons
             foreach ($array_study_number as $study => $label) {
                 $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
                 $study_options_total = $study_options;
-                if ($study == "ethnicity" || $study == "rpps_s_q62") {
+                if (ProjectData::isEthnicityVar($study)) {
                     array_push($study_options, ProjectData::getExtraColumTitle());
                 }
                 foreach ($question_number as $indexQuestion => $question_1) {

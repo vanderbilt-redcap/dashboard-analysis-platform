@@ -127,7 +127,7 @@ class R4Report extends AbstractExternalModule
 	public function getFieldChoices($fieldName) {
 		if(!array_key_exists($fieldName,$this->cachedFieldOptions)) {
 			$study_options = $this->getChoiceLabels($fieldName, $this->projectId);
-			if ($fieldName == "rpps_s_q62") {
+			if (ProjectData::isEthnicityVar($fieldName)) {
 				array_push($study_options, ProjectData::getExtraColumTitle());
 			}
 			

@@ -7,6 +7,8 @@ class ProjectData
     const MAX_CUSTOM_FILTERS = 11;
     const INSTITUTIONS_ARRAY_KEY = "institutions";
     const NOFILTER_ARRAY_KEY = "nofilter";
+    const ETHNICITY_VAR1 = "rpps_s_q62";
+    const ETHNICITY_VAR2 = "ethnicity";
 
     public static function getRandomIdentifier($length = 6) {
         $output = "";
@@ -391,6 +393,13 @@ class ProjectData
             $choicesById = $module->getChoiceLabels($study, $project_id);
         }
         return  $choicesById;
+    }
+
+    public static function isEthnicityVar($study){
+        if($study == self::ETHNICITY_VAR1 || $study == self::ETHNICITY_VAR2){
+            return true;
+        }
+        return false;
     }
 }
 ?>

@@ -119,7 +119,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
         $array_study = ProjectData::getArrayStudyQuestion_2();
     }
 
-    if($study == "rpps_s_q62" || $study == "ethnicity"){
+    if(ProjectData::isEthnicityVar($study)){
         array_push($study_options,ProjectData::getExtraColumTitle());
     }
     if($_SESSION[$project_id . "_startDate"] != ""){
@@ -244,11 +244,11 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     <th class="question"><span style="position: relative; top:23px"><strong>'.$score_title.$top_box_popover_info.'</strong></span></th>'.
         '<th class="dal_task"><div style="width: 197.719px;"><span>TOTAL</span></div></th>';
     if($study != ProjectData::NOFILTER_ARRAY_KEY) {
-        if ($study == "rpps_s_q62" || $study == "ethnicity") {
+        if (ProjectData::isEthnicityVar($study)) {
             foreach ($study_options as $indexstudy => $col_title) {
                 $class = "";
                 $attribute = "";
-                if ($indexstudy != 1 && (($study == "rpps_s_q62"  || $study == "ethnicity") && $indexstudy < count($study_options))) {
+                if ($indexstudy != 1 && (ProjectData::isEthnicityVar($study) && $indexstudy < count($study_options))) {
                     $class = "hide";
                     $attribute = "etnicity='1'";
                 }
@@ -276,13 +276,13 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
     $table .= '<td class="question"></td>';
     $table .= '<td></td>';
     foreach ($study_options as $indexstudy => $col_title) {
-        if($study == "rpps_s_q62" || $study == "ethnicity") {
+        if(ProjectData::isEthnicityVar($study)) {
             $table .="<style>.dal_task>div>span {
                         display: block;
                         margin-left: 38px;
                         color: #5592c6;
                     }</style>";
-            if (($study == "rpps_s_q62" || $study == "ethnicity") && $indexstudy == count($study_options)) {
+            if (ProjectData::isEthnicityVar($study) && $indexstudy == count($study_options)) {
                 $table .= '<td><i class="fas fa-plus-circle fa-fw" id="etnicityPlus" aria-hidden="true" onclick="etnicity_change_icon(this.id)" symbol="0"></i></td>';
             } else if ($indexstudy != 1) {
                 $table .= '<td class="hide" etnicity="1"></td>';
@@ -377,7 +377,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             }
                             $class = "";
                             $attribute = "";
-                            if($study == "rpps_s_q62" && $i > 1 && $i < count($study_options)){
+                            if(ProjectData::isEthnicityVar($study) && $i > 1 && $i < count($study_options)){
                                 $class = "hide";
                                 $attribute = "etnicity = '1'";
                             }
@@ -510,7 +510,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                             foreach ($dash_array['data'][$question][$study]["rpps_s_q" . $i][$singleDataIndex] as $arrayIndex => $value) {
                                 $class = "";
                                 $attribute = "";
-                                if ($study == "rpps_s_q62" && $arrayIndex > 1 && $arrayIndex < count($study_options)) {
+                                if (ProjectData::isEthnicityVar($study) && $arrayIndex > 1 && $arrayIndex < count($study_options)) {
                                     $class = "hide";
                                     $attribute = "etnicity = '1'";
                                 }

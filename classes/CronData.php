@@ -57,7 +57,7 @@ class CronData
                 $responses = $total_records - $missing_InfoLabel;
 
                 #Etnicity Case
-                if ($study == "rpps_s_q62") {
+                if (ProjectData::isEthnicityVar($study)) {
                     if ($index > 1 && $index < 6) {
                         $study_62_array['topscore'] += $topScoreFound;
                         $study_62_array['totalcount'] += $total_records;
@@ -88,7 +88,7 @@ class CronData
                     }
                     $attibute = "";
                     $class = "";
-                    if ($study == "rpps_s_q62" && $index > 1 && $index < 6) {
+                    if (ProjectData::isEthnicityVar($study) && $index > 1 && $index < 6) {
                         $class = "hide";
                         $attibute = "etnicity = '1'";
                     }
