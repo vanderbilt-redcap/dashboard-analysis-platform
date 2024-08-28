@@ -315,6 +315,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     $extras = 3;
                 }
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
+                    $show_graph = '';
                     if(($study == ProjectData::BYSITE_ARRAY_KEY && $display_graph_by_site) || $study != ProjectData::BYSITE_ARRAY_KEY){
                         $show_graph = ' <i class="fas fa-chart-bar infoChart" id="DashChart_'.$question_1.'" indexQuestion="'.$indexQuestion.'"></i>';
                     }
