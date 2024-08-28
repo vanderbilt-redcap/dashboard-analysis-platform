@@ -200,7 +200,6 @@ class CronData
      */
      public static function getTotalCol($question,$project_id,$question_1,$conditionDate,$topScoreMax,$indexQuestion,$tooltipTextArray,$array_colors,$institutions,$recordIds){
 		$recordsoverall = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] <> ''".$conditionDate);
-        //$recordsoverall = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] <> ''".$conditionDate);
         $recordsoverallTotal = count($recordsoverall);
         $topScoreFoundO = 0;
         $showLegendexTotal = false;
@@ -234,7 +233,6 @@ class CronData
         unset($recordsoverall);
 	
 		$missingRecords = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] = '5'".$conditionDate);
-//        $missingRecords = \REDCap::getData($project_id, 'json-array', $recordIds, array('record_id',$question_1), null, null, false, false, false, "[".$question_1."] = '5'".$conditionDate);
         $score_is_5O_overall_missing = 0;
         foreach($missingRecords as $misRecord){
             if ($misRecord[$question_1] == 5 && $topScoreMax == 5) {
@@ -247,7 +245,6 @@ class CronData
 
         $row_questions_1 = ProjectData::getRowQuestionsParticipantPerception();
 		$missingRecordsNoFilter = R4Report::getR4Report($project_id)->applyFilterToData("[".$question_1."] = ''".$conditionDate);
-//        $missingRecordsNoFilter = \REDCap::getData($project_id, 'json-array', $recordIds, $row_questions_1, null, null, false, false, false, "[".$question_1."] = ''".$conditionDate);
         $missingOverall = 0;
         foreach($missingRecordsNoFilter as $misRecordNF) {
             foreach ($row_questions_1 as $questionNF){
@@ -414,12 +411,11 @@ class CronData
         foreach ($study_options as $index => $col_title) {
             $condition = getParamOnType($study, $index,$project_id);
             #Etnicity Case
-            if ($study == "ethnicity" && $index == count($study_options)) {
+            if (ProjectData::isEthnicityVar($study) && $index == count($study_options)) {
                 $condition = getEthnicityCondition(count($study_options),$study,$project_id);
             }
 
 			$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($condition.$conditionDate);
-//            $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, null, null, null, false, false, false, $condition.$conditionDate);
             $total_records = count($allRecords);
             $total_questions = count($row_questions_1);
             $graph["total_records"][$index] = $total_records;
@@ -512,7 +508,6 @@ class CronData
         $data = $row_questions_1;
         array_push($data, "record_id");
 		$allRecords = R4Report::getR4Report($project_id)->applyFilterToData($conditionDate);
-//        $allRecords = \REDCap::getData($project_id, 'json-array', $recordIds, $data, null, null, false, false, false, $conditionDate);
         $total_records = count($allRecords);
         $total_questions = count($row_questions_1);
         $graph["total_records"]["total"] = $total_records;

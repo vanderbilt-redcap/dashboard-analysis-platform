@@ -452,7 +452,7 @@ if(!empty($_GET['dash']) && ProjectData::startTest($_GET['dash'], '', '', $_SESS
                     foreach ($dash_array['data'][$question][$study][$question_2] as $i => $value){
                         $class = "";
                         $attribute = "";
-                        if($study == "ethnicity" && $i > 1 && $i < count($study_options)){
+                        if(ProjectData::isEthnicityVar($study) && $i > 1 && $i < count($study_options)){
                             $class = "hide";
                             $attribute = "etnicity = '1'";
                         }

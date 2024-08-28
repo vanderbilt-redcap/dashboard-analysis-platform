@@ -320,7 +320,7 @@ class Crons
         foreach ($array_study_2 as $study => $label) {
             $study_options = ProjectData::getChoiceLabelsArray($module, $study, $project_id);
             $study_options_total = $study_options;
-            if ($study == "ethnicity") {
+            if (ProjectData::isEthnicityVar($study)) {
                 array_push($study_options, ProjectData::getExtraColumTitle());
             }
             $graph = CronData::getNormalStudyColRate($project_id, $conditionDate, $row_questions_1, $graph, $study, $study_options, $recordIds);

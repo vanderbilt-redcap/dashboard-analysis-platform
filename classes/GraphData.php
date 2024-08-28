@@ -33,7 +33,7 @@ class GraphData
             $graph[$question][$study][$question_1][$index_ethnicity]['graph_top_score_quarter']["is5"] = 0;
         }
         foreach ($study_options as $index => $col_title) {
-            if((ProjectData::isEthnicityVar($study) && $index != count($study_options)) || $study != "rpps_s_q62" && $study != "ethnicity"){
+            if((ProjectData::isEthnicityVar($study) && $index != count($study_options)) || !ProjectData::isEthnicityVar($study)){
                 $graph[$question][$study][$question_1][$index] = array();
                 $graph[$question][$study][$question_1][$index]['graph_top_score_year'] = array();
                 $graph[$question][$study][$question_1][$index]['graph_top_score_month'] = array();

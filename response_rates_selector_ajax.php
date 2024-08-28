@@ -10,31 +10,9 @@ $project_id = $_GET['pid'];
 $selector = $_REQUEST['selector'];
 
 if($selector == 2){
-    $array_study = array(
-        "age" => "Age",
-        "ethnicity" => "Ethnicity",
-        "gender_identity" => "Gender Identity",
-        "race" => "Race",
-        "sex" => "Sex"
-    );
+    $array_study = ProjectData::getArrayStudyQuestion_2();
 }else{
-    $array_study = array(
-        "header0" => "About the participants:",
-        "rpps_s_q60" => "Age",
-        "rpps_s_q59" => "Education",
-        "rpps_s_q62" => "Ethnicity",
-        "rpps_s_q65" => "Gender",
-        "rpps_s_q61" => "Race",
-        "rpps_s_q63" => "Sex",
-        "header1" => "About the research study:",
-        "rpps_s_q58" => "Demands of study",
-        "rpps_s_q15" => "Disease/disorder to enroll",
-        "details_of_study" => "Informed Consent setting",
-        "rpps_s_q16" => "Study Type",
-        "header2" => "About the survey fielding:",
-        "sampling" => "Sampling approach",
-        "timing_of_rpps_administration" => "Timing of RPPS administration"
-    );
+    $array_study = ProjectData::getStudyArray();
 }
 
 $selector = '<option value="'.ProjectData::NOFILTER_ARRAY_KEY.'" selected>No filter</option>';
