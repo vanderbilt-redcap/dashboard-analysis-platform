@@ -294,7 +294,9 @@ class GraphData
 
     public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate,$recordIds){
         $condition = "";
-        if($colType != "total" && $study != ProjectData::INSTITUTIONS_ARRAY_KEY){
+        if($colType == "no") {
+            $condition = " AND [" . $study . "] = ''";
+        }else if($colType != "total" && $study != ProjectData::INSTITUTIONS_ARRAY_KEY){
             $condition = " AND ".getParamOnType($study, $colType, $project_id);
 
             #Ethnicity Case
