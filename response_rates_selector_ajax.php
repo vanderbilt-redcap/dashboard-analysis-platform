@@ -16,7 +16,7 @@ if($selector == 2){
 }
 
 $selector = '<option value="'.ProjectData::NOFILTER_ARRAY_KEY.'" selected>No filter</option>';
-$selector .= '<option value="bysite">By site</option>';
+$selector .= '<option value="'.ProjectData::BYSITE_ARRAY_KEY.'">By site</option>';
 foreach ($array_study as $index => $sstudy){
     if(strpos($index, 'header') !== false){
         $number_header = explode('header', strtolower($index));
