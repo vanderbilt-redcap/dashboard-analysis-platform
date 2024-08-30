@@ -142,10 +142,11 @@ class GraphData
                     ($studyCol == "multiple" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total))
                     || $studyCol == "total"
                     || ($study == ProjectData::INSTITUTIONS_ARRAY_KEY)
-                    || ($studyCol == "no" && $record[$study] == '' && (getFieldType($study, $project_id) != "checkbox") || (is_array($record[$study]) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
+                    || ($studyCol == "no" && $study == "rpps_s_q61" && getFieldType($study, $project_id) == "checkbox" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none'))
+                    || ($studyCol == "no" && $record[$study] == '' && (getFieldType($study, $project_id) != "checkbox") || ((is_array($record[$study])) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
                     || ($studyCol != "multiple" && $studyCol != "total" && $studyCol != "no")
                 ) {
-                    $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol);
+                    $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol, $project_id, $study_options_total);
                 }
             }
             $graph = self::calculatePercentageGraph($project_id, $graph, $question, $question_1, $study, $studyCol, $topScoreMax, $condition_array["percent"],$recordIds);
@@ -153,10 +154,15 @@ class GraphData
         return $graph;
     }
 
-    public static function getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol){
+    public static function getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol, $project_id, $study_options_total){
         if($study == ProjectData::INSTITUTIONS_ARRAY_KEY)
             $studyCol = trim(explode("-",$record['record_id'])[0]);
 
+        if($studyCol == "multiple"){
+            $graph = self::addMultipleTotal($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime'], "total_multiple");
+        }else if($studyCol == "no" && getFieldType($study, $project_id) == "checkbox" && $study == "rpps_s_q61" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')){
+            $graph = self::addMultipleTotal($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime'], "total_no");
+        }
         if ($question == 1) {
             if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
                 $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
@@ -177,44 +183,61 @@ class GraphData
 
     public static function createQuartersForYear($graph, $question, $question_1, $study,$studyCol, $date){
         $year = date("Y",strtotime($date));
-        if(!array_key_exists('graph_top_score_quarter',$graph[$question][$study][$question_1][$studyCol])){
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = array();
-        }
-        for($i=1; $i<5 ; $i++){
-            if(!array_key_exists("Q".$i." ".$year,$graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'])){
-                $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q".$i." ".$year] = 0;
+        if(is_array($graph)) {
+            if (!array_key_exists('graph_top_score_quarter', $graph)) {
+                $graph['graph_top_score_quarter'] = [];
+            }
+            for ($i = 1; $i < 5; $i++) {
+                if (!array_key_exists("Q" . $i . " " . $year, $graph['graph_top_score_quarter'])) {
+                    $graph['graph_top_score_quarter']["Q" . $i . " " . $year] = 0;
+                }
             }
         }
-        return $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'];
+        return $graph['graph_top_score_quarter'];
     }
 
     public static function setQuarter($graph, $question, $question_1, $study,$studyCol, $date){
         $month = date("m",strtotime($date));
         $year = date("Y",strtotime($date));
         if($month <= 3){
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q1 ".$year] += 1;
+            $graph['graph_top_score_quarter']["Q1 ".$year] += 1;
         }else if($month > 3 && $month <= 6) {
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q2 ".$year] += 1;
+            $graph['graph_top_score_quarter']["Q2 ".$year] += 1;
         }else if($month > 6 && $month <= 9) {
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q3 ".$year] += 1;
+            $graph['graph_top_score_quarter']["Q3 ".$year] += 1;
         }else if($month > 9){
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter']["Q4 ".$year] += 1;
+            $graph['graph_top_score_quarter']["Q4 ".$year] += 1;
         }
-        return $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'];
+        return $graph['graph_top_score_quarter'];
     }
 
+    public static function addMultipleTotal($graph,$question,$question_1,$study,$studyCol,$survey_datetime, $type){
+        if(!is_array($graph[$question][$study][$question_1][$studyCol]) || !array_key_exists($type,$graph[$question][$study][$question_1][$studyCol])){
+            $graph[$question][$study][$question_1][$studyCol] = [];
+            $graph[$question][$study][$question_1][$studyCol][$type] = [];
+            $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_year"] = [];
+            $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_month"] = [];
+            $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_quarter"] = [];
+        }
+        $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_year"][date("Y", strtotime($survey_datetime))] += 1;
+        $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_month"][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
+        $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_quarter"] = self::createQuartersForYear($graph[$question][$study][$question_1][$studyCol][$type], $question, $question_1, $study, $studyCol, $survey_datetime);
+        $graph[$question][$study][$question_1][$studyCol][$type]["graph_top_score_quarter"] = self::setQuarter($graph[$question][$study][$question_1][$studyCol][$type], $question, $question_1, $study, $studyCol, $survey_datetime);
+
+        return $graph;
+    }
     public static function addGraph($graph,$question,$question_1,$study,$studyCol,$survey_datetime){
         if($survey_datetime != "") {
             $graph[$question][$study][$question_1][$studyCol]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
             $graph[$question][$study][$question_1][$studyCol]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::createQuartersForYear($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
-            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::setQuarter($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
+            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::createQuartersForYear($graph[$question][$study][$question_1][$studyCol], $question, $question_1, $study, $studyCol, $survey_datetime);
+            $graph[$question][$study][$question_1][$studyCol]['graph_top_score_quarter'] = self::setQuarter($graph[$question][$study][$question_1][$studyCol], $question, $question_1, $study, $studyCol, $survey_datetime);
             $graph[$question][$study][$question_1][$studyCol]['years'][date("Y", strtotime($survey_datetime))] = 0;
             if (ProjectData::isEthnicityVar($study) && $studyCol > 1 && $studyCol < 6) {
                 $graph[$question][$study][$question_1][6]['graph_top_score_year'][date("Y", strtotime($survey_datetime))] += 1;
                 $graph[$question][$study][$question_1][6]['graph_top_score_month'][strtotime(date("Y-m", strtotime($survey_datetime)))] += 1;
-                $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = self::createQuartersForYear($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
-                $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = self::setQuarter($graph, $question, $question_1, $study, $studyCol, $survey_datetime);
+                $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = self::createQuartersForYear($graph[$question][$study][$question_1][$studyCol][$question][$study][$question_1][$studyCol], $question, $question_1, $study, $studyCol, $survey_datetime);
+                $graph[$question][$study][$question_1][6]['graph_top_score_quarter'] = self::setQuarter($graph[$question][$study][$question_1][$studyCol], $question, $question_1, $study, $studyCol, $survey_datetime);
                 $graph[$question][$study][$question_1][6]['years'][date("Y", strtotime($survey_datetime))] = 0;
             }
         }
@@ -292,47 +315,6 @@ class GraphData
         return $graph;
     }
 
-    public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate,$recordIds){
-        $condition = "";
-        if($colType == "no") {
-            $condition = " AND [" . $study . "] = ''";
-        }else if($colType != "total" && $study != ProjectData::INSTITUTIONS_ARRAY_KEY){
-            $condition = " AND ".getParamOnType($study, $colType, $project_id);
-
-            #Ethnicity Case
-            if(ProjectData::isEthnicityVar($study) && $colType == 6) {
-                $condition = " AND (". getEthnicityCondition($colType,$study,$project_id).")";
-            }
-        }
-        $TotalRecordsGraph = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] <> ''" . $conditionDate.$condition);
-
-        $score_is_5O_overall_missing = 0;
-        if($topScoreMax == 5) {
-            $score_is_5O_overall_missing = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
-        }
-        if(ProjectData::isEthnicityVar($study)){
-            if($colType >1 && $colType < 6) {
-                $graph[$question][$study][$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
-                $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
-            }
-        }
-        $responses_na = 0;
-        if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
-            $percent = 0;
-        }else {
-            $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
-            if($TotalRecordsGraph > $score_is_5O_overall_missing)
-                $responses_na = ($TotalRecordsGraph - $score_is_5O_overall_missing);
-        }
-        if($percent == "nan"){
-            $percent = 0;
-        }
-
-        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent.",n=".$responses_na;
-
-        return $graph;
-    }
-
     public static function calculatePercentageGraph($project_id,$graph,$question,$question_1,$study,$colType,$topScoreMax,$condition,$recordIds){
         if($condition != ""){
             $condition = " AND ".$condition;
@@ -368,6 +350,55 @@ class GraphData
             $conditionDate = " AND (contains([survey_datetime], \"".$year."\"))";
             $graph = self::createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,'graph_top_score_year',$year,$conditionDate,$recordIds);
         }
+
+        return $graph;
+    }
+
+    public static function createPercentage($graph,$project_id,$study,$question,$question_1,$topScoreMax,$colType,$type,$date,$conditionDate,$recordIds){
+        $condition = "";
+        if($colType == "no") {
+            $condition = " AND [" . $study . "] = ''";
+        }else if($colType != "total" && $study != ProjectData::INSTITUTIONS_ARRAY_KEY){
+            $condition = " AND ".getParamOnType($study, $colType, $project_id);
+
+            #Ethnicity Case
+            if(ProjectData::isEthnicityVar($study) && $colType == 6) {
+                $condition = " AND (". getEthnicityCondition($colType,$study,$project_id).")";
+            }
+        }
+        if($colType == "multiple") {
+            $TotalRecordsGraph = $graph[$question][$study][$question_1][$colType]["total_multiple"][$type][$date];
+            unset($graph[$question][$study][$question_1][$colType]["total_multiple"][$type][$date]);
+        }else if($colType == "no" && getFieldType($study, $project_id) == "checkbox" && $study == "rpps_s_q61"){
+            $TotalRecordsGraph = $graph[$question][$study][$question_1][$colType]["total_no"][$type][$date];
+            unset($graph[$question][$study][$question_1][$colType]["total_no"][$type][$date]);
+        }else{
+            $TotalRecordsGraph = ProjectData::getDataTotalCount($project_id, $recordIds, "[".$question_1."] <> ''" . $conditionDate.$condition);
+        }
+
+        $score_is_5O_overall_missing = 0;
+        if($topScoreMax == 5) {
+            $score_is_5O_overall_missing = ProjectData::getDataTotalCount($project_id, $recordIds, "[" . $question_1 . "] = '5'" . $conditionDate.$condition);
+        }
+        if(ProjectData::isEthnicityVar($study)){
+            if($colType >1 && $colType < 6) {
+                $graph[$question][$study][$question_1][6][$type]["totalrecords"] += $TotalRecordsGraph;
+                $graph[$question][$study][$question_1][6][$type]["is5"] += $score_is_5O_overall_missing;
+            }
+        }
+        $responses_na = 0;
+        if(($TotalRecordsGraph - $score_is_5O_overall_missing) == 0){
+            $percent = 0;
+        }else {
+            $percent = number_format(($graph[$question][$study][$question_1][$colType][$type][$date] / ($TotalRecordsGraph - $score_is_5O_overall_missing) * 100), 0);
+            if($TotalRecordsGraph > $score_is_5O_overall_missing)
+                $responses_na = ($TotalRecordsGraph - $score_is_5O_overall_missing);
+        }
+        if($percent == "nan"){
+            $percent = 0;
+        }
+
+        $graph[$question][$study][$question_1][$colType][$type][$date] = $percent.",n=".$responses_na;
 
         return $graph;
     }
@@ -434,60 +465,66 @@ class GraphData
             foreach ($study_options_total as $index => $col_title) {
                 if($graph[$question][$study][$question_1][$index] != null) {
                     #YEAR
-                    ksort($graph[$question][$study][$question_1][$index]['graph_top_score_year']);
-                    $graph_top_score_year_values[$question][$study][$question_1][$index] = array();
-                    $labels_year[$question_1][$index] = array_keys($graph[$question][$study][$question_1][$index]['graph_top_score_year']);
-                    $graph_top_score_year_values[$question_1][$index] = array_values($graph[$question][$study][$question_1][$index]['graph_top_score_year']);
-                    $graph_top_score_year_values[$question_1][$index] = array_map(function($value) {
-                        return $value === 0 ? NULL : $value;
-                    }, $graph_top_score_year_values[$question_1][$index]);
+                    if(is_array($graph[$question][$study][$question_1][$index]['graph_top_score_year'])) {
+                        ksort($graph[$question][$study][$question_1][$index]['graph_top_score_year']);
+                        $graph_top_score_year_values[$question][$study][$question_1][$index] = array();
+                        $labels_year[$question_1][$index] = array_keys($graph[$question][$study][$question_1][$index]['graph_top_score_year']);
+                        $graph_top_score_year_values[$question_1][$index] = array_values($graph[$question][$study][$question_1][$index]['graph_top_score_year']);
+                        $graph_top_score_year_values[$question_1][$index] = array_map(function ($value) {
+                            return $value === 0 ? NULL : $value;
+                        }, $graph_top_score_year_values[$question_1][$index]);
+                    }
 
                     #MONTH
-                    ksort($graph[$question][$study][$question_1][$index]['graph_top_score_month']);
-                    $labels_month[$question_1][$index] = array();
-                    $graph_top_score_month_values[$question_1][$index] = array();
-                    foreach ($labels_year[$question_1][$index] as $year) {
-                        for ($month = 1; $month < 13; $month++) {
-                            $found = false;
-                            foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_month'] as $date => $value) {
-                                if ($year . "-" . sprintf('%02d', $month) == date("Y-m", $date)) {
-                                    $found = true;
-                                    array_push($labels_month[$question_1][$index], date("Y-m", $date));
-                                    array_push($graph_top_score_month_values[$question_1][$index], $value);
+                    if(is_array($graph[$question][$study][$question_1][$index]['graph_top_score_month'])) {
+                        ksort($graph[$question][$study][$question_1][$index]['graph_top_score_month']);
+                        $labels_month[$question_1][$index] = array();
+                        $graph_top_score_month_values[$question_1][$index] = array();
+                        foreach ($labels_year[$question_1][$index] as $year) {
+                            for ($month = 1; $month < 13; $month++) {
+                                $found = false;
+                                foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_month'] as $date => $value) {
+                                    if ($year . "-" . sprintf('%02d', $month) == date("Y-m", $date)) {
+                                        $found = true;
+                                        array_push($labels_month[$question_1][$index], date("Y-m", $date));
+                                        array_push($graph_top_score_month_values[$question_1][$index], $value);
+                                    }
                                 }
-                            }
-                            if (!$found) {
-                                array_push($labels_month[$question_1][$index], $year . "-" . sprintf('%02d', $month));
-                                array_push($graph_top_score_month_values[$question_1][$index], null);
+                                if (!$found) {
+                                    array_push($labels_month[$question_1][$index], $year . "-" . sprintf('%02d', $month));
+                                    array_push($graph_top_score_month_values[$question_1][$index], null);
+                                }
                             }
                         }
                     }
 
                     #QUARTER
-                    ksort($graph[$question][$study][$question_1][$index]['years']);
-                    $graph_top_score_quarter_values[$question_1][$index] = array();
-                    $labels_quarter[$question_1][$index] = array();
-                    $position = 0;
-                    foreach ($graph[$question][$study][$question_1][$index]['years'] as $year => $value) {
-                        array_push($labels_quarter[$question_1][$index], "Q1 " . $year);
-                        array_push($labels_quarter[$question_1][$index], "Q2 " . $year);
-                        array_push($labels_quarter[$question_1][$index], "Q3 " . $year);
-                        array_push($labels_quarter[$question_1][$index], "Q4 " . $year);
+                    if(is_array($graph[$question][$study][$question_1][$index]['years'])) {
+                        ksort($graph[$question][$study][$question_1][$index]['years']);
+                        $graph_top_score_quarter_values[$question_1][$index] = array();
+                        $labels_quarter[$question_1][$index] = array();
+                        $position = 0;
+                        foreach ($graph[$question][$study][$question_1][$index]['years'] as $year => $value) {
+                            array_push($labels_quarter[$question_1][$index], "Q1 " . $year);
+                            array_push($labels_quarter[$question_1][$index], "Q2 " . $year);
+                            array_push($labels_quarter[$question_1][$index], "Q3 " . $year);
+                            array_push($labels_quarter[$question_1][$index], "Q4 " . $year);
 
-                        array_push($graph_top_score_quarter_values[$question_1][$index], "");
-                        array_push($graph_top_score_quarter_values[$question_1][$index], "");
-                        array_push($graph_top_score_quarter_values[$question_1][$index], "");
-                        array_push($graph_top_score_quarter_values[$question_1][$index], "");
+                            array_push($graph_top_score_quarter_values[$question_1][$index], "");
+                            array_push($graph_top_score_quarter_values[$question_1][$index], "");
+                            array_push($graph_top_score_quarter_values[$question_1][$index], "");
+                            array_push($graph_top_score_quarter_values[$question_1][$index], "");
 
-                        foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_quarter'] as $date => $value) {
-                            $quarter = explode(" ", $date)[0];
-                            $year_quarter = explode(" ", $date)[1];
-                            if ($year == $year_quarter) {
-                                if($value == 0){
-                                    $value = null;
+                            foreach ($graph[$question][$study][$question_1][$index]['graph_top_score_quarter'] as $date => $value) {
+                                $quarter = explode(" ", $date)[0];
+                                $year_quarter = explode(" ", $date)[1];
+                                if ($year == $year_quarter) {
+                                    if ($value == 0) {
+                                        $value = null;
+                                    }
+                                    $graph_top_score_quarter_values[$question_1][$index][$position] = $value;
+                                    $position++;
                                 }
-                                $graph_top_score_quarter_values[$question_1][$index][$position] = $value;
-                                $position++;
                             }
                         }
                     }
