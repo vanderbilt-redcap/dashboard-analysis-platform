@@ -1,4 +1,4 @@
-<script type="text/javascript" src="<?=$module->getUrl('js/jquery-3.3.1.min.js')?>"></script>
+<?php echo $module->loadREDCapJS(); ?>
 <script type="text/javascript" src="<?=$module->getUrl('js/jquery-ui.min.js')?>"></script>
 <script type="text/javascript" src="<?=$module->getUrl('bootstrap-3.3.7/js/bootstrap.min.js')?>"></script>
 <script type="text/javascript" src="<?=$module->getUrl('js/fontawesome-free-5.15.2-web/js/all.js')?>"></script>
