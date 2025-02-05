@@ -345,7 +345,7 @@ class ProjectData
         if(getFieldType($study, $project_id) == "checkbox") {
             $count = 0;
             foreach ($study_options_total as $index => $value){
-                if ($data[$study . '___' . $index] == '1') {
+                if (array_key_exists($study . '___' . $index, $data) && $data[$study . '___' . $index] == '1') {
                     $count++;
                 }
                 if($count >= 2 && $option != "none")
