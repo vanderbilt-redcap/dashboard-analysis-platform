@@ -561,7 +561,7 @@ class Crons
             #Check if we have a different path than edocs
             $path = ProjectData::getS3Path($module, $project_id);
             $storedName = $path == null ? date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt" : $filename;
-            $filePath = $path == null ? $module->getSafePath($storedName, APP_PATH_TEMP) : $module->validateS3Url($path . $storedName);
+            $filePath = $path == null ? $module->getSafePath($storedName, EDOC_PATH) : $module->validateS3Url($path . $storedName);
 
             #delete previous file
             unlink($filePath);
@@ -580,6 +580,12 @@ class Crons
                     $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
                     while ($row2 = db_fetch_assoc($q2)) {
                         $docId = $row2['doc_id'];
+                        $q3 = $module->query("SELECT stored_name FROM redcap_edocs_metadata WHERE doc_id=?", [$docId]);
+                        while ($row3 = db_fetch_assoc($q3)) {
+                            #delete old file
+                            $oldStoredName = $row3['stored_name'];
+                            unlink($module->getSafePath($oldStoredName, EDOC_PATH));
+                        }
                         $module->query("DELETE FROM redcap_edocs_metadata WHERE project_id = ? AND doc_id=?", [$project_id, $docId]);
                         $module->query("DELETE FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
                         $module->query("DELETE FROM redcap_docs WHERE project_id = ? AND docs_id=?", [$project_id, $docsId]);
@@ -594,7 +600,8 @@ class Crons
                     $module->query("UPDATE redcap_edocs_metadata SET doc_name = ? WHERE doc_id = ?", [$filename, $docId]);
                 }
                 #we clean the extra copy
-                unlink($filePath);
+//                unlink($filePath);
+                $module->query("UPDATE redcap_edocs_metadata SET stored_name = ? WHERE doc_id = ?", [$storedName, $docId]);
 
                 //Save document in File Repository
                 $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",
