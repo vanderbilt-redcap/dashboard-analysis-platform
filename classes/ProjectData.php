@@ -152,7 +152,8 @@ class ProjectData
             9 => "rpps_s_q24",
             10 => "rpps_s_q25",
             11 => "rpps_s_q69",
-            12 => "rpps_s_q67"
+            12 => "rpps_s_q67",
+            14 => "rpps_s_q70"
         );
         return $row_questions_1;
     }
