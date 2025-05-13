@@ -558,10 +558,17 @@ class Crons
             #SAVE DATA IN FILE
             #create and save file as a json
 
+            #Check if it's REDCaps AWS file saving
+            $isRedcapAWS = $module->getProjectSetting('redcap-aws',$project_id);
+            $edocPath = APP_PATH_TEMP;
+            if($isRedcapAWS) {
+                $edocPath = EDOC_PATH;
+            }
+
             #Check if we have a different path than edocs
             $path = ProjectData::getS3Path($module, $project_id);
             $storedName = $path == null ? date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt" : $filename;
-            $filePath = $path == null ? $module->getSafePath($storedName, APP_PATH_TEMP) : $module->validateS3Url($path . $storedName);
+            $filePath = $path == null ? $module->getSafePath($storedName, $edocPath) : $module->validateS3Url($path . $storedName);
 
             #delete previous file
             unlink($filePath);
@@ -580,6 +587,12 @@ class Crons
                     $q2 = $module->query("SELECT doc_id FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
                     while ($row2 = db_fetch_assoc($q2)) {
                         $docId = $row2['doc_id'];
+                        $q3 = $module->query("SELECT stored_name FROM redcap_edocs_metadata WHERE doc_id=?", [$docId]);
+                        while ($row3 = db_fetch_assoc($q3)) {
+                            #delete old file
+                            $oldStoredName = $row3['stored_name'];
+                            unlink($module->getSafePath($oldStoredName, $edocPath));
+                        }
                         $module->query("DELETE FROM redcap_edocs_metadata WHERE project_id = ? AND doc_id=?", [$project_id, $docId]);
                         $module->query("DELETE FROM redcap_docs_to_edocs WHERE docs_id=?", [$docsId]);
                         $module->query("DELETE FROM redcap_docs WHERE project_id = ? AND docs_id=?", [$project_id, $docsId]);
@@ -593,8 +606,14 @@ class Crons
                     $docId = \REDCap::storeFile($filePath, $project_id);
                     $module->query("UPDATE redcap_edocs_metadata SET doc_name = ? WHERE doc_id = ?", [$filename, $docId]);
                 }
-                #we clean the extra copy
-                unlink($filePath);
+
+                if($isRedcapAWS) {
+                    #we rename the file
+                    $module->query("UPDATE redcap_edocs_metadata SET stored_name = ? WHERE doc_id = ?", [$storedName, $docId]);
+                }else{
+                    #we clean the extra copy
+                    unlink($filePath);
+                }
 
                 //Save document in File Repository
                 $q = $module->query("INSERT INTO redcap_docs (project_id,docs_date,docs_name,docs_size,docs_type,docs_comment) VALUES(?,?,?,?,?,?)",

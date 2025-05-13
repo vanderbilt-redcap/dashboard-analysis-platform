@@ -70,6 +70,11 @@
       "type": "textarea"
     },
     {
+      "key": "redcap-aws",
+      "name": "If you are using <strong>REDCap's AWS option to save files</strong>, please check this checkbox.",
+      "type": "checkbox"
+    },
+    {
       "key": "path",
       "name": "Specify a S3 path to save the cache file",
       "type": "text"
