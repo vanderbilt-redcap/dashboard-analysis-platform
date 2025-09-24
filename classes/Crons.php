@@ -570,12 +570,33 @@ class Crons
             $storedName = $path == null ? date("YmdHis") . "_pid" . $project_id . "_" . ProjectData::getRandomIdentifier(6) . ".txt" : $filename;
             $filePath = $path == null ? $module->getSafePath($storedName, $edocPath) : $module->validateS3Url($path . $storedName);
 
-            #delete previous file
-            unlink($filePath);
+            # Ensure directory exists
+            $directory = dirname($filePath);
+            if (!is_dir($directory)) {
+                mkdir($directory, 0777, true); // Create directory if it doesn't exist
+            }
+
+            # Ensure directory is writable
+            if (!is_writable($directory)) {
+                throw new \Exception("Directory is not writable  on PID # ".$project_id.": $directory");
+            }
+
+            # Delete previous file
+            if (file_exists($filePath) && !unlink($filePath)) {
+                throw new \Exception("Failed to delete existing file on PID # ".$project_id.": $filePath");
+            }
+
+            # Open file for writing
             $file = fopen($filePath, "wb");
+            if ($file === false) {
+                throw new \Exception("Failed to open file on PID # ".$project_id." for writing: $filePath");
+            }
+
+            # Write data to file
             fwrite($file, json_encode($table_data, JSON_FORCE_OBJECT));
             fclose($file);
 
+            # Read and write file contents
             $output = file_get_contents($filePath);
             $filesize = file_put_contents($filePath, $output);
 
