@@ -573,7 +573,7 @@ class Crons
             # Ensure directory exists
             $directory = dirname($filePath);
             if (!is_dir($directory)) {
-                mkdir($directory, 0777, true); // Create directory if it doesn't exist
+                mkdir($directory, 0755, true); // Create directory if it doesn't exist
             }
 
             # Ensure directory is writable
