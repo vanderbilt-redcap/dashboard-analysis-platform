@@ -140,14 +140,14 @@ class CronData
         $missing = 0;
         $missingTop = 0;
         foreach ($missingRecords as $key => $mrecord){
-            if (($mrecord[$study] == '' && getFieldType($study, $project_id) != "checkbox") || ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total, 'none')) {
+            if ((arrayKeyExistsReturnValue($mrecord[$study]) == '' && getFieldType($study, $project_id) != "checkbox") || ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total, 'none')) {
                 $missing += 1;
                 if($question == 1){
-                    if (isTopScore($mrecord[$question_1], $topScoreMax, $question_1)) {
+                    if (isTopScore(arrayKeyExistsReturnValue($mrecord, [$question_1]), $topScoreMax, $question_1)) {
                         $missingTop += 1;
                     }
                 }else{
-                    if(isTopScoreVeryOrSomewhatImportant($mrecord[$question_1]) && ($mrecord[$question_1] != '' || array_key_exists($question_1,$mrecord))) {
+                    if(isTopScoreVeryOrSomewhatImportant(arrayKeyExistsReturnValue($mrecord, [$question_1])) && (arrayKeyExistsReturnValue($mrecord, [$question_1]) != null || array_key_exists($question_1,$mrecord))) {
                         $missingTop += 1;
                     }
                 }
@@ -248,7 +248,8 @@ class CronData
         $missingOverall = 0;
         foreach($missingRecordsNoFilter as $misRecordNF) {
             foreach ($row_questions_1 as $questionNF){
-                if($misRecordNF[$questionNF] !== ""){
+                $recordNF = arrayKeyExistsReturnValue($misRecordNF, [$questionNF]);
+                if(!empty($recordNF) && isset($recordNF)){
                     $missingOverall += 1;
                     break;
                 }
@@ -422,7 +423,8 @@ class CronData
             foreach ($allRecords as $record) {
                 $num_questions_answered = 0;
                 foreach ($row_questions_1 as $indexQuestion => $question_1) {
-                    if ($record[$question_1] !== "") {
+                    $recordQAnswered = arrayKeyExistsReturnValue($record,[$question_1]);
+                    if (!empty($recordQAnswered) && isset($recordQAnswered)) {
                         $num_questions_answered++;
                     }
                 }
@@ -484,7 +486,8 @@ class CronData
         foreach ($allRecords as $record) {
             $num_questions_answered = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
-                if ($record[$question_1] !== "") {
+                $recordTotal = arrayKeyExistsReturnValue($record,[$question_1]);
+                if (!empty($recordTotal) && isset($recordTotal)) {
                     $num_questions_answered++;
                 }
             }
@@ -533,7 +536,8 @@ class CronData
                     $graph[ProjectData::INSTITUTIONS_ARRAY_KEY][$institution]['total_records'] += 1;
                     $num_questions_answered = 0;
                     foreach ($row_questions_1 as $indexQuestion => $question_1) {
-                        if ($record[$question_1] !== "") {
+                        $recordQAnswered = arrayKeyExistsReturnValue($record,[$question_1]);
+                        if (!empty($recordQAnswered) && isset($recordQAnswered)) {
                             $num_questions_answered++;
                         }
                     }

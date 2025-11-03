@@ -15,7 +15,7 @@ if($module->isSuperuser()) {
 else {
 	$forceRun = false;
 }
-$report = htmlentities($_GET['report'],ENT_QUOTES);
+$report = htmlentities(arrayKeyExistsReturnValue($_GET,['report']),ENT_QUOTES);
 
 if($cronAttributes['cron_name'] == ""){
     #MANUAL

@@ -143,7 +143,7 @@ class GraphData
                     || $studyCol == "total"
                     || ($study == ProjectData::INSTITUTIONS_ARRAY_KEY)
                     || ($studyCol == "no" && $study == "rpps_s_q61" && getFieldType($study, $project_id) == "checkbox" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none'))
-                    || ($studyCol == "no" && $record[$study] == '' && (getFieldType($study, $project_id) != "checkbox") || ((is_array($record[$study])) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
+                    || ($studyCol == "no" && arrayKeyExistsReturnValue($record,[$study]) == '' && (getFieldType($study, $project_id) != "checkbox") || ((array_key_exists($study, $record) && is_array($record[$study])) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
                     || ($studyCol != "multiple" && $studyCol != "total" && $studyCol != "no")
                 ) {
                     $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol, $project_id, $study_options_total);
@@ -164,14 +164,14 @@ class GraphData
             $graph = self::addMultipleTotal($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime'], "total_no");
         }
         if ($question == 1) {
-            if (isTopScore($record[$question_1], $topScoreMax, $question_1)) {
+            if (isTopScore(arrayKeyExistsReturnValue($record, [$question_1]), $topScoreMax, $question_1)) {
                 $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
             }else{
                 //ADD to the graph as 0
                 $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$record['survey_datetime']);
             }
         } else {
-            if (isTopScoreVeryOrSomewhatImportant($record[$question_1]) && ($record[$question_1] != '' || array_key_exists($question_1, $record))) {
+            if (isTopScoreVeryOrSomewhatImportant(arrayKeyExistsReturnValue($record, [$question_1])) && (arrayKeyExistsReturnValue($record, [$question_1]) != null || array_key_exists($question_1, $record))) {
                 $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
             }else{
                 //ADD to the graph as 0
@@ -406,13 +406,18 @@ class GraphData
     public static function calculatePercentageResponseRate($graph,$question, $question_1, $study,$total_records,$index){
         $row_questions_2 = ProjectData::getRowQuestionsResponseRate();
         foreach ($row_questions_2 as $question_2) {
-            foreach ($graph[$question][$study][$question_2][$index] as $type=>$graphp){
-                foreach ($graphp as $date=>$topscore) {
-                    $percent = 0;
-                    if($total_records != 0){
-                        $percent = number_format(($graph[$question][$study][$question_2][$index][$type][$date] / $total_records * 100), 0);
+            if(!empty(arrayKeyExistsReturnValue($graph,[$question,$study,$question_2,$index]))) {
+                foreach ($graph[$question][$study][$question_2][$index] as $type => $graphp) {
+                    foreach ($graphp as $date => $topscore) {
+                        $percent = 0;
+                        if ($total_records != 0) {
+                            $percent = number_format(
+                                ($graph[$question][$study][$question_2][$index][$type][$date] / $total_records * 100),
+                                0
+                            );
+                        }
+                        $graph[$question][$study][$question_2][$index][$type][$date] = $percent;
                     }
-                    $graph[$question][$study][$question_2][$index][$type][$date] = $percent;
                 }
             }
         }

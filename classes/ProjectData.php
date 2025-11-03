@@ -345,12 +345,15 @@ class ProjectData
     public static function isMultiplesCheckbox($project_id, $data, $study, $study_options_total, $option=''){
         if(getFieldType($study, $project_id) == "checkbox") {
             $count = 0;
-            foreach ($study_options_total as $index => $value){
-                if (array_key_exists($study . '___' . $index, $data) && $data[$study . '___' . $index] == '1') {
-                    $count++;
+            if(is_array($study_options_total)) {
+                foreach ($study_options_total as $index => $value) {
+                    if (array_key_exists($study . '___' . $index, $data) && $data[$study . '___' . $index] == '1') {
+                        $count++;
+                    }
+                    if ($count >= 2 && $option != "none") {
+                        return true;
+                    }
                 }
-                if($count >= 2 && $option != "none")
-                    return true;
             }
             if($option == 'none' && $count ==  "0"){
                 return true;
