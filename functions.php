@@ -109,4 +109,19 @@ function isTokenCorrect($token,$pidPeople){
     }
     return false;
 }
+
+function arrayKeyExistsReturnValue($array, $keys) {
+    if (!is_array($keys)) {
+        return null;
+    }
+
+    foreach ($keys as $key) {
+        if (is_array($array) && array_key_exists($key, $array)) {
+            $array = $array[$key];
+        } else {
+            return null;
+        }
+    }
+    return $array;
+}
 ?>
