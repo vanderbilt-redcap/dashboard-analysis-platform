@@ -140,7 +140,7 @@ class CronData
         $missing = 0;
         $missingTop = 0;
         foreach ($missingRecords as $key => $mrecord){
-            if ((arrayKeyExistsReturnValue($mrecord[$study]) == '' && getFieldType($study, $project_id) != "checkbox") || ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total, 'none')) {
+            if ((arrayKeyExistsReturnValue($mrecord, [$study]) == '' && getFieldType($study, $project_id) != "checkbox") || ProjectData::isMultiplesCheckbox($project_id, $mrecord, $study, $study_options_total, 'none')) {
                 $missing += 1;
                 if($question == 1){
                     if (isTopScore(arrayKeyExistsReturnValue($mrecord, [$question_1]), $topScoreMax, $question_1)) {
