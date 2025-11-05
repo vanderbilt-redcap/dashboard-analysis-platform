@@ -143,7 +143,7 @@ class GraphData
                     || $studyCol == "total"
                     || ($study == ProjectData::INSTITUTIONS_ARRAY_KEY)
                     || ($studyCol == "no" && $study == "rpps_s_q61" && getFieldType($study, $project_id) == "checkbox" && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none'))
-                    || ($studyCol == "no" && arrayKeyExistsReturnValue($record,[$study]) == '' && (getFieldType($study, $project_id) != "checkbox") || ((array_key_exists($study, $record) && is_array($record[$study])) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
+                    || ($studyCol == "no" && empty(arrayKeyExistsReturnValue($record,[$study])) && (getFieldType($study, $project_id) != "checkbox") || ((array_key_exists($study, $record) && is_array($record[$study])) && ProjectData::isMultiplesCheckbox($project_id, $record, $study, $study_options_total,'none')))
                     || ($studyCol != "multiple" && $studyCol != "total" && $studyCol != "no")
                 ) {
                     $graph = self::getTopScoresArray($graph, $record, $question, $question_1, $study, $topScoreMax, $studyCol, $project_id, $study_options_total);
@@ -171,7 +171,7 @@ class GraphData
                 $graph = self::addGraphNoTops($graph,$question,$question_1,$study,$studyCol,$record['survey_datetime']);
             }
         } else {
-            if (isTopScoreVeryOrSomewhatImportant(arrayKeyExistsReturnValue($record, [$question_1])) && (arrayKeyExistsReturnValue($record, [$question_1]) != null || array_key_exists($question_1, $record))) {
+            if (isTopScoreVeryOrSomewhatImportant(arrayKeyExistsReturnValue($record, [$question_1])) && (!empty(arrayKeyExistsReturnValue($record, [$question_1])) || array_key_exists($question_1, $record))) {
                 $graph = self::addGraph($graph, $question, $question_1, $study, $studyCol, $record['survey_datetime']);
             }else{
                 //ADD to the graph as 0
