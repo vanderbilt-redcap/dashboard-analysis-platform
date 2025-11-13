@@ -340,7 +340,7 @@ class Crons
 
                 #NORMAL
                 foreach ($study_options as $index => $col_title) {
-                    $normal = CronData::getResponseRate($graph[$question_2][$index], $graph["total_records"][$index]);
+                    $normal = CronData::getResponseRate(arrayKeyExistsReturnValue($graph, [$question_2,$index]), arrayKeyExistsReturnValue($graph, ["total_records",$index]));
                     array_push($array_colors, $normal[0]);
                     array_push($tooltipTextArray, $normal[1]);
                 }
@@ -381,9 +381,9 @@ class Crons
         $row_questions = ProjectData::getRowQuestions();
         $array_study_3 = ProjectData::getArrayStudyQuestion_3();
 
-        $allData_array = $table_data['data'];
-        $allDataTooltip_array = $table_data['tooltip'];
-        $allLabel_array = $table_data['legend'];
+        $allData_array = arrayKeyExistsReturnValue($table_data,['data']);
+        $allDataTooltip_array = arrayKeyExistsReturnValue($table_data,['tooltip']);
+        $allLabel_array = arrayKeyExistsReturnValue($table_data,['legend']);
         $conditionDate = "";
         $max = 100;
 
