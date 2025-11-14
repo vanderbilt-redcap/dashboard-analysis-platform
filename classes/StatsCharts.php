@@ -3,9 +3,9 @@ namespace Vanderbilt\DashboardAnalysisPlatformExternalModule;
 
 class StatsCharts{
     // Display all charts and statistics on page and use AJAX to load the charts
-    public static function outputStatsCharts($report_id=null,
+    public static function outputStatsCharts($page, $report_id=null,
         // The parameters below are ONLY used for $report_id == 'SELECTED'
-                                             $selectedInstruments=array(), $selectedEvents=array(),$page)
+                                             $selectedInstruments=array(), $selectedEvents=array())
     {
         global $lang, $Proj, $longitudinal, $user_rights, $enable_plotting;
 
