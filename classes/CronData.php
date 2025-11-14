@@ -376,14 +376,14 @@ class CronData
 	
      public static function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
-        if ($percent >= 0.8) {
+        if ($percent >= 0.8 && arrayKeyExistsReturnValue($graph, ["complete"][$index]) != null) {
             $graph["complete"][$index]++;
-        } else if ($percent < 0.8 && $percent >= 0.5) {
+        } else if ($percent < 0.8 && $percent >= 0.5 && arrayKeyExistsReturnValue($graph, ["partial"][$index]) != null) {
             $graph["partial"][$index]++;
-        } else if ($percent < 0.5 && $percent > 0) {
+        } else if ($percent < 0.5 && $percent > 0 && arrayKeyExistsReturnValue($graph, ["breakoffs"][$index]) != null) {
             $graph["breakoffs"][$index]++;
         }
-        if($percent > 0){
+        if($percent > 0 && arrayKeyExistsReturnValue($graph, ["any"][$index]) != null){
             $graph["any"][$index]++;
         }
         return $graph;
