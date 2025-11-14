@@ -22,7 +22,7 @@ $page = "research_participant_perception_survey_epv_version";
 
 \DataExport::checkReportHash();
 
-$html = StatsCharts::outputStatsCharts(	$report_id, $instrument, $events, $page);
+$html = StatsCharts::outputStatsCharts($page, $report_id, $instrument, $events, );
 // Add note about Missing Data Codes for "Missing" values
 $html .= \RCView::div(array('class'=>'spacer mt-5'),' ') .
     \RCView::h6(array('class'=>'mt-3', 'style'=>'color:#A00000;'),
