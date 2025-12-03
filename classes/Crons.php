@@ -582,8 +582,10 @@ class Crons
             }
 
             # Delete previous file
-            if (file_exists($filePath) && !unlink($filePath)) {
-                throw new \Exception("Failed to delete existing file on PID # ".$project_id.": $filePath");
+            if (file_exists($filePath)) {
+                if (!unlink($filePath)) {
+                    throw new \Exception("Failed to delete existing file on PID # ".$project_id.": $filePath");
+                }
             }
 
             # Open file for writing
