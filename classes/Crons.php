@@ -584,7 +584,8 @@ class Crons
             # Delete previous file
             if (file_exists($filePath)) {
                 if (!unlink($filePath)) {
-                    throw new \Exception("Failed to delete existing file on PID # ".$project_id.": $filePath");
+                    $error = error_get_last();
+                    throw new \Exception("Failed to delete existing file on PID # ".$project_id.": $filePath. Error: " . $error['message']);
                 }
             }
 
