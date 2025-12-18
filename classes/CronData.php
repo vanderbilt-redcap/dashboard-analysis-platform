@@ -249,7 +249,7 @@ class CronData
         foreach($missingRecordsNoFilter as $misRecordNF) {
             foreach ($row_questions_1 as $questionNF){
                 $recordNF = arrayKeyExistsReturnValue($misRecordNF, [$questionNF]);
-                if(array_key_exists($questionNF, $misRecordNF) && $misRecordNF[$questionNF] !== ""){
+                if($recordNF !== "" && $recordNF != null){
                     $missingOverall += 1;
                     break;
                 }
@@ -376,14 +376,14 @@ class CronData
 	
      public static function calculateResponseRate($num_questions_answered, $total_questions, $index, $graph){
         $percent = number_format((float)($num_questions_answered / $total_questions), 2, '.', '');
-        if ($percent >= 0.8 && arrayKeyExistsReturnValue($graph, ["complete"][$index]) != null) {
+        if ($percent >= 0.8) {
             $graph["complete"][$index]++;
-        } else if ($percent < 0.8 && $percent >= 0.5 && arrayKeyExistsReturnValue($graph, ["partial"][$index]) != null) {
+        } else if ($percent < 0.8 && $percent >= 0.5) {
             $graph["partial"][$index]++;
-        } else if ($percent < 0.5 && $percent > 0 && arrayKeyExistsReturnValue($graph, ["breakoffs"][$index]) != null) {
+        } else if ($percent < 0.5 && $percent > 0) {
             $graph["breakoffs"][$index]++;
         }
-        if($percent > 0 && arrayKeyExistsReturnValue($graph, ["any"][$index]) != null){
+        if($percent > 0){
             $graph["any"][$index]++;
         }
         return $graph;
@@ -410,6 +410,7 @@ class CronData
             "responses" => 0
         );
         foreach ($study_options as $index => $col_title) {
+            $graph = self::addZeros($graph, $index);
             $condition = getParamOnType($study, $index,$project_id);
             #Etnicity Case
             if (ProjectData::isEthnicityVar($study) && $index == count($study_options)) {
@@ -486,7 +487,7 @@ class CronData
             $num_questions_answered = 0;
             foreach ($row_questions_1 as $indexQuestion => $question_1) {
                 $recordTotal = arrayKeyExistsReturnValue($record,[$question_1]);
-                if (!empty($recordTotal) && isset($recordTotal)) {
+                if ($recordTotal !== "" && $recordTotal != null) {
                     $num_questions_answered++;
                 }
             }
@@ -593,10 +594,11 @@ class CronData
     }
 
      public static function addZeros($graph, $index){
-        $graph["any"][$index] = 0;
-        $graph["complete"][$index] = 0;
-        $graph["partial"][$index] = 0;
-        $graph["breakoffs"][$index] = 0;
+         foreach (["any","complete","partial","breakoffs"] as $type) {
+             if (!isset($graph[$type][$index])) {
+                 $graph[$type][$index] = 0;
+             }
+         }
         return $graph;
     }
 
